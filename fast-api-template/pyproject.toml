@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "fast-api-template"
+version = "0.1.0"
+description = ""
+authors = ["Harry Sadler <harrysadlermusic@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.95.1"
+uvicorn = "^0.22.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+mypy = "^1.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
