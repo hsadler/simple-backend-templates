@@ -18,6 +18,12 @@ run local server:
 poetry run uvicorn src.main:app --reload
 ```
 
+verify server is running by hitting the status endpoint:
+
+```sh
+http GET http://localhost:8000/status/
+```
+
 ## Other dev commands:
 
 enter poetry shell:
