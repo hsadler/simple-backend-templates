@@ -6,3 +6,5 @@ black:
 
 mypy:
 	poetry run mypy .
+
+lint: black mypy
