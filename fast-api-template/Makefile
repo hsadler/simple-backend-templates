@@ -1,5 +1,8 @@
+build:
+	docker compose build
+
 up:
-	poetry run uvicorn src.main:app --reload
+	docker compose up
 
 black:
 	poetry run black .
