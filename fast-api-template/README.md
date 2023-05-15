@@ -12,10 +12,16 @@ install dependencies:
 poetry install
 ```
 
-run local server:
+build the server image:
 
 ```sh
-poetry run uvicorn src.main:app --reload
+docker compose build
+```
+
+run server container locally:
+
+```sh
+docker compose up
 ```
 
 verify server is running by hitting the status endpoint:
@@ -30,4 +36,19 @@ enter poetry shell:
 
 ```sh
 poetry shell
+```
+
+## Try out the example "items" API:
+
+POST some items:
+
+```sh
+http POST http://127.0.0.1:8000/items \
+items:='[{"name": "one", "price": 1}, {"name": "two", "price": 2}]'
+```
+
+GET items
+
+```sh
+http GET http://127.0.0.1:8000/items
 ```

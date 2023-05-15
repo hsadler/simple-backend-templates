@@ -29,13 +29,42 @@ async def status() -> StatusOutput:
     return StatusOutput(status="ok")
 
 
+# EXAMPLE ITEMS API
+
+
 class Item(BaseModel):
     name: str
     price: float
 
 
-# http POST http://localhost:8000/items name=apple price=1.23
+class ItemsGETOutput(BaseModel):
+    items: list[Item]
+
+
+class ItemsPOSTInput(BaseModel):
+    items: list[Item]
+
+
+class ItemsPOSTOutput(BaseModel):
+    items_created: list[Item]
+
+
+items: list[Item] = []
+
+
+@app.get("/items")
+async def get_items() -> ItemsGETOutput:
+    logger.info("GET Request to /items", extra={"return_items": items})
+    return ItemsGETOutput(items=items)
+
+
 @app.post("/items")
-async def create_item(item: Item) -> Item:
-    logger.info("Request to /items", extra={"returned_item": item.dict()})
-    return item
+async def create_item(input: ItemsPOSTInput) -> ItemsPOSTOutput:
+    item: Item
+    for item in input.items:
+        items.append(item)
+    logger.info(
+        "POST Request to /items",
+        extra={"items_created": [item.dict() for item in input.items]},
+    )
+    return ItemsPOSTOutput(items_created=input.items)
