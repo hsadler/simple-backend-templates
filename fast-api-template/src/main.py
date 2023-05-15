@@ -4,7 +4,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-logging.basicConfig(level=logging.INFO)
+from src.log import setup_logging
+
+setup_logging()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(docs_url="/docs", redoc_url=None)
@@ -35,5 +37,5 @@ class Item(BaseModel):
 # http POST http://localhost:8000/items name=apple price:=1.23
 @app.post("/items")
 async def create_item(item: Item) -> Item:
-    logger.info("Request to /items")
+    logger.info("Request to /items", extra={"returned_item": item.dict()})
     return item
