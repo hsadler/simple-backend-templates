@@ -18,7 +18,7 @@ app.add_middleware(
 app.add_route("/metrics", handle_metrics)
 
 
-class StatusOutput(BaseModel):  # type: ignore
+class StatusOutput(BaseModel):
     status: str = Field(description="Status description")
 
 
@@ -34,7 +34,7 @@ class Item(BaseModel):
     price: float
 
 
-# http POST http://localhost:8000/items name=apple price:=1.23
+# http POST http://localhost:8000/items name=apple price=1.23
 @app.post("/items")
 async def create_item(item: Item) -> Item:
     logger.info("Request to /items", extra={"returned_item": item.dict()})
