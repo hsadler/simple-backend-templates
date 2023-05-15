@@ -22,7 +22,6 @@ class StatusOutput(BaseModel):
     status: str = Field(description="Status description")
 
 
-# http GET http://localhost:8000/status
 @app.get("/status")
 async def status() -> StatusOutput:
     logger.info("Request to /status")
@@ -63,8 +62,9 @@ async def create_item(input: ItemsPOSTInput) -> ItemsPOSTOutput:
     item: Item
     for item in input.items:
         items.append(item)
+    res = ItemsPOSTOutput(items_created=input.items)
     logger.info(
         "POST Request to /items",
-        extra={"items_created": [item.dict() for item in input.items]},
+        extra={"items_created": res.items_created},
     )
-    return ItemsPOSTOutput(items_created=input.items)
+    return res

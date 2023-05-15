@@ -38,7 +38,7 @@ enter poetry shell:
 poetry shell
 ```
 
-## Try out the example "items" API:
+## Try out the "items" example API:
 
 POST some items:
 
@@ -47,7 +47,7 @@ http POST http://127.0.0.1:8000/items \
 items:='[{"name": "one", "price": 1}, {"name": "two", "price": 2}]'
 ```
 
-GET items
+GET all items
 
 ```sh
 http GET http://127.0.0.1:8000/items
