@@ -85,9 +85,13 @@ async def status() -> StatusOutput:
 # EXAMPLE ITEMS API
 
 
-class Item(BaseModel):
+class ItemIn(BaseModel):
     name: str
     price: float
+
+
+class Item(ItemIn):
+    id: int
 
 
 class ItemsOutput_GET(BaseModel):
@@ -95,7 +99,7 @@ class ItemsOutput_GET(BaseModel):
 
 
 class ItemsInput_POST(BaseModel):
-    items: list[Item]
+    items: list[ItemIn]
 
 
 class ItemsOutput_POST(BaseModel):
@@ -112,11 +116,16 @@ async def get_items() -> ItemsOutput_GET:
 
 
 @app.post("/items", description="Store list of provided items.")
-async def create_item(input: ItemsInput_POST) -> ItemsOutput_POST:
-    item: Item
-    for item in input.items:
+async def create_item(
+    input: ItemsInput_POST, db: Database = Depends(get_database)
+) -> ItemsOutput_POST:
+    item_in: ItemIn
+    items_created: list[Item] = []
+    for item_in in input.items:
+        item = Item(id=len(items) + 1, name=item_in.name, price=item_in.price)
         items.append(item)
-    res = ItemsOutput_POST(items_created=input.items)
+        items_created.append(item)
+    res = ItemsOutput_POST(items_created=items_created)
     logger.info(
         "POST Request to /items",
         extra={"items_created": res.items_created},
