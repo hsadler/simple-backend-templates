@@ -50,7 +50,7 @@ POST some items:
 
 ```sh
 http POST http://127.0.0.1:8000/items \
-items:='[{"name": "one", "price": 1}, {"name": "two", "price": 2}]'
+items:='[{"name": "one", "price": 1.234}, {"name": "two", "price": 2.345}]'
 ```
 
 GET all items

@@ -47,13 +47,14 @@ async def create_tables() -> None:
     CREATE_TABLES_QUERY = """
         CREATE TABLE IF NOT EXISTS item (
             id SERIAL PRIMARY KEY,
-            item_data JSONB
+            name VARCHAR(50),
+            price REAL
         );
     """
     db = await get_database()
     async with db.pool.acquire() as con:
-        status = await con.execute(CREATE_TABLES_QUERY)
-        logger.info("Creating DB tables", extra={"status": status})
+        exec_status = await con.execute(CREATE_TABLES_QUERY)
+        logger.info("Creating DB tables", extra={"exec_status": exec_status})
 
 
 @app.on_event("startup")
@@ -106,31 +107,47 @@ class ItemsOutput_POST(BaseModel):
     items_created: list[Item]
 
 
-items: list[Item] = []
+@app.get("/items", description="Fetch all stored items.")
+async def get_items(db: Database = Depends(get_database)) -> ItemsOutput_GET:
+    logger.info("Fetching all items.")
+
+    FETCH_ITEMS_QUERY = """
+        SELECT * FROM item;
+    """
+    async with db.pool.acquire() as con:
+        fetched_records = await con.fetch(FETCH_ITEMS_QUERY)
+        items = [Item(id=r["id"], name=r["name"], price=r["price"]) for r in fetched_records]
+        return ItemsOutput_GET(items=items)
 
 
-@app.get("/items", description="Retrieve all stored items.")
-async def get_items() -> ItemsOutput_GET:
-    logger.info("GET Request to /items", extra={"return_items": items})
-    return ItemsOutput_GET(items=items)
-
-
-@app.post("/items", description="Store list of provided items.")
-async def create_item(
+@app.post("/items", description="Insert list of provided items.")
+async def create_items(
     input: ItemsInput_POST, db: Database = Depends(get_database)
 ) -> ItemsOutput_POST:
-    item_in: ItemIn
-    items_created: list[Item] = []
-    for item_in in input.items:
-        item = Item(id=len(items) + 1, name=item_in.name, price=item_in.price)
-        items.append(item)
-        items_created.append(item)
-    res = ItemsOutput_POST(items_created=items_created)
-    logger.info(
-        "POST Request to /items",
-        extra={"items_created": res.items_created},
-    )
-    return res
+    logger.info("Inserting items.", extra={"to_create": input.items})
+
+    INSERT_ITEMS_COMMAND = """
+        INSERT INTO item (name, price)
+        VALUES ($1, $2)
+        RETURNING id;
+    """
+
+    FETCH_ITEMS_BY_IDS_COMMAND = """
+        SELECT * FROM item
+        WHERE id = ANY($1::int[])
+    """
+
+    async with db.pool.acquire() as con:
+        created_ids = []
+        for input_item in input.items:
+            record_id = await con.fetchval(INSERT_ITEMS_COMMAND, input_item.name, input_item.price)
+            created_ids.append(record_id)
+        created_records = await con.fetch(FETCH_ITEMS_BY_IDS_COMMAND, created_ids)
+
+        logger.info("Created item records.", extra={"item_records": str(created_records)})
+
+        items = [Item(id=r["id"], name=r["name"], price=r["price"]) for r in created_records]
+        return ItemsOutput_POST(items_created=items)
 
 
 # TEST POSTGRES DB STUFF

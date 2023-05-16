@@ -8,7 +8,7 @@ class Database:
         self.pool: asyncpg.Pool = pool
 
     async def cleanup(self) -> None:
-        self.pool.close()
+        await self.pool.close()
 
 
 async def create_db() -> Database:
