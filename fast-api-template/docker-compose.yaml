@@ -26,5 +26,22 @@ services:
     ports:
       - "5433:5432"
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: user@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: password
+  #   ports:
+  #     - 8080:80
+  #   depends_on:
+  #     - db
+
 volumes:
   db_data:

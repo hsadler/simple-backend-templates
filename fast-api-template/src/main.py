@@ -29,7 +29,7 @@ app.add_middleware(
 app.add_route("/metrics", handle_metrics)
 
 
-# INIT DB
+# INIT DB AND TABLES
 
 
 db: Union[Database, None] = None
@@ -43,11 +43,26 @@ async def get_database() -> Database:
     return db
 
 
-# REGISTER APP EVENT LISTENERS
+async def create_tables() -> None:
+    CREATE_TABLES_QUERY = """
+        CREATE TABLE IF NOT EXISTS item (
+            id SERIAL PRIMARY KEY,
+            item_data JSONB
+        );
+    """
+    db = await get_database()
+    async with db.pool.acquire() as con:
+        status = await con.execute(CREATE_TABLES_QUERY)
+        logger.info("Creating DB tables", extra={"status": status})
+
+
+@app.on_event("startup")
+async def startup() -> None:
+    await create_tables()
 
 
 @app.on_event("shutdown")
-async def shutdown_event() -> None:
+async def shutdown() -> None:
     global db
     if db:
         await db.cleanup()
@@ -112,13 +127,15 @@ async def create_item(input: ItemsInput_POST) -> ItemsOutput_POST:
 # TEST POSTGRES DB STUFF
 
 
-@app.get("/db", description="test db")
-async def get_db(db: Database = Depends(get_database)) -> list[str]:
+@app.get("/db-tables", description="Show created DB tables")
+async def get_db_tables(db: Database = Depends(get_database)) -> list[str]:
     async with db.pool.acquire() as con:
         records: list[asyncpg.Record] = await con.fetch(
             """
             SELECT table_name
-            FROM information_schema.tables;
-            """
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+            AND table_type = 'BASE TABLE';
+        """
         )
         return [str(r) for r in records]
