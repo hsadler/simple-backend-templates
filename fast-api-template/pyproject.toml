@@ -12,12 +12,24 @@ uvicorn = {extras = ["standard"], version = "^0.22.0"}
 starlette-exporter = "^0.16.0"
 httpx = "^0.24.0"
 python-json-logger = "^2.0.7"
+asyncpg = "^0.27.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 mypy = "^1.3.0"
 flake8 = "^6.0.0"
 flake8-isort = "^6.0.0"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile="black"
+line_length = 100
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core"]

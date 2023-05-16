@@ -3,6 +3,7 @@
 ## Getting started
 
 Requirements:
+- docker
 - poetry
 - httpie
 

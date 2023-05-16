@@ -5,27 +5,26 @@ services:
     build:
       context: .
       target: development
-    # env_file:
-    #   - .env
     volumes:
       - .:/app
-    # depends_on:
-    #   - db
-    # environment:
-    #   - DATABASE_URL=postgresql://user:password@db:5432/example_db
+    depends_on:
+      - db
+    environment:
+      DEBUG: "true"
+      DATABASE_URL: postgresql://user:password@db:5432/example_db
     ports:
       - "8000:8000"
 
-  # db:
-  #   image: postgres:15.3-alpine3.18
-  #   environment:
-  #     - POSTGRES_USER=user
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_DB=example_db
-  #   volumes:
-  #     - db_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5433:5432"
+  db:
+    image: postgres:15.3-alpine3.18
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=example_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
 
 volumes:
   db_data:

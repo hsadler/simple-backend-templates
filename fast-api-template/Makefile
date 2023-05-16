@@ -14,6 +14,6 @@ flake8:
 	poetry run flake8 .
 
 mypy:
-	poetry run mypy --strict .
+	poetry run mypy .
 
 lint: black flake8 isort mypy
