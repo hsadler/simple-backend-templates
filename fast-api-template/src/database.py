@@ -7,6 +7,9 @@ class Database:
     def __init__(self, pool: asyncpg.Pool) -> None:
         self.pool: asyncpg.Pool = pool
 
+    async def cleanup(self) -> None:
+        self.pool.close()
+
 
 async def create_db() -> Database:
     pool = await asyncpg.create_pool(settings.DATABASE_URL, min_size=5, max_size=10)

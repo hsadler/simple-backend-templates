@@ -13,13 +13,13 @@ install dependencies:
 poetry install
 ```
 
-build the server image:
+build images:
 
 ```sh
 docker compose build
 ```
 
-run server container locally:
+run containers locally:
 
 ```sh
 docker compose up
@@ -37,6 +37,11 @@ enter poetry shell:
 
 ```sh
 poetry shell
+```
+
+before you commit code, make sure to lint:
+```sh
+make lint
 ```
 
 ## Try out the "items" example API:
