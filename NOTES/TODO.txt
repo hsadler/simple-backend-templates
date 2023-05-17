@@ -1,7 +1,13 @@
 
 TODO:
-    - add a timestamp column to the example items table
-    - add a constraint to the price column so that it stores only 2 decimal places
+    - add a timestamp column to the example item table
+    - add a UUID column to the example item table
+    - add a constraint to the price column so that it stores only 2 decimal
+        places
     - add tests
+    - maybe: decompose routers
+    - maybe: put "items" CRUD into a repo (if we want this template to be
+        opinionated about architecture)
+    - maybe: put pydantic models in their own file
+    - maybe: use a fastapi basesettings subclass for the app settings definition
     - maybe: add a redis caching example
-    - 

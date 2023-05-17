@@ -76,7 +76,7 @@ class StatusOutput(BaseModel):
     status: str = Field(description="Status description")
 
 
-@app.get("/status", description="Provides server status.")
+@app.get("/status", description="Provides server status.", tags=["status"])
 async def status() -> StatusOutput:
     logger.info("Request to /status")
     return StatusOutput(status="ok")
@@ -110,7 +110,7 @@ class ItemsOutput_POST(BaseModel):
     items_created: list[Item]
 
 
-@app.get("/item/{item_id}", description="Fetch item by ids.")
+@app.get("/api/items/{item_id}", description="Fetch single item by id.", tags=["items"])
 async def get_item(
     item_id: int = Path(gt=0, example=1), db: Database = Depends(get_database)
 ) -> ItemOutput_GET:
@@ -126,7 +126,7 @@ async def get_item(
         return ItemOutput_GET(item=Item(**item_record))
 
 
-@app.get("/items", description="Fetch items by ids.")
+@app.get("/api/items", description="Fetch multiple items by ids.", tags=["items"])
 async def get_items(
     item_ids: list[int] = Query(gt=0, example=[1, 2]), db: Database = Depends(get_database)
 ) -> ItemsOutput_GET:
@@ -143,7 +143,7 @@ async def get_items(
         return ItemsOutput_GET(items=items)
 
 
-@app.post("/items", description="Insert list of provided items.")
+@app.post("/api/items", description="Save new items.", tags=["items"])
 async def create_items(
     input: ItemsInput_POST, db: Database = Depends(get_database)
 ) -> ItemsOutput_POST:
