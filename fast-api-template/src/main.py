@@ -73,7 +73,7 @@ async def shutdown() -> None:
 
 
 class StatusOutput(BaseModel):
-    status: str = Field(description="Status description")
+    status: str = Field(description="Status description.")
 
 
 @app.get("/status", description="Provides server status.", tags=["status"])
@@ -86,12 +86,12 @@ async def status() -> StatusOutput:
 
 
 class ItemIn(BaseModel):
-    name: str
-    price: float
+    name: str = Field(max_length=50, description="Item name.")
+    price: float = Field(gt=0, description="Item price.")
 
 
 class Item(ItemIn):
-    id: int
+    id: int = Field(gt=0, description="Item id. Autoincremented.")
 
 
 class ItemOutput_GET(BaseModel):

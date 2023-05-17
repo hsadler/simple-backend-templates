@@ -12,3 +12,4 @@ TODO:
     - maybe: use a fastapi basesettings subclass for the app settings definition
     - maybe: add a redis caching example
     - maybe: add pre-commit hooks
+    - maybe: add migrations with Alembic or similar
