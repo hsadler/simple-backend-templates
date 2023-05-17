@@ -11,3 +11,4 @@ TODO:
     - maybe: put pydantic models in their own file
     - maybe: use a fastapi basesettings subclass for the app settings definition
     - maybe: add a redis caching example
+    - maybe: add pre-commit hooks
