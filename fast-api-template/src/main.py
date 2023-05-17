@@ -1,8 +1,7 @@
 import logging
 from typing import Union
 
-import asyncpg
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Path, Query
 from pydantic import BaseModel, Field
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -95,6 +94,10 @@ class Item(ItemIn):
     id: int
 
 
+class ItemOutput_GET(BaseModel):
+    item: Item
+
+
 class ItemsOutput_GET(BaseModel):
     items: list[Item]
 
@@ -107,16 +110,36 @@ class ItemsOutput_POST(BaseModel):
     items_created: list[Item]
 
 
-@app.get("/items", description="Fetch all stored items.")
-async def get_items(db: Database = Depends(get_database)) -> ItemsOutput_GET:
-    logger.info("Fetching all items.")
+@app.get("/item/{item_id}", description="Fetch item by ids.")
+async def get_item(
+    item_id: int = Path(gt=0, example=1), db: Database = Depends(get_database)
+) -> ItemOutput_GET:
+    logger.info("Fetching item by id", extra={"item_id": item_id})
 
-    FETCH_ITEMS_QUERY = """
-        SELECT * FROM item;
+    FETCH_ITEM_BY_ID_COMMAND = """
+        SELECT * FROM item
+        WHERE id = $1
     """
+
     async with db.pool.acquire() as con:
-        fetched_records = await con.fetch(FETCH_ITEMS_QUERY)
-        items = [Item(id=r["id"], name=r["name"], price=r["price"]) for r in fetched_records]
+        item_record = await con.fetchrow(FETCH_ITEM_BY_ID_COMMAND, item_id)
+        return ItemOutput_GET(item=Item(**item_record))
+
+
+@app.get("/items", description="Fetch items by ids.")
+async def get_items(
+    item_ids: list[int] = Query(gt=0, example=[1, 2]), db: Database = Depends(get_database)
+) -> ItemsOutput_GET:
+    logger.info("Fetching items by ids.", extra={"item_ids": item_ids})
+
+    FETCH_ITEMS_BY_IDS_COMMAND = """
+        SELECT * FROM item
+        WHERE id = ANY($1::int[])
+    """
+
+    async with db.pool.acquire() as con:
+        fetched_records = await con.fetch(FETCH_ITEMS_BY_IDS_COMMAND, item_ids)
+        items = [Item(**r) for r in fetched_records]
         return ItemsOutput_GET(items=items)
 
 
@@ -146,22 +169,5 @@ async def create_items(
 
         logger.info("Created item records.", extra={"item_records": str(created_records)})
 
-        items = [Item(id=r["id"], name=r["name"], price=r["price"]) for r in created_records]
+        items = [Item(**r) for r in created_records]
         return ItemsOutput_POST(items_created=items)
-
-
-# TEST POSTGRES DB STUFF
-
-
-@app.get("/db-tables", description="Show created DB tables")
-async def get_db_tables(db: Database = Depends(get_database)) -> list[str]:
-    async with db.pool.acquire() as con:
-        records: list[asyncpg.Record] = await con.fetch(
-            """
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema = 'public'
-            AND table_type = 'BASE TABLE';
-        """
-        )
-        return [str(r) for r in records]

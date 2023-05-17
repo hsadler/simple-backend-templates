@@ -40,8 +40,15 @@ poetry shell
 ```
 
 before you commit code, make sure to lint:
+
 ```sh
 make lint
+```
+
+if you get isort errors, run the command alone to fix:
+
+```sh
+poetry run isort .
 ```
 
 ## Try out the "items" example API:
@@ -53,8 +60,14 @@ http POST http://127.0.0.1:8000/items \
 items:='[{"name": "one", "price": 1.234}, {"name": "two", "price": 2.345}]'
 ```
 
-GET all items
+GET a single item:
 
 ```sh
-http GET http://127.0.0.1:8000/items
+http GET http://127.0.0.1:8000/item/1
+```
+
+GET multiple items:
+
+```sh
+http GET 'http://127.0.0.1:8000/items' item_ids==1 item_ids==2
 ```
