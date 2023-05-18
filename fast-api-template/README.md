@@ -56,18 +56,18 @@ poetry run isort .
 POST some items:
 
 ```sh
-http POST http://127.0.0.1:8000/items \
-items:='[{"name": "one", "price": 1.234}, {"name": "two", "price": 2.345}]'
+http POST http://127.0.0.1:8000/api/items \
+items:='[{"name": "one", "price": 1.23}, {"name": "two", "price": 2.34}]'
 ```
 
 GET a single item:
 
 ```sh
-http GET http://127.0.0.1:8000/item/1
+http GET http://127.0.0.1:8000/api/items/1
 ```
 
 GET multiple items:
 
 ```sh
-http GET 'http://127.0.0.1:8000/items' item_ids==1 item_ids==2
+http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 ```

@@ -1,7 +1,10 @@
 import logging
+from datetime import datetime
 from typing import Union
+from uuid import UUID
 
-from fastapi import Depends, FastAPI, Path, Query
+import asyncpg
+from fastapi import Depends, FastAPI, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -42,23 +45,27 @@ async def get_database() -> Database:
     return db
 
 
-async def create_tables() -> None:
-    CREATE_TABLES_QUERY = """
+async def init_db() -> None:
+    INIT_DB_QUERY = """
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
         CREATE TABLE IF NOT EXISTS item (
             id SERIAL PRIMARY KEY,
+            uuid UUID DEFAULT uuid_generate_v4(),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             name VARCHAR(50),
-            price REAL
+            price NUMERIC(10, 2),
+            CONSTRAINT name_unique UNIQUE (name)
         );
     """
     db = await get_database()
     async with db.pool.acquire() as con:
-        exec_status = await con.execute(CREATE_TABLES_QUERY)
-        logger.info("Creating DB tables", extra={"exec_status": exec_status})
+        exec_status = await con.execute(INIT_DB_QUERY)
+        logger.info("Initializing DB and creating tables", extra={"exec_status": exec_status})
 
 
 @app.on_event("startup")
 async def startup() -> None:
-    await create_tables()
+    await init_db()
 
 
 @app.on_event("shutdown")
@@ -90,8 +97,12 @@ class ItemIn(BaseModel):
     price: float = Field(gt=0, description="Item price.")
 
 
-class Item(ItemIn):
+class Item(BaseModel):
     id: int = Field(gt=0, description="Item id. Autoincremented.")
+    uuid: UUID = Field(description="Item uuid4 identifier.")
+    created_at: datetime = Field(description="Item time created.")
+    name: str = Field(max_length=50, description="Item name.")
+    price: float = Field(gt=0, description="Item price.")
 
 
 class ItemOutput_GET(BaseModel):
@@ -110,7 +121,14 @@ class ItemsOutput_POST(BaseModel):
     items_created: list[Item]
 
 
-@app.get("/api/items/{item_id}", description="Fetch single item by id.", tags=["items"])
+@app.get(
+    "/api/items/{item_id}",
+    description="Fetch single item by id.",
+    responses={
+        "404": {"description": "Resource not found"},
+    },
+    tags=["items"],
+)
 async def get_item(
     item_id: int = Path(gt=0, example=1), db: Database = Depends(get_database)
 ) -> ItemOutput_GET:
@@ -123,6 +141,9 @@ async def get_item(
 
     async with db.pool.acquire() as con:
         item_record = await con.fetchrow(FETCH_ITEM_BY_ID_COMMAND, item_id)
+        logger.info("Item record fetched", extra={"item_record": item_record})
+        if item_record is None:
+            raise HTTPException(status_code=404, detail="Item resource not found")
         return ItemOutput_GET(item=Item(**item_record))
 
 
@@ -130,7 +151,7 @@ async def get_item(
 async def get_items(
     item_ids: list[int] = Query(gt=0, example=[1, 2]), db: Database = Depends(get_database)
 ) -> ItemsOutput_GET:
-    logger.info("Fetching items by ids.", extra={"item_ids": item_ids})
+    logger.info("Fetching items by ids", extra={"item_ids": item_ids})
 
     FETCH_ITEMS_BY_IDS_COMMAND = """
         SELECT * FROM item
@@ -143,11 +164,19 @@ async def get_items(
         return ItemsOutput_GET(items=items)
 
 
+@app.post(
+    "/api/items",
+    description="Save new items.",
+    responses={
+        "409": {"description": "Resource already exists"},
+    },
+    tags=["items"],
+)
 @app.post("/api/items", description="Save new items.", tags=["items"])
 async def create_items(
     input: ItemsInput_POST, db: Database = Depends(get_database)
 ) -> ItemsOutput_POST:
-    logger.info("Inserting items.", extra={"to_create": input.items})
+    logger.info("Inserting items", extra={"to_create": input.items})
 
     INSERT_ITEMS_COMMAND = """
         INSERT INTO item (name, price)
@@ -159,15 +188,25 @@ async def create_items(
         SELECT * FROM item
         WHERE id = ANY($1::int[])
     """
+    try:
+        async with db.pool.acquire() as con:
+            created_ids = []
+            for input_item in input.items:
+                record_id = await con.fetchval(
+                    INSERT_ITEMS_COMMAND, input_item.name, input_item.price
+                )
+                logger.debug("Item record inserted", extra={"record_id": record_id})
+                created_ids.append(record_id)
+            created_records = await con.fetch(FETCH_ITEMS_BY_IDS_COMMAND, created_ids)
 
-    async with db.pool.acquire() as con:
-        created_ids = []
-        for input_item in input.items:
-            record_id = await con.fetchval(INSERT_ITEMS_COMMAND, input_item.name, input_item.price)
-            created_ids.append(record_id)
-        created_records = await con.fetch(FETCH_ITEMS_BY_IDS_COMMAND, created_ids)
-
-        logger.info("Created item records.", extra={"item_records": str(created_records)})
+        logger.info("Created item records", extra={"item_records": dict(created_records)})
 
         items = [Item(**r) for r in created_records]
         return ItemsOutput_POST(items_created=items)
+
+    except asyncpg.exceptions.UniqueViolationError as e:
+        logger.debug(
+            "Item record could not be created because it violated a unique constraint",
+            extra={"error": e},
+        )
+        raise HTTPException(status_code=409, detail="Resource already exists")
