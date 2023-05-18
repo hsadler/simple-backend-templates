@@ -1,6 +1,11 @@
+import logging
+from typing import Union
+
 import asyncpg
 
 from src import settings
+
+logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -9,6 +14,17 @@ class Database:
 
     async def cleanup(self) -> None:
         await self.pool.close()
+
+
+db: Union[Database, None] = None
+
+
+async def get_database() -> Database:
+    global db
+    if not db:
+        db = await create_db()
+        logger.info("Database with new connection pool created")
+    return db
 
 
 async def create_db() -> Database:
