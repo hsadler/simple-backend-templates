@@ -53,11 +53,10 @@ poetry run isort .
 
 ## Try out the "items" example API:
 
-POST some items:
+POST an items:
 
 ```sh
-http POST http://127.0.0.1:8000/api/items \
-items:='[{"name": "one", "price": 1.23}, {"name": "two", "price": 2.34}]'
+http POST http://127.0.0.1:8000/api/items item:='{"name": "harry", "price": 3.14}'
 ```
 
 GET a single item:
