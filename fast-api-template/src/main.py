@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from src import models
-from src.database import get_database
+from src.database import get_database, init_db
 from src.log import setup_logging
 from src.routers.items import router as items_router
 
@@ -28,25 +28,7 @@ app.add_middleware(
 app.add_route("/metrics", handle_metrics)
 
 
-# INIT DB AND TABLES
-
-
-async def init_db() -> None:
-    INIT_DB_QUERY = """
-        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-        CREATE TABLE IF NOT EXISTS item (
-            id SERIAL PRIMARY KEY,
-            uuid UUID DEFAULT uuid_generate_v4(),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            name VARCHAR(50),
-            price NUMERIC(10, 2),
-            CONSTRAINT name_unique UNIQUE (name)
-        );
-    """
-    db = await get_database()
-    async with db.pool.acquire() as con:
-        exec_status = await con.execute(INIT_DB_QUERY)
-        logger.info("Initializing DB and creating tables", extra={"exec_status": exec_status})
+# REGISTER LISTENERS TO APP EVENTS
 
 
 @app.on_event("startup")

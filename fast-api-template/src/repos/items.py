@@ -48,13 +48,13 @@ async def create_item(db: Database, input_item: ItemIn) -> Item:
     try:
         async with db.pool.acquire() as con:
             item_id = await con.fetchval(INSERT_ITEM_COMMAND, input_item.name, input_item.price)
-            logger.debug("Item record inserted", extra={"item_id": item_id})
+            logger.info("Item record inserted", extra={"item_id": item_id})
             item_created_record = await con.fetchrow(FETCH_ITEM_BY_ID_COMMAND, item_id)
 
         return Item(**item_created_record)
 
     except asyncpg.exceptions.UniqueViolationError as e:
-        logger.debug(
+        logger.info(
             "Item record could not be created because it violated a unique constraint",
             extra={"error": e},
         )
