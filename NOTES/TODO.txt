@@ -5,9 +5,9 @@ TODO:
         places
     X add a UUID column to the example item table
     X add proper try/catches and status code returns for non-200 conditions
-    - decompose routers
-    - put pydantic models in their own file
-    - put "items" CRUD into a repo (if we want this template to be
+    X decompose routers
+    X put pydantic models in their own file
+    X put "items" CRUD into a repo (if we want this template to be
         opinionated about architecture)
     - add tests
     - maybe: add a redis caching example
