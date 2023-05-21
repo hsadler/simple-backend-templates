@@ -1,4 +1,9 @@
-import os
+from pydantic import BaseSettings
 
-DEBUG = os.getenv("DEBUG", "false")
-DATABASE_URL = os.getenv("DATABASE_URL")
+
+class Settings(BaseSettings):
+    debug: bool = False
+    database_url: str = ""
+
+
+settings = Settings()

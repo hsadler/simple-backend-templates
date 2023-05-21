@@ -10,9 +10,7 @@ from src.repos import items as items_repo
 logger = logging.getLogger(__name__)
 
 
-router: APIRouter = APIRouter(
-    prefix="/api/items", tags=["items"], dependencies=[Depends(get_database)]
-)
+router: APIRouter = APIRouter(prefix="/api/items", tags=["items"])
 
 
 @router.get(
@@ -25,23 +23,23 @@ router: APIRouter = APIRouter(
 )
 async def get_item(
     item_id: int = Path(gt=0, example=1), db: Database = Depends(get_database)
-) -> models.ItemOutput_GET:
+) -> models.ItemOutput:
     logger.info("Fetching item by id", extra={"item_id": item_id})
     item = await items_repo.fetch_item_by_id(db, item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Item resource not found")
     logger.info("Item fetched", extra={"item": dict(item)})
-    return models.ItemOutput_GET(item=item)
+    return models.ItemOutput(item=item)
 
 
 @router.get("", description="Fetch multiple items by ids.", tags=["items"])
 async def get_items(
     item_ids: list[int] = Query(gt=0, example=[1, 2]), db: Database = Depends(get_database)
-) -> models.ItemsOutput_GET:
+) -> models.ItemsOutput:
     logger.info("Fetching items by ids", extra={"item_ids": item_ids})
     items = await items_repo.fetch_items_by_ids(db, item_ids)
     logger.info("Items fetched", extra={"items": [dict(item) for item in items]})
-    return models.ItemsOutput_GET(items=items)
+    return models.ItemsOutput(items=items)
 
 
 @router.post(
@@ -53,8 +51,8 @@ async def get_items(
     tags=["items"],
 )
 async def create_item(
-    input: models.ItemInput_POST, db: Database = Depends(get_database)
-) -> models.ItemOutput_POST:
+    input: models.ItemInput, db: Database = Depends(get_database)
+) -> models.ItemOutput:
     logger.info("Inserting item", extra={"item": dict(input.item)})
 
     try:
@@ -63,4 +61,4 @@ async def create_item(
         raise HTTPException(status_code=409, detail="Resource already exists")
 
     logger.info("Created item", extra={"item": dict(item_created)})
-    return models.ItemOutput_POST(item_created=item_created)
+    return models.ItemOutput(item=item_created)

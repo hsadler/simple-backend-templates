@@ -3,7 +3,7 @@ from typing import Union
 
 import asyncpg
 
-from src import settings
+from src.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def get_database() -> Database:
 
 
 async def create_db() -> Database:
-    pool = await asyncpg.create_pool(settings.DATABASE_URL, min_size=5, max_size=10)
+    pool = await asyncpg.create_pool(settings.database_url, min_size=5, max_size=10)
     return Database(pool)
 
 

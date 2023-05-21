@@ -1,16 +1,17 @@
 
 TODO:
-    X add a timestamp column to the example item table
-    X add a constraint to the price column so that it stores only 2 decimal
-        places
-    X add a UUID column to the example item table
-    X add proper try/catches and status code returns for non-200 conditions
-    X decompose routers
-    X put pydantic models in their own file
-    X put "items" CRUD into a repo (if we want this template to be
-        opinionated about architecture)
-    - add tests
-    - maybe: add a redis caching example
-    - maybe: add pre-commit hooks
-    - maybe: use a fastapi basesettings subclass for the app settings definition
-    - maybe: add migrations with Alembic or similar
+    X pydantic basesettings subclass for the app settings definition
+    X prometheus metrics exporter alternative
+    - README updates for:
+        - using adminer
+        - TODOs
+        - How to contribute
+    - api tests
+    - unit tests
+    - load testing
+    - maybe: pre-commit hooks
+    - maybe: SQLAlchemy ORM
+    - maybe: migrations with Alembic or similar
+    - maybe: api call example
+    - maybe: background task example
+    - maybe: caching example

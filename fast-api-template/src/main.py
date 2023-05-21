@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import FastAPI
-from starlette_exporter import PrometheusMiddleware, handle_metrics
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from src import models
 from src.database import get_database, init_db
@@ -12,23 +12,11 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-# INIT FAST API
-
-
 app = FastAPI(
     docs_url="/docs",
     title="Example Python FastAPI Server",
     version="0.1.0",
 )
-app.add_middleware(
-    PrometheusMiddleware,
-    group_paths=True,
-    prefix="http",
-)
-app.add_route("/metrics", handle_metrics)
-
-
-# REGISTER LISTENERS TO APP EVENTS
 
 
 @app.on_event("startup")
@@ -42,9 +30,6 @@ async def shutdown() -> None:
     await db.cleanup()
 
 
-# STATUS API
-
-
 @app.get("/status", description="Provides server status.", tags=["status"])
 async def status() -> models.StatusOutput:
     logger.info("Request to /status")
@@ -52,3 +37,6 @@ async def status() -> models.StatusOutput:
 
 
 app.include_router(items_router)
+
+
+Instrumentator().instrument(app).expose(app)

@@ -21,17 +21,13 @@ class Item(BaseModel):
     price: float = Field(gt=0, description="Item price.", example="3.14")
 
 
-class ItemOutput_GET(BaseModel):
-    item: Item
-
-
-class ItemsOutput_GET(BaseModel):
-    items: list[Item]
-
-
-class ItemInput_POST(BaseModel):
+class ItemInput(BaseModel):
     item: ItemIn
 
 
-class ItemOutput_POST(BaseModel):
-    item_created: Item
+class ItemOutput(BaseModel):
+    item: Item
+
+
+class ItemsOutput(BaseModel):
+    items: list[Item]
