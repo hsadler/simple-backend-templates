@@ -1,2 +1,2 @@
-# python-backend-templates
-Templates for python backends.
+# simple-backend-templates
+Simple templates for backends.
