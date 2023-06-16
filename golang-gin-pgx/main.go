@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
+	// docs "github.com/hsadler/simple-backend-templates/tree/golang-server/docs"
 )
 
 // @title Example Server API
@@ -19,6 +20,7 @@ func main() {
 	// @Router /status [get]
 	// @Summary Get server status
 	// @Description Get the server status
+	// @Tags status
 	// @Produce json
 	// @Success 200 {object} statusResponse
 	r.GET("/status", func(c *gin.Context) {
@@ -26,13 +28,9 @@ func main() {
 			Status: "ok!",
 		}
 		c.JSON(http.StatusOK, status)
-
 	})
 
-	// Register Swagger routes
-	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The API endpoint URL
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":8000")
 }
 
