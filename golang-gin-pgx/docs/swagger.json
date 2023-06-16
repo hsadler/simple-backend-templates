@@ -1,12 +1,38 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is an example server API",
-        "title": "Example Server API",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
-    "host": "localhost:8080",
-    "basePath": "/",
-    "paths": {}
+    "paths": {
+        "/status": {
+            "get": {
+                "description": "returns \"ok!\" if server is up",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "status"
+                ],
+                "summary": "status endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.statusResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.statusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }

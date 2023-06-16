@@ -6,3 +6,6 @@ up:
 
 format:
 	gofmt -l -s -w .
+
+gen-docs:
+	swag init

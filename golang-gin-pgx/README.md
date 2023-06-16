@@ -31,7 +31,15 @@ verify server is running by hitting the status endpoint:
 http GET http://localhost:8000/status
 ```
 
-## Other dev commands:
+generate API docs:
+```sh
+swag init
+```
+
+visit local Swagger API docs
+```sh
+http://localhost:8000/swagger/index.html
+```
 
 before you commit code, make sure to lint:
 

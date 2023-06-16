@@ -5,36 +5,33 @@ import (
 
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
-	// docs "github.com/hsadler/simple-backend-templates/golang-gin-pgx/docs"
+	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
+
+	_ "example-server/docs"
 )
 
-// @title Example Server API
-// @description This is an example server API
-// @version 1.0
-// @host localhost:8080
-// @BasePath /
 func main() {
 	r := gin.Default()
-
-	// @Router /status [get]
-	// @Summary Get server status
-	// @Description Get the server status
-	// @Tags status
-	// @Produce json
-	// @Success 200 {object} statusResponse
-	r.GET("/status", func(c *gin.Context) {
-		status := statusResponse{
-			Status: "ok!",
-		}
-		c.JSON(http.StatusOK, status)
-	})
-
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/status", HandleStatus)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.Run(":8000")
 }
 
-// Status response struct
+// Status godoc
+// @Summary status endpoint
+// @Schemes
+// @Description returns "ok!" if server is up
+// @Tags status
+// @Produce json
+// @Success 200 {object} statusResponse
+// @Router /status [get]
+func HandleStatus(g *gin.Context) {
+	status := statusResponse{
+		Status: "ok!",
+	}
+	g.JSON(http.StatusOK, status)
+}
+
 type statusResponse struct {
 	Status string `json:"status"`
 }

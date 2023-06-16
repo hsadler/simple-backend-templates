@@ -1,9 +1,23 @@
-basePath: /
-host: localhost:8080
+definitions:
+  main.statusResponse:
+    properties:
+      status:
+        type: string
+    type: object
 info:
   contact: {}
-  description: This is an example server API
-  title: Example Server API
-  version: "1.0"
-paths: {}
+paths:
+  /status:
+    get:
+      description: returns "ok!" if server is up
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.statusResponse'
+      summary: status endpoint
+      tags:
+      - status
 swagger: "2.0"
