@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
-	// docs "github.com/hsadler/simple-backend-templates/tree/golang-server/docs"
+	// docs "github.com/hsadler/simple-backend-templates/golang-gin-pgx/docs"
 )
 
 // @title Example Server API
