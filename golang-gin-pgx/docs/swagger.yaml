@@ -1,12 +1,125 @@
+basePath: /
 definitions:
+  main.CreateItemRequest:
+    properties:
+      data:
+        $ref: '#/definitions/main.ItemIn'
+    type: object
+  main.CreateItemResponse:
+    properties:
+      data:
+        $ref: '#/definitions/main.Item'
+      meta:
+        $ref: '#/definitions/main.CreateItemResponseMeta'
+    type: object
+  main.CreateItemResponseMeta:
+    properties:
+      created:
+        type: boolean
+    type: object
+  main.GetItemResponse:
+    properties:
+      data:
+        $ref: '#/definitions/main.Item'
+      meta:
+        type: object
+    type: object
+  main.Item:
+    properties:
+      created_at:
+        example: "2021-01-01T00:00:00.000Z"
+        format: date-time
+        type: string
+      id:
+        example: 1
+        format: int64
+        type: integer
+      name:
+        example: foo
+        format: string
+        type: string
+      price:
+        example: 3.14
+        format: float64
+        type: number
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        format: uuid
+        type: string
+    type: object
+  main.ItemIn:
+    properties:
+      name:
+        example: foo
+        format: string
+        type: string
+      price:
+        example: 3.14
+        format: float64
+        type: number
+    type: object
   main.statusResponse:
     properties:
       status:
+        example: ok!
         type: string
     type: object
+host: localhost:8000
 info:
   contact: {}
+  description: This is a sample server for the golang-gin-pgx project.
+  title: Example Server API
+  version: "1"
 paths:
+  /items:
+    post:
+      consumes:
+      - application/json
+      description: creates item
+      parameters:
+      - description: Create Item Request
+        in: body
+        name: createItemRequest
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.CreateItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: create item
+      tags:
+      - items
+  /items/{id}:
+    get:
+      description: returns item by id
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.GetItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: get item by id
+      tags:
+      - items
   /status:
     get:
       description: returns "ok!" if server is up
@@ -20,4 +133,6 @@ paths:
       summary: status endpoint
       tags:
       - status
+schemes:
+- http
 swagger: "2.0"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -10,16 +11,30 @@ import (
 	_ "example-server/docs"
 )
 
+// @title Example Server API
+// @description This is a sample server for the golang-gin-pgx project.
+// @version 1
+// @host localhost:8000
+// @BasePath /
+// @schemes http
 func main() {
 	r := gin.Default()
 	r.GET("/status", HandleStatus)
+	itemsRouterGroup := r.Group("/items")
+	itemsRouterGroup.GET("/:id", HandleGetItem)
+	itemsRouterGroup.POST("/", HandleCreateItem)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.Run(":8000")
 }
 
+// STATUS API
+
+type statusResponse struct {
+	Status string `json:"status" example:"ok!"`
+}
+
 // Status godoc
 // @Summary status endpoint
-// @Schemes
 // @Description returns "ok!" if server is up
 // @Tags status
 // @Produce json
@@ -32,11 +47,89 @@ func HandleStatus(g *gin.Context) {
 	g.JSON(http.StatusOK, status)
 }
 
-type statusResponse struct {
-	Status string `json:"status"`
+// ITEM API
+
+type ItemIn struct {
+	Name  string  `json:"name" example:"foo" format:"string"`
+	Price float32 `json:"price" example:"3.14" format:"float64"`
 }
 
-// package main
+type Item struct {
+	ID        int     `json:"id" example:"1" format:"int64"`
+	UUID      string  `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
+	CreatedAt string  `json:"created_at" example:"2021-01-01T00:00:00.000Z" format:"date-time"`
+	Name      string  `json:"name" example:"foo" format:"string"`
+	Price     float32 `json:"price" example:"3.14" format:"float64"`
+}
+
+type GetItemResponse struct {
+	Data Item     `json:"data"`
+	Meta struct{} `json:"meta"`
+}
+
+type CreateItemRequest struct {
+	Data ItemIn `json:"data"`
+}
+
+type CreateItemResponseMeta struct {
+	Created bool `json:"created"`
+}
+
+type CreateItemResponse struct {
+	Data Item                   `json:"data"`
+	Meta CreateItemResponseMeta `json:"meta"`
+}
+
+// GetItem godoc
+// @Summary get item by id
+// @Description returns item by id
+// @Tags items
+// @Produce json
+// @Param id path int true "Item ID"
+// @Success 200 {object} main.GetItemResponse
+// @Failure 400 {object} string
+// @Router /items/{id} [get]
+func HandleGetItem(g *gin.Context) {
+	id, err := strconv.Atoi(g.Param("id"))
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		return
+	}
+	item := Item{
+		ID:        id,
+		UUID:      "550e8400-e29b-41d4-a716-446655440000",
+		CreatedAt: "2021-01-01T00:00:00.000Z",
+		Name:      "foo",
+		Price:     3.14,
+	}
+	g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
+}
+
+// CreateItem godoc
+// @Summary create item
+// @Description creates item
+// @Tags items
+// @Accept json
+// @Produce json
+// @Param createItemRequest body main.CreateItemRequest true "Create Item Request"
+// @Success 200 {object} main.CreateItemResponse
+// @Failure 400 {object} string
+// @Router /items [post]
+func HandleCreateItem(g *gin.Context) {
+	var createItemRequest CreateItemRequest
+	if err := g.ShouldBindJSON(&createItemRequest); err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+		return
+	}
+	item := Item{
+		ID:        1,
+		UUID:      "550e8400-e29b-41d4-a716-446655440000",
+		CreatedAt: "2021-01-01T00:00:00.000Z",
+		Name:      createItemRequest.Data.Name,
+		Price:     createItemRequest.Data.Price,
+	}
+	g.JSON(http.StatusOK, CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}})
+}
 
 // import (
 // 	"context"

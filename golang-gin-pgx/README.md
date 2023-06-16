@@ -28,7 +28,7 @@ docker compose up
 verify server is running by hitting the status endpoint:
 
 ```sh
-http GET http://localhost:8000/status
+http://localhost:8000/status
 ```
 
 generate API docs:

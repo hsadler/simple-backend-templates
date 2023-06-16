@@ -1,9 +1,92 @@
 {
+    "schemes": [
+        "http"
+    ],
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "This is a sample server for the golang-gin-pgx project.",
+        "title": "Example Server API",
+        "contact": {},
+        "version": "1"
     },
+    "host": "localhost:8000",
+    "basePath": "/",
     "paths": {
+        "/items": {
+            "post": {
+                "description": "creates item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "create item",
+                "parameters": [
+                    {
+                        "description": "Create Item Request",
+                        "name": "createItemRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.CreateItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.CreateItemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/items/{id}": {
+            "get": {
+                "description": "returns item by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "get item by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.GetItemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/status": {
             "get": {
                 "description": "returns \"ok!\" if server is up",
@@ -26,11 +109,95 @@
         }
     },
     "definitions": {
+        "main.CreateItemRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/main.ItemIn"
+                }
+            }
+        },
+        "main.CreateItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/main.Item"
+                },
+                "meta": {
+                    "$ref": "#/definitions/main.CreateItemResponseMeta"
+                }
+            }
+        },
+        "main.CreateItemResponseMeta": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "main.GetItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/main.Item"
+                },
+                "meta": {
+                    "type": "object"
+                }
+            }
+        },
+        "main.Item": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2021-01-01T00:00:00.000Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "format": "string",
+                    "example": "foo"
+                },
+                "price": {
+                    "type": "number",
+                    "format": "float64",
+                    "example": 3.14
+                },
+                "uuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "main.ItemIn": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "format": "string",
+                    "example": "foo"
+                },
+                "price": {
+                    "type": "number",
+                    "format": "float64",
+                    "example": 3.14
+                }
+            }
+        },
         "main.statusResponse": {
             "type": "object",
             "properties": {
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "ok!"
                 }
             }
         }
