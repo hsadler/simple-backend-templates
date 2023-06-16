@@ -6,8 +6,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     ports:
-      - "8080:8080"
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: 'CompileDaemon -log-prefix=false -build="go build -o /app/app" -command="/app/app"'
   
   # server:
   #   build:

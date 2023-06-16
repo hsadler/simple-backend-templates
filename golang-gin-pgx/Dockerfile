@@ -1,9 +1,9 @@
-FROM golang:1.20-alpine
+FROM golang:1.18.10-alpine
 
 WORKDIR /app
 
 COPY . .
 
-RUN go build -o app .
+RUN apk add --no-cache git
 
-CMD ["./app"]
+RUN go install -mod=mod github.com/githubnemo/CompileDaemon

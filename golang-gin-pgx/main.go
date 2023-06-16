@@ -1,16 +1,44 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
+// @title Example Server API
+// @description This is an example server API
+// @version 1.0
+// @host localhost:8080
+// @BasePath /
 func main() {
-	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Server is running!")
+	r := gin.Default()
+
+	// @Router /status [get]
+	// @Summary Get server status
+	// @Description Get the server status
+	// @Produce json
+	// @Success 200 {object} statusResponse
+	r.GET("/status", func(c *gin.Context) {
+		status := statusResponse{
+			Status: "ok!",
+		}
+		c.JSON(http.StatusOK, status)
+
 	})
 
-	http.ListenAndServe(":8080", nil)
+	// Register Swagger routes
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The API endpoint URL
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+
+	r.Run(":8000")
+}
+
+// Status response struct
+type statusResponse struct {
+	Status string `json:"status"`
 }
 
 // package main
