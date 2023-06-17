@@ -1,18 +1,21 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
 
 	_ "example-server/docs"
 )
 
-// var db *pgx.Conn
+var db *pgx.Conn
 
 // @title Example Server API
 // @description Example Go+Gin+pgx JSON API server.
@@ -21,12 +24,14 @@ import (
 // @BasePath /
 // @schemes http
 func main() {
-	// var err error
-	// db, err = pgx.Connect(context.Background(), "postgres://username:password@localhost/mydatabase?sslmode=disable")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer db.Close()
+	var err error
+	db, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	defer db.Close(context.Background())
+	log.Println("Connected to database")
 
 	r := gin.Default()
 

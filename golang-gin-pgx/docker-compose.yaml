@@ -1,43 +1,38 @@
 version: "3.8"
 
 services:
-
   server:
     build:
       context: .
       dockerfile: Dockerfile
     restart: always
-    ports:
-      - "8000:8000"
+    environment:
+      DEBUG: "true"
+      DATABASE_URL: postgresql://user:password@db:5432/example_db
+    depends_on:
+      - db
     volumes:
       - .:/app
+    ports:
+      - "8000:8000"
     command: 'CompileDaemon -log-prefix=false -build="go build -o /app/app" -command="/app/app"'
   
-  # server:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     DEBUG: "true"
-  #     DATABASE_URL: postgresql://user:password@db:5432/example_db
-  #   depends_on:
-  #     - db
-  #   ports:
-  #     - "8000:8000"
-  
-  # db:
-  #   image: postgres:15.3-alpine3.18
-  #   environment:
-  #     - POSTGRES_USER=user
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_DB=example_db
-  #   volumes:
-  #     - db_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5433:5432"
+  db:
+    image: postgres:15.3-alpine3.18
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=example_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
 
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db_data:
