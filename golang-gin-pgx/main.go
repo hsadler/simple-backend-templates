@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -11,20 +12,33 @@ import (
 	_ "example-server/docs"
 )
 
+// var db *pgx.Conn
+
 // @title Example Server API
-// @description This is a sample server for the golang-gin-pgx project.
+// @description Example Go+Gin+pgx JSON API server.
 // @version 1
 // @host localhost:8000
 // @BasePath /
 // @schemes http
 func main() {
+	// var err error
+	// db, err = pgx.Connect(context.Background(), "postgres://username:password@localhost/mydatabase?sslmode=disable")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer db.Close()
+
 	r := gin.Default()
+
 	r.GET("/status", HandleStatus)
+
 	itemsRouterGroup := r.Group("/items")
 	itemsRouterGroup.GET("/:id", HandleGetItem)
 	itemsRouterGroup.POST("/", HandleCreateItem)
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	r.Run(":8000")
+
+	log.Fatal(r.Run(":8000"))
 }
 
 // STATUS API
@@ -35,7 +49,7 @@ type statusResponse struct {
 
 // Status godoc
 // @Summary status endpoint
-// @Description returns "ok!" if server is up
+// @Description Returns `"ok!"` if the server is up
 // @Tags status
 // @Produce json
 // @Success 200 {object} statusResponse
@@ -82,7 +96,7 @@ type CreateItemResponse struct {
 
 // GetItem godoc
 // @Summary get item by id
-// @Description returns item by id
+// @Description Returns item by id
 // @Tags items
 // @Produce json
 // @Param id path int true "Item ID"
@@ -95,19 +109,19 @@ func HandleGetItem(g *gin.Context) {
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
 		return
 	}
-	item := Item{
+	mockItem := Item{
 		ID:        id,
 		UUID:      "550e8400-e29b-41d4-a716-446655440000",
 		CreatedAt: "2021-01-01T00:00:00.000Z",
 		Name:      "foo",
 		Price:     3.14,
 	}
-	g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
+	g.JSON(http.StatusOK, GetItemResponse{Data: mockItem, Meta: struct{}{}})
 }
 
 // CreateItem godoc
 // @Summary create item
-// @Description creates item
+// @Description Creates item
 // @Tags items
 // @Accept json
 // @Produce json
@@ -121,14 +135,14 @@ func HandleCreateItem(g *gin.Context) {
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
 		return
 	}
-	item := Item{
+	mockItem := Item{
 		ID:        1,
 		UUID:      "550e8400-e29b-41d4-a716-446655440000",
 		CreatedAt: "2021-01-01T00:00:00.000Z",
 		Name:      createItemRequest.Data.Name,
 		Price:     createItemRequest.Data.Price,
 	}
-	g.JSON(http.StatusOK, CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}})
+	g.JSON(http.StatusOK, CreateItemResponse{Data: mockItem, Meta: CreateItemResponseMeta{Created: true}})
 }
 
 // import (

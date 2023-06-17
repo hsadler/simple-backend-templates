@@ -67,7 +67,7 @@ definitions:
 host: localhost:8000
 info:
   contact: {}
-  description: This is a sample server for the golang-gin-pgx project.
+  description: Example Go+Gin+pgx JSON API server.
   title: Example Server API
   version: "1"
 paths:
@@ -75,7 +75,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: creates item
+      description: Creates item
       parameters:
       - description: Create Item Request
         in: body
@@ -99,7 +99,7 @@ paths:
       - items
   /items/{id}:
     get:
-      description: returns item by id
+      description: Returns item by id
       parameters:
       - description: Item ID
         in: path
@@ -122,7 +122,7 @@ paths:
       - items
   /status:
     get:
-      description: returns "ok!" if server is up
+      description: Returns `"ok!"` if the server is up
       produces:
       - application/json
       responses:

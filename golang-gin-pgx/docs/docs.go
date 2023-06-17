@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/items": {
             "post": {
-                "description": "creates item",
+                "description": "Creates item",
                 "consumes": [
                     "application/json"
                 ],
@@ -58,7 +58,7 @@ const docTemplate = `{
         },
         "/items/{id}": {
             "get": {
-                "description": "returns item by id",
+                "description": "Returns item by id",
                 "produces": [
                     "application/json"
                 ],
@@ -93,7 +93,7 @@ const docTemplate = `{
         },
         "/status": {
             "get": {
-                "description": "returns \"ok!\" if server is up",
+                "description": "Returns ` + "`" + `\"ok!\"` + "`" + ` if the server is up",
                 "produces": [
                     "application/json"
                 ],
@@ -215,7 +215,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{"http"},
 	Title:            "Example Server API",
-	Description:      "This is a sample server for the golang-gin-pgx project.",
+	Description:      "Example Go+Gin+pgx JSON API server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
