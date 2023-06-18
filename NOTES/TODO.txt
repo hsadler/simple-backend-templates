@@ -1,5 +1,7 @@
 
 TODO:
+
+python-fastapi-asyncpg:
     X pydantic basesettings subclass for the app settings definition
     X prometheus metrics exporter alternative
     - README updates for:
@@ -15,3 +17,10 @@ TODO:
     - maybe: api call example
     - maybe: background task example
     - maybe: caching example
+
+golang-gin-pgx:
+    - db connection pooling
+    - dependency injection for route handlers?
+    - break up api layer and biz-loc layer
+    - tests
+    - load tests

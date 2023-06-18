@@ -1,4 +1,4 @@
-# FastAPI template
+# Python + FastAPI + asyncpg Template
 
 ## Getting started
 
