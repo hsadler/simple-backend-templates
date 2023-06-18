@@ -71,7 +71,7 @@ info:
   title: Example Server API
   version: "1"
 paths:
-  /items:
+  /api/items:
     post:
       consumes:
       - application/json
@@ -97,7 +97,7 @@ paths:
       summary: create item
       tags:
       - items
-  /items/{id}:
+  /api/items/{id}:
     get:
       description: Returns item by id
       parameters:

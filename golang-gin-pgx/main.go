@@ -26,7 +26,7 @@ var db *pgx.Conn
 // @schemes http
 func main() {
 
-	// Connect to database
+	// Connect to database and create tables
 	var err error
 	db, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -43,9 +43,9 @@ func main() {
 
 	r.GET("/status", HandleStatus)
 
-	itemsRouterGroup := r.Group("/items")
+	itemsRouterGroup := r.Group("/api/items")
 	itemsRouterGroup.GET("/:id", HandleGetItem)
-	itemsRouterGroup.POST("/", HandleCreateItem)
+	itemsRouterGroup.POST("", HandleCreateItem)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
@@ -131,21 +131,27 @@ type CreateItemResponse struct {
 // @Param id path int true "Item ID"
 // @Success 200 {object} main.GetItemResponse
 // @Failure 400 {object} string
-// @Router /items/{id} [get]
+// @Router /api/items/{id} [get]
 func HandleGetItem(g *gin.Context) {
-	id, err := strconv.Atoi(g.Param("id"))
+	itemId, err := strconv.Atoi(g.Param("id"))
 	if err != nil {
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
 		return
 	}
-	mockItem := Item{
-		ID:        id,
-		UUID:      "550e8400-e29b-41d4-a716-446655440000",
-		CreatedAt: time.Now(),
-		Name:      "foo",
-		Price:     3.14,
+	// Fetch item
+	var item Item
+	fetchErr := db.QueryRow(
+		context.Background(),
+		"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
+		itemId,
+	).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
+	if fetchErr != nil {
+		log.Println("Error querying item:", fetchErr)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query item"})
+		return
 	}
-	g.JSON(http.StatusOK, GetItemResponse{Data: mockItem, Meta: struct{}{}})
+	// Return response
+	g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
 }
 
 // CreateItem godoc
@@ -157,7 +163,7 @@ func HandleGetItem(g *gin.Context) {
 // @Param createItemRequest body main.CreateItemRequest true "Create Item Request"
 // @Success 200 {object} main.CreateItemResponse
 // @Failure 400 {object} string
-// @Router /items [post]
+// @Router /api/items [post]
 func HandleCreateItem(g *gin.Context) {
 	// Validate request
 	var createItemRequest CreateItemRequest
@@ -175,13 +181,17 @@ func HandleCreateItem(g *gin.Context) {
 	).Scan(&itemId)
 	if insertErr != nil {
 		log.Println("Error inserting item:", insertErr)
-		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert item"})
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create item"})
 		return
 	}
 	log.Printf("Inserted itemId: %+v\n", itemId)
 	// Fetch item
 	var item Item
-	fetchErr := db.QueryRow(context.Background(), "SELECT * FROM item WHERE id = $1", itemId).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
+	fetchErr := db.QueryRow(
+		context.Background(),
+		"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
+		itemId,
+	).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
 	if fetchErr != nil {
 		log.Println("Error querying item:", fetchErr)
 		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query item"})
@@ -190,76 +200,3 @@ func HandleCreateItem(g *gin.Context) {
 	// Return response
 	g.JSON(http.StatusOK, CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}})
 }
-
-// import (
-// 	"context"
-// 	"log"
-// 	"net/http"
-// 	"strconv"
-
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/jackc/pgx/v4"
-// )
-
-// type Item struct {
-// 	ID    int    `json:"id"`
-// 	Name  string `json:"name"`
-// 	Price int    `json:"price"`
-// }
-
-// var db *pgx.Conn
-
-// func main() {
-// 	var err error
-// 	db, err = pgx.Connect(context.Background(), "postgres://username:password@localhost/mydatabase?sslmode=disable")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer db.Close()
-
-// 	router := gin.Default()
-
-// 	router.POST("/items", createItemHandler)
-// 	router.GET("/items/:id", getItemHandler)
-
-// 	log.Fatal(router.Run(":8080"))
-// }
-
-// func createItemHandler(c *gin.Context) {
-// 	var item Item
-// 	if err := c.ShouldBindJSON(&item); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
-// 		return
-// 	}
-
-// 	err := db.QueryRow(context.Background(), "INSERT INTO items (name, price) VALUES ($1, $2) RETURNING id", item.Name, item.Price).Scan(&item.ID)
-// 	if err != nil {
-// 		log.Println("Error inserting item:", err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert item"})
-// 		return
-// 	}
-
-// 	c.Status(http.StatusCreated)
-// }
-
-// func getItemHandler(c *gin.Context) {
-// 	id, err := strconv.Atoi(c.Param("id"))
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
-// 		return
-// 	}
-
-// 	var item Item
-// 	err = db.QueryRow(context.Background(), "SELECT id, name, price FROM items WHERE id = $1", id).Scan(&item.ID, &item.Name, &item.Price)
-// 	if err != nil {
-// 		if err == pgx.ErrNoRows {
-// 			c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
-// 		} else {
-// 			log.Println("Error retrieving item:", err)
-// 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve item"})
-// 		}
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, item)
-// }

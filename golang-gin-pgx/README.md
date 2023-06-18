@@ -47,7 +47,7 @@ before you commit code, make sure to lint:
 gofmt -l -s -w .
 ```
 
-<!-- ## Try out the "items" example API:
+## Try out the "items" example API:
 
 POST an items:
 
@@ -60,9 +60,3 @@ GET a single item:
 ```sh
 http GET http://127.0.0.1:8000/api/items/1
 ```
-
-GET multiple items:
-
-```sh
-http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
-``` -->

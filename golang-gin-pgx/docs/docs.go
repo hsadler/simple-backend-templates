@@ -16,7 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/items": {
+        "/api/items": {
             "post": {
                 "description": "Creates item",
                 "consumes": [
@@ -56,7 +56,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/items/{id}": {
+        "/api/items/{id}": {
             "get": {
                 "description": "Returns item by id",
                 "produces": [

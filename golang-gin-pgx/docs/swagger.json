@@ -12,7 +12,7 @@
     "host": "localhost:8000",
     "basePath": "/",
     "paths": {
-        "/items": {
+        "/api/items": {
             "post": {
                 "description": "Creates item",
                 "consumes": [
@@ -52,7 +52,7 @@
                 }
             }
         },
-        "/items/{id}": {
+        "/api/items/{id}": {
             "get": {
                 "description": "Returns item by id",
                 "produces": [
