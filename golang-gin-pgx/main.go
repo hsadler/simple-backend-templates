@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -16,7 +18,9 @@ import (
 	_ "example-server/docs"
 )
 
+// Global variables
 var db *pgx.Conn
+var validate *validator.Validate
 
 // @title Example Server API
 // @description Example Go+Gin+pgx JSON API server.
@@ -37,6 +41,9 @@ func main() {
 	log.Println("Connected to database")
 	CreateTables()
 	log.Println("Created tables")
+
+	// Setup validator
+	validate = validator.New()
 
 	// Setup Gin router
 	r := gin.Default()
@@ -93,8 +100,8 @@ func HandleStatus(g *gin.Context) {
 // ITEM API
 
 type ItemIn struct {
-	Name  string  `json:"name" example:"foo" format:"string"`
-	Price float32 `json:"price" example:"3.14" format:"float64"`
+	Name  string   `json:"name" example:"foo" format:"string" validate:"required"`
+	Price *float32 `json:"price" example:"3.14" format:"float64" validate:"min=0"`
 }
 
 type Item struct {
@@ -133,12 +140,14 @@ type CreateItemResponse struct {
 // @Failure 400 {object} string
 // @Router /api/items/{id} [get]
 func HandleGetItem(g *gin.Context) {
+	// Parse item ID
 	itemId, err := strconv.Atoi(g.Param("id"))
 	if err != nil {
+		log.Println("Error parsing item ID:", err)
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
 		return
 	}
-	// Fetch item
+	// Fetch item by ID
 	var item Item
 	fetchErr := db.QueryRow(
 		context.Background(),
@@ -165,10 +174,17 @@ func HandleGetItem(g *gin.Context) {
 // @Failure 400 {object} string
 // @Router /api/items [post]
 func HandleCreateItem(g *gin.Context) {
-	// Validate request
+	// Deserialize request
 	var createItemRequest CreateItemRequest
 	if err := g.ShouldBindJSON(&createItemRequest); err != nil {
+		log.Println("Error deserializing request:", err)
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+		return
+	}
+	// Validate request ItemIn data
+	if err := validate.Struct(createItemRequest.Data); err != nil {
+		log.Println("Error validating request:", err)
+		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Item data payload"})
 		return
 	}
 	// Insert item
@@ -185,7 +201,7 @@ func HandleCreateItem(g *gin.Context) {
 		return
 	}
 	log.Printf("Inserted itemId: %+v\n", itemId)
-	// Fetch item
+	// Fetch item after insert
 	var item Item
 	fetchErr := db.QueryRow(
 		context.Background(),

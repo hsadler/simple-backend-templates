@@ -56,7 +56,10 @@ definitions:
       price:
         example: 3.14
         format: float64
+        minimum: 0
         type: number
+    required:
+    - name
     type: object
   main.statusResponse:
     properties:

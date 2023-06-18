@@ -183,6 +183,9 @@ const docTemplate = `{
         },
         "main.ItemIn": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string",
@@ -192,6 +195,7 @@ const docTemplate = `{
                 "price": {
                     "type": "number",
                     "format": "float64",
+                    "minimum": 0,
                     "example": 3.14
                 }
             }
