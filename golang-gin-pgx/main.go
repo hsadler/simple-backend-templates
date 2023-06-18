@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -24,6 +25,8 @@ var db *pgx.Conn
 // @BasePath /
 // @schemes http
 func main() {
+
+	// Connect to database
 	var err error
 	db, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -32,7 +35,10 @@ func main() {
 	}
 	defer db.Close(context.Background())
 	log.Println("Connected to database")
+	CreateTables()
+	log.Println("Created tables")
 
+	// Setup Gin router
 	r := gin.Default()
 
 	r.GET("/status", HandleStatus)
@@ -43,7 +49,25 @@ func main() {
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
+	// Run server
 	log.Fatal(r.Run(":8000"))
+}
+
+func CreateTables() {
+	_, err := db.Exec(context.Background(), `
+		CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+		CREATE TABLE IF NOT EXISTS item (
+			id SERIAL PRIMARY KEY,
+			uuid UUID DEFAULT uuid_generate_v4(),
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			name VARCHAR(50),
+			price NUMERIC(10, 2),
+			CONSTRAINT name_unique UNIQUE (name)
+		);
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // STATUS API
@@ -74,11 +98,11 @@ type ItemIn struct {
 }
 
 type Item struct {
-	ID        int     `json:"id" example:"1" format:"int64"`
-	UUID      string  `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
-	CreatedAt string  `json:"created_at" example:"2021-01-01T00:00:00.000Z" format:"date-time"`
-	Name      string  `json:"name" example:"foo" format:"string"`
-	Price     float32 `json:"price" example:"3.14" format:"float64"`
+	ID        int       `json:"id" example:"1" format:"int64"`
+	UUID      string    `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
+	CreatedAt time.Time `json:"created_at" example:"2021-01-01T00:00:00.000Z" format:"date-time"`
+	Name      string    `json:"name" example:"foo" format:"string"`
+	Price     float32   `json:"price" example:"3.14" format:"float64"`
 }
 
 type GetItemResponse struct {
@@ -117,7 +141,7 @@ func HandleGetItem(g *gin.Context) {
 	mockItem := Item{
 		ID:        id,
 		UUID:      "550e8400-e29b-41d4-a716-446655440000",
-		CreatedAt: "2021-01-01T00:00:00.000Z",
+		CreatedAt: time.Now(),
 		Name:      "foo",
 		Price:     3.14,
 	}
@@ -135,19 +159,36 @@ func HandleGetItem(g *gin.Context) {
 // @Failure 400 {object} string
 // @Router /items [post]
 func HandleCreateItem(g *gin.Context) {
+	// Validate request
 	var createItemRequest CreateItemRequest
 	if err := g.ShouldBindJSON(&createItemRequest); err != nil {
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
 		return
 	}
-	mockItem := Item{
-		ID:        1,
-		UUID:      "550e8400-e29b-41d4-a716-446655440000",
-		CreatedAt: "2021-01-01T00:00:00.000Z",
-		Name:      createItemRequest.Data.Name,
-		Price:     createItemRequest.Data.Price,
+	// Insert item
+	var itemId int
+	insertErr := db.QueryRow(
+		context.Background(),
+		"INSERT INTO item (name, price) VALUES ($1, $2) RETURNING id",
+		createItemRequest.Data.Name,
+		createItemRequest.Data.Price,
+	).Scan(&itemId)
+	if insertErr != nil {
+		log.Println("Error inserting item:", insertErr)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert item"})
+		return
 	}
-	g.JSON(http.StatusOK, CreateItemResponse{Data: mockItem, Meta: CreateItemResponseMeta{Created: true}})
+	log.Printf("Inserted itemId: %+v\n", itemId)
+	// Fetch item
+	var item Item
+	fetchErr := db.QueryRow(context.Background(), "SELECT * FROM item WHERE id = $1", itemId).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
+	if fetchErr != nil {
+		log.Println("Error querying item:", fetchErr)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query item"})
+		return
+	}
+	// Return response
+	g.JSON(http.StatusOK, CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}})
 }
 
 // import (
