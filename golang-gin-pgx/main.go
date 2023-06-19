@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +11,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
 	ginSwagger "github.com/swaggo/gin-swagger"
 	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -131,8 +134,8 @@ type CreateItemResponse struct {
 }
 
 // GetItem godoc
-// @Summary get item by id
-// @Description Returns item by id
+// @Summary get Item by id
+// @Description Returns Item by id
 // @Tags items
 // @Produce json
 // @Param id path int true "Item ID"
@@ -140,23 +143,24 @@ type CreateItemResponse struct {
 // @Failure 400 {object} string
 // @Router /api/items/{id} [get]
 func HandleGetItem(g *gin.Context) {
-	// Parse item ID
+	// Parse Item ID
 	itemId, err := strconv.Atoi(g.Param("id"))
 	if err != nil {
-		log.Println("Error parsing item ID:", err)
-		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		log.Println("Error parsing Item ID:", err)
+		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Item ID"})
 		return
 	}
-	// Fetch item by ID
+	// Fetch Item by ID
 	var item Item
 	fetchErr := dbpool.QueryRow(
 		context.Background(),
 		"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
 		itemId,
 	).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
+	// Handle Item fetch error
 	if fetchErr != nil {
-		log.Println("Error querying item:", fetchErr)
-		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query item"})
+		log.Println("Error querying Item:", fetchErr)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Item"})
 		return
 	}
 	// Return response
@@ -164,8 +168,8 @@ func HandleGetItem(g *gin.Context) {
 }
 
 // CreateItem godoc
-// @Summary create item
-// @Description Creates item
+// @Summary Create Item
+// @Description Creates Item
 // @Tags items
 // @Accept json
 // @Produce json
@@ -187,7 +191,7 @@ func HandleCreateItem(g *gin.Context) {
 		g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Item data payload"})
 		return
 	}
-	// Insert item
+	// Insert Item
 	var itemId int
 	insertErr := dbpool.QueryRow(
 		context.Background(),
@@ -195,13 +199,26 @@ func HandleCreateItem(g *gin.Context) {
 		createItemRequest.Data.Name,
 		createItemRequest.Data.Price,
 	).Scan(&itemId)
+	// Handle Item insert error
 	if insertErr != nil {
-		log.Println("Error inserting item:", insertErr)
-		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create item"})
+		var pgErr *pgconn.PgError
+		if errors.As(insertErr, &pgErr) {
+			// Duplicate entry error handling
+			if pgErr.Code == "23505" {
+				log.Println("Duplicate Item entry error:", pgErr)
+				g.JSON(
+					http.StatusConflict,
+					gin.H{"error": "Item already exists with name '" + createItemRequest.Data.Name + "'"},
+				)
+				return
+			}
+		}
+		log.Println("Error inserting Item:", insertErr)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create Item"})
 		return
 	}
 	log.Printf("Inserted itemId: %+v\n", itemId)
-	// Fetch item after insert
+	// Fetch Item after insert
 	var item Item
 	fetchErr := dbpool.QueryRow(
 		context.Background(),
@@ -209,8 +226,8 @@ func HandleCreateItem(g *gin.Context) {
 		itemId,
 	).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
 	if fetchErr != nil {
-		log.Println("Error querying item:", fetchErr)
-		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query item"})
+		log.Println("Error querying Item:", fetchErr)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Item"})
 		return
 	}
 	// Return response

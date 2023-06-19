@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/api/items": {
             "post": {
-                "description": "Creates item",
+                "description": "Creates Item",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,7 +28,7 @@ const docTemplate = `{
                 "tags": [
                     "items"
                 ],
-                "summary": "create item",
+                "summary": "Create Item",
                 "parameters": [
                     {
                         "description": "Create Item Request",
@@ -58,14 +58,14 @@ const docTemplate = `{
         },
         "/api/items/{id}": {
             "get": {
-                "description": "Returns item by id",
+                "description": "Returns Item by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "items"
                 ],
-                "summary": "get item by id",
+                "summary": "get Item by id",
                 "parameters": [
                     {
                         "type": "integer",

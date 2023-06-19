@@ -78,7 +78,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates item
+      description: Creates Item
       parameters:
       - description: Create Item Request
         in: body
@@ -97,12 +97,12 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: create item
+      summary: Create Item
       tags:
       - items
   /api/items/{id}:
     get:
-      description: Returns item by id
+      description: Returns Item by id
       parameters:
       - description: Item ID
         in: path
@@ -120,7 +120,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: get item by id
+      summary: get Item by id
       tags:
       - items
   /status:
