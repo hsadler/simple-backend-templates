@@ -8,10 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-playground/validator/v10"
-
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
+	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgxpool"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -19,7 +18,8 @@ import (
 )
 
 // Global variables
-var db *pgx.Conn
+// var db *pgx.Conn
+var dbpool *pgxpool.Pool
 var validate *validator.Validate
 
 // @title Example Server API
@@ -32,12 +32,12 @@ func main() {
 
 	// Connect to database and create tables
 	var err error
-	db, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	dbpool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	defer db.Close(context.Background())
+	defer dbpool.Close()
 	log.Println("Connected to database")
 	CreateTables()
 	log.Println("Created tables")
@@ -61,7 +61,7 @@ func main() {
 }
 
 func CreateTables() {
-	_, err := db.Exec(context.Background(), `
+	_, err := dbpool.Exec(context.Background(), `
 		CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 		CREATE TABLE IF NOT EXISTS item (
 			id SERIAL PRIMARY KEY,
@@ -149,7 +149,7 @@ func HandleGetItem(g *gin.Context) {
 	}
 	// Fetch item by ID
 	var item Item
-	fetchErr := db.QueryRow(
+	fetchErr := dbpool.QueryRow(
 		context.Background(),
 		"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
 		itemId,
@@ -189,7 +189,7 @@ func HandleCreateItem(g *gin.Context) {
 	}
 	// Insert item
 	var itemId int
-	insertErr := db.QueryRow(
+	insertErr := dbpool.QueryRow(
 		context.Background(),
 		"INSERT INTO item (name, price) VALUES ($1, $2) RETURNING id",
 		createItemRequest.Data.Name,
@@ -203,7 +203,7 @@ func HandleCreateItem(g *gin.Context) {
 	log.Printf("Inserted itemId: %+v\n", itemId)
 	// Fetch item after insert
 	var item Item
-	fetchErr := db.QueryRow(
+	fetchErr := dbpool.QueryRow(
 		context.Background(),
 		"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
 		itemId,
@@ -214,5 +214,8 @@ func HandleCreateItem(g *gin.Context) {
 		return
 	}
 	// Return response
-	g.JSON(http.StatusOK, CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}})
+	g.JSON(
+		http.StatusOK,
+		CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}},
+	)
 }
