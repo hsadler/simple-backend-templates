@@ -90,15 +90,15 @@ type statusResponse struct {
 }
 
 // Status godoc
-// @Summary status endpoint
-// @Description Returns `"ok!"` if the server is up
+// @Summary Status
+// @Description Returns `"ok"` if the server is up
 // @Tags status
 // @Produce json
 // @Success 200 {object} statusResponse
 // @Router /status [get]
 func HandleStatus(g *gin.Context) {
 	status := statusResponse{
-		Status: "ok!",
+		Status: "ok",
 	}
 	g.JSON(http.StatusOK, status)
 }
@@ -124,7 +124,7 @@ type GetItemResponse struct {
 }
 
 // GetItem godoc
-// @Summary get Item by id
+// @Summary Get Item
 // @Description Returns Item by id
 // @Tags items
 // @Produce json

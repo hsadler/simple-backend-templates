@@ -8,19 +8,24 @@ python-fastapi-asyncpg:
         - using adminer
         - TODOs
         - How to contribute
+    - migrations with Alembic
     - api tests
     - unit tests
     - load testing
     - maybe: pre-commit hooks
     - maybe: SQLAlchemy ORM
-    - maybe: migrations with Alembic or similar
     - maybe: api call example
     - maybe: background task example
     - maybe: caching example
 
 golang-gin-pgx:
-    - db connection pooling
-    - dependency injection for route handlers?
+    X db connection pooling
+    X add 409 response on POST if item already exists by unique name
+    X add get multiple items by ids endpoint
     - break up api layer and biz-loc layer
+    - add prometheus metrics exporter
+    - dependency injection for route handlers?
+    - logging levels:
+        https://github.com/uber-go/zap
     - tests
     - load tests

@@ -30,7 +30,7 @@ async def shutdown() -> None:
     await db.cleanup()
 
 
-@app.get("/status", description="Provides server status.", tags=["status"])
+@app.get("/status", description="Returns `\"ok\"` if the server is up", tags=["status"])
 async def status() -> models.StatusOutput:
     logger.info("Request to /status")
     return models.StatusOutput(status="ok")

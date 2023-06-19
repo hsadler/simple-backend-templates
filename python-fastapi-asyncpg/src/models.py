@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class StatusOutput(BaseModel):
-    status: str = Field(description="Status description.")
+    status: str = Field(description="Status of the service.")
 
 
 class ItemIn(BaseModel):

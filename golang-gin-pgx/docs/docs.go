@@ -108,7 +108,7 @@ const docTemplate = `{
                 "tags": [
                     "items"
                 ],
-                "summary": "get Item by id",
+                "summary": "Get Item",
                 "parameters": [
                     {
                         "type": "integer",
@@ -136,14 +136,14 @@ const docTemplate = `{
         },
         "/status": {
             "get": {
-                "description": "Returns ` + "`" + `\"ok!\"` + "`" + ` if the server is up",
+                "description": "Returns ` + "`" + `\"ok\"` + "`" + ` if the server is up",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "status"
                 ],
-                "summary": "status endpoint",
+                "summary": "Status",
                 "responses": {
                     "200": {
                         "description": "OK",

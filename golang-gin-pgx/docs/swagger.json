@@ -104,7 +104,7 @@
                 "tags": [
                     "items"
                 ],
-                "summary": "get Item by id",
+                "summary": "Get Item",
                 "parameters": [
                     {
                         "type": "integer",
@@ -132,14 +132,14 @@
         },
         "/status": {
             "get": {
-                "description": "Returns `\"ok!\"` if the server is up",
+                "description": "Returns `\"ok\"` if the server is up",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "status"
                 ],
-                "summary": "status endpoint",
+                "summary": "Status",
                 "responses": {
                     "200": {
                         "description": "OK",

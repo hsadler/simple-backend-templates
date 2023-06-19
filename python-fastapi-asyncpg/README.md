@@ -31,6 +31,26 @@ verify server is running by hitting the status endpoint:
 http GET http://localhost:8000/status
 ```
 
+## Try out the "items" example API:
+
+POST an items:
+
+```sh
+http POST http://127.0.0.1:8000/api/items item:='{"name": "foo", "price": 3.14}'
+```
+
+GET a single item:
+
+```sh
+http GET http://127.0.0.1:8000/api/items/1
+```
+
+GET multiple items:
+
+```sh
+http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
+```
+
 ## Other dev commands:
 
 enter poetry shell:
@@ -51,22 +71,16 @@ if you get isort errors, run the command alone to fix:
 poetry run isort .
 ```
 
-## Try out the "items" example API:
+### Running the docker-compose containers will spin-up Swagger docs and Adminer.
 
-POST an items:
+- Visit Swagger docs here:
 
-```sh
-http POST http://127.0.0.1:8000/api/items item:='{"name": "foo", "price": 3.14}'
-```
+    ```sh
+    http://127.0.0.1:8000/docs#/
+    ```
 
-GET a single item:
+- Visit Adminer DB management tool here:
 
-```sh
-http GET http://127.0.0.1:8000/api/items/1
-```
-
-GET multiple items:
-
-```sh
-http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
-```
+    ```sh
+    http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public
+    ```

@@ -158,12 +158,12 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: get Item by id
+      summary: Get Item
       tags:
       - items
   /status:
     get:
-      description: Returns `"ok!"` if the server is up
+      description: Returns `"ok"` if the server is up
       produces:
       - application/json
       responses:
@@ -171,7 +171,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/main.statusResponse'
-      summary: status endpoint
+      summary: Status
       tags:
       - status
 schemes:
