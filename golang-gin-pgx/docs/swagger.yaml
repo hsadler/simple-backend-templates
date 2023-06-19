@@ -24,6 +24,15 @@ definitions:
       meta:
         type: object
     type: object
+  main.GetItemsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/main.Item'
+        type: array
+      meta:
+        type: object
+    type: object
   main.Item:
     properties:
       created_at:
@@ -75,6 +84,35 @@ info:
   version: "1"
 paths:
   /api/items:
+    get:
+      consumes:
+      - application/json
+      description: Returns Items by ids
+      parameters:
+      - collectionFormat: csv
+        description: Item IDs
+        in: query
+        items:
+          type: integer
+        name: item_ids
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.GetItemsResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Get Items
+      tags:
+      - items
     post:
       consumes:
       - application/json

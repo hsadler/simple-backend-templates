@@ -17,6 +17,49 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/items": {
+            "get": {
+                "description": "Returns Items by ids",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get Items",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Item IDs",
+                        "name": "item_ids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.GetItemsResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates Item",
                 "consumes": [
@@ -145,6 +188,20 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/main.Item"
+                },
+                "meta": {
+                    "type": "object"
+                }
+            }
+        },
+        "main.GetItemsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.Item"
+                    }
                 },
                 "meta": {
                     "type": "object"

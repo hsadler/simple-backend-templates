@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -55,6 +57,7 @@ func main() {
 
 	itemsRouterGroup := r.Group("/api/items")
 	itemsRouterGroup.GET("/:id", HandleGetItem)
+	itemsRouterGroup.GET("", HandleGetItems)
 	itemsRouterGroup.POST("", HandleCreateItem)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
@@ -120,19 +123,6 @@ type GetItemResponse struct {
 	Meta struct{} `json:"meta"`
 }
 
-type CreateItemRequest struct {
-	Data ItemIn `json:"data"`
-}
-
-type CreateItemResponseMeta struct {
-	Created bool `json:"created"`
-}
-
-type CreateItemResponse struct {
-	Data Item                   `json:"data"`
-	Meta CreateItemResponseMeta `json:"meta"`
-}
-
 // GetItem godoc
 // @Summary get Item by id
 // @Description Returns Item by id
@@ -165,6 +155,83 @@ func HandleGetItem(g *gin.Context) {
 	}
 	// Return response
 	g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
+}
+
+type GetItemsResponse struct {
+	Data []Item   `json:"data"`
+	Meta struct{} `json:"meta"`
+}
+
+// GetItems godoc
+// @Summary Get Items
+// @Description Returns Items by ids
+// @Tags items
+// @Accept json
+// @Produce json
+// @Param item_ids query []int true "Item IDs"
+// @Success 200 {array} main.GetItemsResponse
+// @Failure 400 {object} string
+// @Router /api/items [get]
+func HandleGetItems(g *gin.Context) {
+	// Parse Item IDs
+	var itemIds []int
+	var err error
+	if itemIdsStr := g.Query("item_ids"); itemIdsStr != "" {
+		itemIdsStrArr := strings.Split(itemIdsStr, ",")
+		itemIds = make([]int, len(itemIdsStrArr))
+		for i, itemIdStr := range itemIdsStrArr {
+			itemIds[i], err = strconv.Atoi(itemIdStr)
+			// Handle Item ID parse error
+			if err != nil {
+				log.Println("Error parsing Item ID:", err)
+				g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Item ID"})
+				return
+			}
+		}
+	}
+	// Fetch Items by IDs
+	var items []Item
+	var rows pgx.Rows
+	if len(itemIds) > 0 {
+		rows, err = dbpool.Query(
+			context.Background(),
+			"SELECT id, uuid, created_at, name, price FROM item WHERE id = ANY($1)",
+			itemIds,
+		)
+	}
+	// Handle Items fetch error
+	if err != nil {
+		log.Println("Error querying Items:", err)
+		g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Items"})
+		return
+	}
+	defer rows.Close()
+	// Iterate over Items
+	for rows.Next() {
+		var item Item
+		// Scan Item and append to Items unless error
+		if err := rows.Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price); err != nil {
+			log.Println("Error scanning Item:", err)
+			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan Item"})
+			return
+		}
+		items = append(items, item)
+	}
+	// Return response
+	g.JSON(http.StatusOK, GetItemsResponse{Data: items, Meta: struct{}{}})
+}
+
+type CreateItemRequest struct {
+	Data ItemIn `json:"data"`
+}
+
+type CreateItemResponseMeta struct {
+	Created bool `json:"created"`
+}
+
+type CreateItemResponse struct {
+	Data Item                   `json:"data"`
+	Meta CreateItemResponseMeta `json:"meta"`
 }
 
 // CreateItem godoc
