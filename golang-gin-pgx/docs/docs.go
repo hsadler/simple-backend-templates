@@ -48,7 +48,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.GetItemsResponse"
+                                "$ref": "#/definitions/routes.GetItemsResponse"
                             }
                         }
                     },
@@ -79,7 +79,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.CreateItemRequest"
+                            "$ref": "#/definitions/routes.CreateItemRequest"
                         }
                     }
                 ],
@@ -87,7 +87,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.CreateItemResponse"
+                            "$ref": "#/definitions/routes.CreateItemResponse"
                         }
                     },
                     "400": {
@@ -122,7 +122,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.GetItemResponse"
+                            "$ref": "#/definitions/routes.GetItemResponse"
                         }
                     },
                     "400": {
@@ -156,26 +156,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.CreateItemRequest": {
+        "main.statusResponse": {
             "type": "object",
             "properties": {
-                "data": {
-                    "$ref": "#/definitions/main.ItemIn"
+                "status": {
+                    "type": "string",
+                    "example": "ok!"
                 }
             }
         },
-        "main.CreateItemResponse": {
+        "routes.CreateItemRequest": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/main.Item"
+                    "$ref": "#/definitions/routes.ItemIn"
+                }
+            }
+        },
+        "routes.CreateItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/routes.Item"
                 },
                 "meta": {
-                    "$ref": "#/definitions/main.CreateItemResponseMeta"
+                    "$ref": "#/definitions/routes.CreateItemResponseMeta"
                 }
             }
         },
-        "main.CreateItemResponseMeta": {
+        "routes.CreateItemResponseMeta": {
             "type": "object",
             "properties": {
                 "created": {
@@ -183,24 +192,24 @@ const docTemplate = `{
                 }
             }
         },
-        "main.GetItemResponse": {
+        "routes.GetItemResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/main.Item"
+                    "$ref": "#/definitions/routes.Item"
                 },
                 "meta": {
                     "type": "object"
                 }
             }
         },
-        "main.GetItemsResponse": {
+        "routes.GetItemsResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/main.Item"
+                        "$ref": "#/definitions/routes.Item"
                     }
                 },
                 "meta": {
@@ -208,7 +217,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.Item": {
+        "routes.Item": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -238,7 +247,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.ItemIn": {
+        "routes.ItemIn": {
             "type": "object",
             "required": [
                 "name"
@@ -254,15 +263,6 @@ const docTemplate = `{
                     "format": "float64",
                     "minimum": 0,
                     "example": 3.14
-                }
-            }
-        },
-        "main.statusResponse": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "example": "ok!"
                 }
             }
         }

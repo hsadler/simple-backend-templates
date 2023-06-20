@@ -1,39 +1,45 @@
 basePath: /
 definitions:
-  main.CreateItemRequest:
+  main.statusResponse:
     properties:
-      data:
-        $ref: '#/definitions/main.ItemIn'
+      status:
+        example: ok!
+        type: string
     type: object
-  main.CreateItemResponse:
+  routes.CreateItemRequest:
     properties:
       data:
-        $ref: '#/definitions/main.Item'
+        $ref: '#/definitions/routes.ItemIn'
+    type: object
+  routes.CreateItemResponse:
+    properties:
+      data:
+        $ref: '#/definitions/routes.Item'
       meta:
-        $ref: '#/definitions/main.CreateItemResponseMeta'
+        $ref: '#/definitions/routes.CreateItemResponseMeta'
     type: object
-  main.CreateItemResponseMeta:
+  routes.CreateItemResponseMeta:
     properties:
       created:
         type: boolean
     type: object
-  main.GetItemResponse:
+  routes.GetItemResponse:
     properties:
       data:
-        $ref: '#/definitions/main.Item'
+        $ref: '#/definitions/routes.Item'
       meta:
         type: object
     type: object
-  main.GetItemsResponse:
+  routes.GetItemsResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/main.Item'
+          $ref: '#/definitions/routes.Item'
         type: array
       meta:
         type: object
     type: object
-  main.Item:
+  routes.Item:
     properties:
       created_at:
         example: "2021-01-01T00:00:00.000Z"
@@ -56,7 +62,7 @@ definitions:
         format: uuid
         type: string
     type: object
-  main.ItemIn:
+  routes.ItemIn:
     properties:
       name:
         example: foo
@@ -69,12 +75,6 @@ definitions:
         type: number
     required:
     - name
-    type: object
-  main.statusResponse:
-    properties:
-      status:
-        example: ok!
-        type: string
     type: object
 host: localhost:8000
 info:
@@ -104,7 +104,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.GetItemsResponse'
+              $ref: '#/definitions/routes.GetItemsResponse'
             type: array
         "400":
           description: Bad Request
@@ -123,14 +123,14 @@ paths:
         name: createItemRequest
         required: true
         schema:
-          $ref: '#/definitions/main.CreateItemRequest'
+          $ref: '#/definitions/routes.CreateItemRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.CreateItemResponse'
+            $ref: '#/definitions/routes.CreateItemResponse'
         "400":
           description: Bad Request
           schema:
@@ -153,7 +153,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.GetItemResponse'
+            $ref: '#/definitions/routes.GetItemResponse'
         "400":
           description: Bad Request
           schema:
