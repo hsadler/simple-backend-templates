@@ -31,7 +31,7 @@ verify server is running by hitting the status endpoint:
 http GET http://localhost:8000/status
 ```
 
-## Try out the "items" example API:
+## Try out the "items" example API
 
 POST an items:
 
@@ -51,7 +51,7 @@ GET multiple items:
 http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 ```
 
-## Other dev commands:
+## Other dev commands
 
 enter poetry shell:
 
@@ -71,7 +71,7 @@ if you get isort errors, run the command alone to fix:
 poetry run isort .
 ```
 
-### Running the docker-compose containers will spin-up Swagger docs and Adminer.
+### Running the docker containers will spin-up Swagger docs and Adminer
 
 - Visit Swagger docs here:
 
