@@ -37,17 +37,6 @@ verify server is running by hitting the status endpoint:
 http://localhost:8000/status
 ```
 
-generate API docs:
-```sh
-swag init
-```
-
-before you commit code, make sure to lint:
-
-```sh
-gofmt -l -s -w .
-```
-
 ## Try out the "items" example API:
 
 POST an items:
@@ -66,6 +55,21 @@ GET multiple items:
 
 ```sh
 http GET "http://localhost:8000/api/items" item_ids==1,2
+# (change to this)
+# http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
+```
+
+## Other dev commands:
+
+generate API docs:
+```sh
+swag init
+```
+
+before you commit code, make sure to lint:
+
+```sh
+gofmt -l -s -w .
 ```
 
 ### Running the docker-compose containers will spin-up Swagger docs and Adminer.
@@ -73,7 +77,7 @@ http GET "http://localhost:8000/api/items" item_ids==1,2
 - Visit Swagger docs here:
 
     ```sh
-    http://localhost:8000/swagger/index.html
+    http://localhost:8000/docs/index.html
     ```
 
 - Visit Adminer DB management tool here:

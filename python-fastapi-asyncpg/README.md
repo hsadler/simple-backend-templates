@@ -76,7 +76,7 @@ poetry run isort .
 - Visit Swagger docs here:
 
     ```sh
-    http://127.0.0.1:8000/docs#/
+    http://127.0.0.1:8000/docs
     ```
 
 - Visit Adminer DB management tool here:

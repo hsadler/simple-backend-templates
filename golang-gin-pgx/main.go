@@ -23,7 +23,6 @@ import (
 )
 
 // Global variables
-// var db *pgx.Conn
 var dbpool *pgxpool.Pool
 var validate *validator.Validate
 
@@ -55,12 +54,14 @@ func main() {
 
 	r.GET("/status", HandleStatus)
 
+	// Items API
 	itemsRouterGroup := r.Group("/api/items")
 	itemsRouterGroup.GET("/:id", HandleGetItem)
 	itemsRouterGroup.GET("", HandleGetItems)
 	itemsRouterGroup.POST("", HandleCreateItem)
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	// Swagger docs
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Run server
 	log.Fatal(r.Run(":8000"))
