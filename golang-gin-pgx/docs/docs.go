@@ -165,59 +165,7 @@ const docTemplate = `{
                 }
             }
         },
-        "routes.CreateItemRequest": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/routes.ItemIn"
-                }
-            }
-        },
-        "routes.CreateItemResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/routes.Item"
-                },
-                "meta": {
-                    "$ref": "#/definitions/routes.CreateItemResponseMeta"
-                }
-            }
-        },
-        "routes.CreateItemResponseMeta": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "routes.GetItemResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/routes.Item"
-                },
-                "meta": {
-                    "type": "object"
-                }
-            }
-        },
-        "routes.GetItemsResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/routes.Item"
-                    }
-                },
-                "meta": {
-                    "type": "object"
-                }
-            }
-        },
-        "routes.Item": {
+        "models.Item": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -247,7 +195,7 @@ const docTemplate = `{
                 }
             }
         },
-        "routes.ItemIn": {
+        "models.ItemIn": {
             "type": "object",
             "required": [
                 "name"
@@ -263,6 +211,58 @@ const docTemplate = `{
                     "format": "float64",
                     "minimum": 0,
                     "example": 3.14
+                }
+            }
+        },
+        "routes.CreateItemRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.ItemIn"
+                }
+            }
+        },
+        "routes.CreateItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Item"
+                },
+                "meta": {
+                    "$ref": "#/definitions/routes.CreateItemResponseMeta"
+                }
+            }
+        },
+        "routes.CreateItemResponseMeta": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "routes.GetItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Item"
+                },
+                "meta": {
+                    "type": "object"
+                }
+            }
+        },
+        "routes.GetItemsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Item"
+                    }
+                },
+                "meta": {
+                    "type": "object"
                 }
             }
         }

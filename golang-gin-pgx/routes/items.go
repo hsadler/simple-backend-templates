@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"example-server/dependencies"
+	"example-server/models"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -23,22 +23,9 @@ func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
 	itemsRouterGroup.POST("", HandleCreateItem(deps))
 }
 
-type ItemIn struct {
-	Name  string   `json:"name" example:"foo" format:"string" validate:"required"`
-	Price *float32 `json:"price" example:"3.14" format:"float64" validate:"min=0"`
-}
-
-type Item struct {
-	ID        int       `json:"id" example:"1" format:"int64"`
-	UUID      string    `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
-	CreatedAt time.Time `json:"created_at" example:"2021-01-01T00:00:00.000Z" format:"date-time"`
-	Name      string    `json:"name" example:"foo" format:"string"`
-	Price     float32   `json:"price" example:"3.14" format:"float64"`
-}
-
 type GetItemResponse struct {
-	Data Item     `json:"data"`
-	Meta struct{} `json:"meta"`
+	Data models.Item `json:"data"`
+	Meta struct{}    `json:"meta"`
 }
 
 // GetItem godoc
@@ -60,7 +47,7 @@ func HandleGetItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 			return
 		}
 		// Fetch Item by ID
-		var item Item
+		var item models.Item
 		fetchErr := deps.DBPool.QueryRow(
 			context.Background(),
 			"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
@@ -78,8 +65,8 @@ func HandleGetItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 }
 
 type GetItemsResponse struct {
-	Data []Item   `json:"data"`
-	Meta struct{} `json:"meta"`
+	Data []models.Item `json:"data"`
+	Meta struct{}      `json:"meta"`
 }
 
 // GetItems godoc
@@ -111,7 +98,7 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 			}
 		}
 		// Fetch Items by IDs
-		var items []Item
+		var items []models.Item
 		var rows pgx.Rows
 		if len(itemIds) > 0 {
 			rows, err = deps.DBPool.Query(
@@ -129,7 +116,7 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 		defer rows.Close()
 		// Iterate over Items
 		for rows.Next() {
-			var item Item
+			var item models.Item
 			// Scan Item and append to Items unless error
 			if err := rows.Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price); err != nil {
 				log.Println("Error scanning Item:", err)
@@ -144,7 +131,7 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 }
 
 type CreateItemRequest struct {
-	Data ItemIn `json:"data"`
+	Data models.ItemIn `json:"data"`
 }
 
 type CreateItemResponseMeta struct {
@@ -152,7 +139,7 @@ type CreateItemResponseMeta struct {
 }
 
 type CreateItemResponse struct {
-	Data Item                   `json:"data"`
+	Data models.Item            `json:"data"`
 	Meta CreateItemResponseMeta `json:"meta"`
 }
 
@@ -209,7 +196,7 @@ func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 		}
 		log.Printf("Inserted itemId: %+v\n", itemId)
 		// Fetch Item after insert
-		var item Item
+		var item models.Item
 		fetchErr := deps.DBPool.QueryRow(
 			context.Background(),
 			"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
