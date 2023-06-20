@@ -87,9 +87,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns Items by ids
+      description: Returns Items by ids. Only returns subset of Items found.
       parameters:
-      - collectionFormat: csv
+      - collectionFormat: multi
         description: Item IDs
         in: query
         items:
@@ -116,7 +116,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates Item
+      description: Creates Item.
       parameters:
       - description: Create Item Request
         in: body
@@ -140,7 +140,7 @@ paths:
       - items
   /api/items/{id}:
     get:
-      description: Returns Item by id
+      description: Returns Item by id.
       parameters:
       - description: Item ID
         in: path
@@ -163,7 +163,7 @@ paths:
       - items
   /status:
     get:
-      description: Returns `"ok"` if the server is up
+      description: Returns `"ok"` if the server is up.
       produces:
       - application/json
       responses:

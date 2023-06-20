@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/api/items": {
             "get": {
-                "description": "Returns Items by ids",
+                "description": "Returns Items by ids. Only returns subset of Items found.",
                 "consumes": [
                     "application/json"
                 ],
@@ -35,7 +35,7 @@ const docTemplate = `{
                         "items": {
                             "type": "integer"
                         },
-                        "collectionFormat": "csv",
+                        "collectionFormat": "multi",
                         "description": "Item IDs",
                         "name": "item_ids",
                         "in": "query",
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates Item",
+                "description": "Creates Item.",
                 "consumes": [
                     "application/json"
                 ],
@@ -101,7 +101,7 @@ const docTemplate = `{
         },
         "/api/items/{id}": {
             "get": {
-                "description": "Returns Item by id",
+                "description": "Returns Item by id.",
                 "produces": [
                     "application/json"
                 ],
@@ -136,7 +136,7 @@ const docTemplate = `{
         },
         "/status": {
             "get": {
-                "description": "Returns ` + "`" + `\"ok\"` + "`" + ` if the server is up",
+                "description": "Returns ` + "`" + `\"ok\"` + "`" + ` if the server is up.",
                 "produces": [
                     "application/json"
                 ],

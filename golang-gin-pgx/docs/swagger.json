@@ -14,7 +14,7 @@
     "paths": {
         "/api/items": {
             "get": {
-                "description": "Returns Items by ids",
+                "description": "Returns Items by ids. Only returns subset of Items found.",
                 "consumes": [
                     "application/json"
                 ],
@@ -31,7 +31,7 @@
                         "items": {
                             "type": "integer"
                         },
-                        "collectionFormat": "csv",
+                        "collectionFormat": "multi",
                         "description": "Item IDs",
                         "name": "item_ids",
                         "in": "query",
@@ -57,7 +57,7 @@
                 }
             },
             "post": {
-                "description": "Creates Item",
+                "description": "Creates Item.",
                 "consumes": [
                     "application/json"
                 ],
@@ -97,7 +97,7 @@
         },
         "/api/items/{id}": {
             "get": {
-                "description": "Returns Item by id",
+                "description": "Returns Item by id.",
                 "produces": [
                     "application/json"
                 ],
@@ -132,7 +132,7 @@
         },
         "/status": {
             "get": {
-                "description": "Returns `\"ok\"` if the server is up",
+                "description": "Returns `\"ok\"` if the server is up.",
                 "produces": [
                     "application/json"
                 ],

@@ -54,9 +54,7 @@ http GET http://127.0.0.1:8000/api/items/1
 GET multiple items:
 
 ```sh
-http GET "http://localhost:8000/api/items" item_ids==1,2
-# (change to this)
-# http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
+http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 ```
 
 ## Other dev commands:

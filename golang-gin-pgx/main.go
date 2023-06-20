@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -92,7 +91,7 @@ type statusResponse struct {
 
 // Status godoc
 // @Summary Status
-// @Description Returns `"ok"` if the server is up
+// @Description Returns `"ok"` if the server is up.
 // @Tags status
 // @Produce json
 // @Success 200 {object} statusResponse
@@ -126,7 +125,7 @@ type GetItemResponse struct {
 
 // GetItem godoc
 // @Summary Get Item
-// @Description Returns Item by id
+// @Description Returns Item by id.
 // @Tags items
 // @Produce json
 // @Param id path int true "Item ID"
@@ -165,11 +164,11 @@ type GetItemsResponse struct {
 
 // GetItems godoc
 // @Summary Get Items
-// @Description Returns Items by ids
+// @Description Returns Items by ids. Only returns subset of Items found.
 // @Tags items
 // @Accept json
 // @Produce json
-// @Param item_ids query []int true "Item IDs"
+// @Param item_ids query []int true "Item IDs" collectionFormat(multi)
 // @Success 200 {array} main.GetItemsResponse
 // @Failure 400 {object} string
 // @Router /api/items [get]
@@ -177,8 +176,8 @@ func HandleGetItems(g *gin.Context) {
 	// Parse Item IDs
 	var itemIds []int
 	var err error
-	if itemIdsStr := g.Query("item_ids"); itemIdsStr != "" {
-		itemIdsStrArr := strings.Split(itemIdsStr, ",")
+	itemIdsStrArr, ok := g.GetQueryArray("item_ids")
+	if ok {
 		itemIds = make([]int, len(itemIdsStrArr))
 		for i, itemIdStr := range itemIdsStrArr {
 			itemIds[i], err = strconv.Atoi(itemIdStr)
@@ -237,7 +236,7 @@ type CreateItemResponse struct {
 
 // CreateItem godoc
 // @Summary Create Item
-// @Description Creates Item
+// @Description Creates Item.
 // @Tags items
 // @Accept json
 // @Produce json
