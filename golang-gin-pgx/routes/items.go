@@ -1,17 +1,14 @@
 package routes
 
 import (
-	"context"
-	"errors"
 	"example-server/dependencies"
 	"example-server/models"
+	"example-server/repos"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // ITEMS API
@@ -24,8 +21,8 @@ func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
 }
 
 type GetItemResponse struct {
-	Data models.Item `json:"data"`
-	Meta struct{}    `json:"meta"`
+	Data *models.Item `json:"data"`
+	Meta struct{}     `json:"meta"`
 }
 
 // GetItem godoc
@@ -47,26 +44,23 @@ func HandleGetItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 			return
 		}
 		// Fetch Item by ID
-		var item models.Item
-		fetchErr := deps.DBPool.QueryRow(
-			context.Background(),
-			"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
-			itemId,
-		).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
-		// Handle Item fetch error
-		if fetchErr != nil {
-			log.Println("Error querying Item:", fetchErr)
+		status, item := repos.FetchItemById(deps.DBPool, itemId)
+		if !status {
 			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Item"})
 			return
 		}
-		// Return response
-		g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
+		// Return Item if found otherwise 404
+		if item != nil {
+			g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
+		} else {
+			g.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		}
 	}
 }
 
 type GetItemsResponse struct {
-	Data []models.Item `json:"data"`
-	Meta struct{}      `json:"meta"`
+	Data []*models.Item `json:"data"`
+	Meta struct{}       `json:"meta"`
 }
 
 // GetItems godoc
@@ -98,32 +92,10 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 			}
 		}
 		// Fetch Items by IDs
-		var items []models.Item
-		var rows pgx.Rows
-		if len(itemIds) > 0 {
-			rows, err = deps.DBPool.Query(
-				context.Background(),
-				"SELECT id, uuid, created_at, name, price FROM item WHERE id = ANY($1)",
-				itemIds,
-			)
-		}
-		// Handle Items fetch error
-		if err != nil {
-			log.Println("Error querying Items:", err)
+		status, items := repos.FetchItemsByIds(deps.DBPool, itemIds)
+		if !status {
 			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Items"})
 			return
-		}
-		defer rows.Close()
-		// Iterate over Items
-		for rows.Next() {
-			var item models.Item
-			// Scan Item and append to Items unless error
-			if err := rows.Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price); err != nil {
-				log.Println("Error scanning Item:", err)
-				g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan Item"})
-				return
-			}
-			items = append(items, item)
 		}
 		// Return response
 		g.JSON(http.StatusOK, GetItemsResponse{Data: items, Meta: struct{}{}})
@@ -139,7 +111,7 @@ type CreateItemResponseMeta struct {
 }
 
 type CreateItemResponse struct {
-	Data models.Item            `json:"data"`
+	Data *models.Item           `json:"data"`
 	Meta CreateItemResponseMeta `json:"meta"`
 }
 
@@ -169,42 +141,22 @@ func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 			return
 		}
 		// Insert Item
-		var itemId int
-		insertErr := deps.DBPool.QueryRow(
-			context.Background(),
-			"INSERT INTO item (name, price) VALUES ($1, $2) RETURNING id",
-			createItemRequest.Data.Name,
-			createItemRequest.Data.Price,
-		).Scan(&itemId)
+		status, item, pgErr := repos.InsertItem(deps.DBPool, createItemRequest.Data)
 		// Handle Item insert error
-		if insertErr != nil {
-			var pgErr *pgconn.PgError
-			if errors.As(insertErr, &pgErr) {
+		if !status {
+			if pgErr != nil {
 				// Duplicate entry error handling
 				if pgErr.Code == "23505" {
 					log.Println("Duplicate Item entry error:", pgErr)
 					g.JSON(
 						http.StatusConflict,
-						gin.H{"error": "Item already exists with name '" + createItemRequest.Data.Name + "'"},
+						gin.H{"error": "Item already exists"},
 					)
 					return
 				}
 			}
-			log.Println("Error inserting Item:", insertErr)
+			log.Println("Error inserting Item:", pgErr)
 			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create Item"})
-			return
-		}
-		log.Printf("Inserted itemId: %+v\n", itemId)
-		// Fetch Item after insert
-		var item models.Item
-		fetchErr := deps.DBPool.QueryRow(
-			context.Background(),
-			"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
-			itemId,
-		).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
-		if fetchErr != nil {
-			log.Println("Error querying Item:", fetchErr)
-			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Item"})
 			return
 		}
 		// Return response
