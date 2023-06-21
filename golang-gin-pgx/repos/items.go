@@ -3,12 +3,13 @@ package repos
 import (
 	"context"
 	"errors"
-	"example-server/models"
 	"log"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"example-server/models"
 )
 
 func FetchItemById(dbPool *pgxpool.Pool, itemId int) (bool, *models.Item) {

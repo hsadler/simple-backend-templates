@@ -4,6 +4,8 @@ TODO:
 python-fastapi-asyncpg:
     X pydantic basesettings subclass for the app settings definition
     X prometheus metrics exporter alternative
+    - update input schemas and output schemas to be aligned with the golang
+        server
     - README updates for:
         - using adminer
         - TODOs
@@ -22,7 +24,7 @@ golang-gin-pgx:
     X db connection pooling
     X add 409 response on POST if item already exists by unique name
     X add get multiple items by ids endpoint
-    - break up api layer and biz-loc layer
+    X break up api layer and biz-loc layer
     - add prometheus metrics exporter
     - dependency injection for route handlers?
     - logging levels:

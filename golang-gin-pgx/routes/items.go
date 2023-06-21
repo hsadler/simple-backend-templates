@@ -1,14 +1,15 @@
 package routes
 
 import (
-	"example-server/dependencies"
-	"example-server/models"
-	"example-server/repos"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"example-server/dependencies"
+	"example-server/models"
+	"example-server/repos"
 )
 
 // ITEMS API
