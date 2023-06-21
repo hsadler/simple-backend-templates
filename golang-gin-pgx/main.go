@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -24,15 +25,18 @@ import (
 func main() {
 	// Setup dependencies
 	validator := validator.New()
-	dbpool := database.SetupDB()
-	defer dbpool.Close()
+	dbPool := database.SetupDB()
+	defer dbPool.Close()
 	deps := dependencies.Dependencies{
 		Validator: validator,
-		DBPool:    dbpool,
+		DBPool:    dbPool,
 	}
 	// Setup Gin router
 	r := gin.Default()
+	// Status
 	r.GET("/status", HandleStatus)
+	// Prometheus metrics
+	r.GET("/metrics", HandleMetrics(r))
 	// Setup API routes
 	routes.SetupItemsAPIRoutes(r, &deps)
 	// Swagger docs
@@ -57,4 +61,15 @@ func HandleStatus(g *gin.Context) {
 		Status: "ok",
 	}
 	g.JSON(http.StatusOK, status)
+}
+
+// Metrics godoc
+// @Summary Metrics
+// @Description Returns Prometheus metrics.
+// @Tags metrics
+// @Produce text/plain
+// @Success 200 {string} string
+// @Router /metrics [get]
+func HandleMetrics(g *gin.Engine) gin.HandlerFunc {
+	return gin.WrapH(promhttp.Handler())
 }

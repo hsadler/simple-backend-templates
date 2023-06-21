@@ -161,6 +161,19 @@ paths:
       summary: Get Item
       tags:
       - items
+  /metrics:
+    get:
+      description: Returns Prometheus metrics.
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Metrics
+      tags:
+      - metrics
   /status:
     get:
       description: Returns `"ok"` if the server is up.
