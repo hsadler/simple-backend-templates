@@ -25,8 +25,8 @@ golang-gin-pgx:
     X add 409 response on POST if item already exists by unique name
     X add get multiple items by ids endpoint
     X break up api layer and biz-loc layer
-    - add prometheus metrics exporter
-    - dependency injection for route handlers?
+    X add prometheus metrics exporter
+    X dependency injection for route handlers?
     - logging levels:
         https://github.com/uber-go/zap
     - tests
