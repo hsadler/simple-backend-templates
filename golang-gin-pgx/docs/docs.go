@@ -51,12 +51,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/routes.GetItemsResponse"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             },
@@ -90,8 +84,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/routes.CreateItemResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "409": {
+                        "description": "Item already exists",
                         "schema": {
                             "type": "string"
                         }
@@ -125,8 +119,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/routes.GetItemResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "404": {
+                        "description": "Item not found",
                         "schema": {
                             "type": "string"
                         }

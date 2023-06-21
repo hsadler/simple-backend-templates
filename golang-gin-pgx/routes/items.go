@@ -33,7 +33,7 @@ type GetItemResponse struct {
 // @Produce json
 // @Param id path int true "Item ID"
 // @Success 200 {object} routes.GetItemResponse
-// @Failure 400 {object} string
+// @Failure 404 {object} string "Item not found"
 // @Router /api/items/{id} [get]
 func HandleGetItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -72,7 +72,6 @@ type GetItemsResponse struct {
 // @Produce json
 // @Param item_ids query []int true "Item IDs" collectionFormat(multi)
 // @Success 200 {array} routes.GetItemsResponse
-// @Failure 400 {object} string
 // @Router /api/items [get]
 func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -124,7 +123,7 @@ type CreateItemResponse struct {
 // @Produce json
 // @Param createItemRequest body routes.CreateItemRequest true "Create Item Request"
 // @Success 200 {object} routes.CreateItemResponse
-// @Failure 400 {object} string
+// @Failure 409 {object} string "Item already exists"
 // @Router /api/items [post]
 func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 	return func(g *gin.Context) {
