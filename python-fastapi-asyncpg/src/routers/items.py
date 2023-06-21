@@ -29,7 +29,7 @@ async def get_item(
     if item is None:
         raise HTTPException(status_code=404, detail="Item resource not found")
     logger.info("Item fetched", extra={"item": dict(item)})
-    return models.ItemOutput(item=item)
+    return models.ItemOutput(data=item, meta={})
 
 
 @router.get("", description="Fetch multiple items by ids.", tags=["items"])
@@ -39,7 +39,7 @@ async def get_items(
     logger.info("Fetching items by ids", extra={"item_ids": item_ids})
     items = await items_repo.fetch_items_by_ids(db, item_ids)
     logger.info("Items fetched", extra={"items": [dict(item) for item in items]})
-    return models.ItemsOutput(items=items)
+    return models.ItemsOutput(data=items, meta={})
 
 
 @router.post(
@@ -53,12 +53,13 @@ async def get_items(
 async def create_item(
     input: models.ItemInput, db: Database = Depends(get_database)
 ) -> models.ItemOutput:
-    logger.info("Inserting item", extra={"item": dict(input.item)})
+    item_in = input.data
+    logger.info("Inserting item", extra={"item": dict(item_in)})
 
     try:
-        item_created = await items_repo.create_item(db, input.item)
+        item_created = await items_repo.create_item(db, item_in)
     except asyncpg.exceptions.UniqueViolationError:
         raise HTTPException(status_code=409, detail="Resource already exists")
 
     logger.info("Created item", extra={"item": dict(item_created)})
-    return models.ItemOutput(item=item_created)
+    return models.ItemOutput(data=item_created, meta={"created": True})
