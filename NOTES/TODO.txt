@@ -2,18 +2,20 @@
 TODO:
 
 python-fastapi-asyncpg:
+    - api call example
+    - long-running task example
     - migrations with Alembic
     - api tests
     - unit tests
-    - load testing
-    - maybe: pre-commit hooks
-    - maybe: SQLAlchemy ORM
-    - maybe: api call example
-    - maybe: background task example
-    - maybe: caching example
+    - load tests
+    - pre-commit hooks
 
 golang-gin-pgx:
     - logging levels:
         https://github.com/uber-go/zap
+    - api call example
+    - long-running task example
+    - migrations: 
+        https://github.com/golang-migrate/migrate
     - tests
     - load tests
