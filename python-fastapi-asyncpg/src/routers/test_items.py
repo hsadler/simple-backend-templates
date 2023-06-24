@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import uuid
 from typing import Any, Generator
@@ -50,7 +51,6 @@ async def test_get_item_found_status_code(
     mock_item = get_mock_item()
     mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
-    print(response.json())
     assert response.status_code == expected_status_code
 
 
@@ -60,33 +60,21 @@ async def test_get_item_found_status_code(
         (
             1,
             {
-                "data": {
-                    "id": 1,
-                    "uuid": "00000000-0000-0000-0000-000000000000",
-                    "created_at": "2021-08-15T18:00:00",
-                    "name": "mock item",
-                    "price": 1.99,
-                },
+                "data": json.loads(get_mock_item(1).json()),
                 "meta": {},
             },
         ),
         (
             2,
             {
-                "data": {
-                    "id": 2,
-                    "uuid": "00000000-0000-0000-0000-000000000000",
-                    "created_at": "2021-08-15T18:00:00",
-                    "name": "mock item",
-                    "price": 1.99,
-                },
+                "data": json.loads(get_mock_item(2).json()),
                 "meta": {},
             },
         ),
     ],
 )
 @pytest.mark.asyncio
-async def test_get_item_found_response_format(
+async def test_get_item_found_response_shape(
     client: TestClient, mocker: MockFixture, item_id: int, expected_response: dict[str, Any]
 ) -> None:
     mock_item = get_mock_item(item_id)
@@ -110,37 +98,98 @@ async def test_get_item_not_found_status_code(
     assert response.status_code == expected_status_code
 
 
-# @pytest.mark.parametrize(
-#     "item_ids, expected_status_code",
-#     [
-#         ([1, 2], 200),
-#         ([1, 2, 3], 200),
-#         ([3], 200),
-#         ([], 200),
-#         ([0], 422),
-#         ([-1], 422),
-#     ],
-# )
-# def test_get_items(client: TestClient, item_ids: list[int], expected_status_code: int) -> None:
-#     response = client.get("/api/items", params={"item_ids": item_ids})
-#     assert response.status_code == expected_status_code
+@pytest.mark.parametrize(
+    "item_id, expected_status_code",
+    [("abc", 422), ("1.01", 422)],
+)
+@pytest.mark.asyncio
+async def test_get_item_malformed_id_status_code(
+    client: TestClient, mocker: MockFixture, item_id: str, expected_status_code: int
+) -> None:
+    mock_item = get_mock_item()
+    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    response = client.get(f"/api/items/{item_id}")
+    assert response.status_code == expected_status_code
 
-# @pytest.mark.parametrize(
-#     "item_in, expected_status_code",
-#     [
-#         ({"name": "Item 1", "description": "Item 1 description"}, 200),
-#         ({"name": "Item 2", "description": "Item 2 description"}, 200),
-#         ({"name": "Item 1", "description": "Item 1 description"}, 409),
-#     ],
-# )
-# def test_create_item(
-#     client: TestClient,
-#     item_in: dict[str, str],
-#     expected_status_code: int
-# ) -> None:
-#     response = client.post("/api/items", json=item_in)
-#     assert response.status_code == expected_status_code
 
-# # Run the tests:
-# # $ pytest -v
-# #
+@pytest.mark.parametrize(
+    "item_ids, expected_status_code",
+    [
+        ([1, 2], 200),
+        ([1, 2, 3], 200),
+        ([], 422),
+        ([0], 422),
+        ([-1], 422),
+    ],
+)
+@pytest.mark.asyncio
+async def test_get_items_found_status_code(
+    client: TestClient, mocker: MockFixture, item_ids: list[int], expected_status_code: int
+) -> None:
+    mock_items = [get_mock_item() for _ in item_ids]
+    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    response = client.get("/api/items", params={"item_ids": item_ids})
+    assert response.status_code == expected_status_code
+
+
+@pytest.mark.parametrize(
+    "item_ids, expected_response",
+    [
+        (
+            [1, 2],
+            {
+                "data": [
+                    json.loads(get_mock_item(1).json()),
+                    json.loads(get_mock_item(2).json()),
+                ],
+                "meta": {},
+            },
+        ),
+        (
+            [1, 2, 3],
+            {
+                "data": [
+                    json.loads(get_mock_item(1).json()),
+                    json.loads(get_mock_item(2).json()),
+                    json.loads(get_mock_item(3).json()),
+                ],
+                "meta": {},
+            },
+        ),
+    ],
+)
+@pytest.mark.asyncio
+async def test_get_items_found_response_shape(
+    client: TestClient, mocker: MockFixture, item_ids: list[int], expected_response: dict[str, Any]
+) -> None:
+    mock_items = [get_mock_item(id) for id in item_ids]
+    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    response = client.get("/api/items", params={"item_ids": item_ids})
+    assert response.json() == expected_response
+
+
+@pytest.mark.asyncio
+async def test_get_items_not_found(client: TestClient, mocker: MockFixture) -> None:
+    mock_items: list[Item] = []
+    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    response = client.get("/api/items", params={"item_ids": [1, 2]})
+    assert response.status_code == 200
+    assert response.json() == {"data": [], "meta": {}}
+
+
+@pytest.mark.parametrize(
+    "item_ids, expected_status_code",
+    [
+        ([1, "two"], 422),
+        ([[1], 2, 3], 422),
+        ([1, 2, {"three": 3}], 422),
+    ],
+)
+@pytest.mark.asyncio
+async def test_get_items_malformed_input(
+    client: TestClient, mocker: MockFixture, item_ids: list[int], expected_status_code: int
+) -> None:
+    mock_items: list[Item] = []
+    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    response = client.get("/api/items", params={"item_ids": item_ids})
+    assert response.status_code == expected_status_code
