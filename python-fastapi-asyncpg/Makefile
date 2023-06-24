@@ -17,3 +17,6 @@ mypy:
 	poetry run mypy .
 
 lint: black flake8 isort mypy
+
+test:
+	poetry run pytest -s -vv
