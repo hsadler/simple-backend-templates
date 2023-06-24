@@ -24,6 +24,16 @@ def client(mocker: MockFixture) -> Generator[TestClient, None, None]:
     del app.dependency_overrides[get_database]
 
 
+def get_mock_item(id: int = 1) -> Item:
+    return Item(
+        id=id,
+        uuid=uuid.UUID("00000000-0000-0000-0000-000000000000"),
+        created_at=datetime.datetime(2021, 8, 15, 18, 0),
+        name="mock item",
+        price=1.99,
+    )
+
+
 @pytest.mark.parametrize(
     "item_id, expected_status_code",
     [
@@ -34,16 +44,10 @@ def client(mocker: MockFixture) -> Generator[TestClient, None, None]:
     ],
 )
 @pytest.mark.asyncio
-async def test_get_item_status_code(
+async def test_get_item_found_status_code(
     client: TestClient, mocker: MockFixture, item_id: int, expected_status_code: int
 ) -> None:
-    mock_item = Item(
-        id=1,
-        uuid=uuid.UUID("00000000-0000-0000-0000-000000000000"),
-        created_at=datetime.datetime(2021, 8, 15, 18, 0),
-        name="mock item",
-        price=1.99,
-    )
+    mock_item = get_mock_item()
     mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     print(response.json())
@@ -82,19 +86,28 @@ async def test_get_item_status_code(
     ],
 )
 @pytest.mark.asyncio
-async def test_get_item_response_format(
+async def test_get_item_found_response_format(
     client: TestClient, mocker: MockFixture, item_id: int, expected_response: dict[str, Any]
 ) -> None:
-    mock_item = Item(
-        id=item_id,
-        uuid=uuid.UUID("00000000-0000-0000-0000-000000000000"),
-        created_at=datetime.datetime(2021, 8, 15, 18, 0),
-        name="mock item",
-        price=1.99,
-    )
+    mock_item = get_mock_item(item_id)
     mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.json() == expected_response
+
+
+@pytest.mark.parametrize(
+    "item_id, expected_status_code",
+    [(3, 404), (4, 404)],
+)
+@pytest.mark.asyncio
+async def test_get_item_not_found_status_code(
+    client: TestClient, mocker: MockFixture, item_id: int, expected_status_code: int
+) -> None:
+    mock_item = None
+    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    response = client.get(f"/api/items/{item_id}")
+    print(response.json())
+    assert response.status_code == expected_status_code
 
 
 # @pytest.mark.parametrize(
