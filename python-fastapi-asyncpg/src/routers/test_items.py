@@ -34,7 +34,7 @@ def client(mocker: MockFixture) -> Generator[TestClient, None, None]:
     ],
 )
 @pytest.mark.asyncio
-async def test_get_item(
+async def test_get_item_status_code(
     client: TestClient, mocker: MockFixture, item_id: int, expected_status_code: int
 ) -> None:
     mock_item = Item(
@@ -46,7 +46,55 @@ async def test_get_item(
     )
     mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
+    print(response.json())
     assert response.status_code == expected_status_code
+
+
+@pytest.mark.parametrize(
+    "item_id, expected_response",
+    [
+        (
+            1,
+            {
+                "data": {
+                    "id": 1,
+                    "uuid": "00000000-0000-0000-0000-000000000000",
+                    "created_at": "2021-08-15T18:00:00",
+                    "name": "mock item",
+                    "price": 1.99,
+                },
+                "meta": {},
+            },
+        ),
+        (
+            2,
+            {
+                "data": {
+                    "id": 2,
+                    "uuid": "00000000-0000-0000-0000-000000000000",
+                    "created_at": "2021-08-15T18:00:00",
+                    "name": "mock item",
+                    "price": 1.99,
+                },
+                "meta": {},
+            },
+        ),
+    ],
+)
+@pytest.mark.asyncio
+async def test_get_item_response_format(
+    client: TestClient, mocker: MockFixture, item_id: int, expected_response: dict[str, Any]
+) -> None:
+    mock_item = Item(
+        id=item_id,
+        uuid=uuid.UUID("00000000-0000-0000-0000-000000000000"),
+        created_at=datetime.datetime(2021, 8, 15, 18, 0),
+        name="mock item",
+        price=1.99,
+    )
+    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    response = client.get(f"/api/items/{item_id}")
+    assert response.json() == expected_response
 
 
 # @pytest.mark.parametrize(

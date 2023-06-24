@@ -1,7 +1,7 @@
 import logging
 
 import asyncpg
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 from src import models
 from src.database import Database, get_database
