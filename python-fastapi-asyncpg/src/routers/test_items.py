@@ -4,13 +4,14 @@ import logging
 import uuid
 from typing import Any, Generator
 
+import asyncpg
 import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockFixture
 
 from src.database import Database, get_database
 from src.main import app
-from src.models import Item
+from src.models import Item, ItemIn
 
 
 @pytest.fixture
@@ -35,6 +36,10 @@ def get_mock_item(id: int = 1) -> Item:
     )
 
 
+# GET ITEM TESTS
+
+
+# test get_item status code
 @pytest.mark.parametrize(
     "item_id, expected_status_code",
     [
@@ -54,6 +59,7 @@ async def test_get_item_found_status_code(
     assert response.status_code == expected_status_code
 
 
+# test get_item response shape
 @pytest.mark.parametrize(
     "item_id, expected_response",
     [
@@ -83,6 +89,7 @@ async def test_get_item_found_response_shape(
     assert response.json() == expected_response
 
 
+# test get_item not found status code
 @pytest.mark.parametrize(
     "item_id, expected_status_code",
     [(3, 404), (4, 404)],
@@ -98,6 +105,7 @@ async def test_get_item_not_found_status_code(
     assert response.status_code == expected_status_code
 
 
+# test get_item malformed id status code
 @pytest.mark.parametrize(
     "item_id, expected_status_code",
     [("abc", 422), ("1.01", 422)],
@@ -112,6 +120,10 @@ async def test_get_item_malformed_id_status_code(
     assert response.status_code == expected_status_code
 
 
+# GET ITEMS TESTS
+
+
+# test get_items status code
 @pytest.mark.parametrize(
     "item_ids, expected_status_code",
     [
@@ -132,6 +144,7 @@ async def test_get_items_found_status_code(
     assert response.status_code == expected_status_code
 
 
+# test get_items response shape
 @pytest.mark.parametrize(
     "item_ids, expected_response",
     [
@@ -168,6 +181,7 @@ async def test_get_items_found_response_shape(
     assert response.json() == expected_response
 
 
+# test get_items when not found
 @pytest.mark.asyncio
 async def test_get_items_not_found(client: TestClient, mocker: MockFixture) -> None:
     mock_items: list[Item] = []
@@ -177,6 +191,7 @@ async def test_get_items_not_found(client: TestClient, mocker: MockFixture) -> N
     assert response.json() == {"data": [], "meta": {}}
 
 
+# test get_items malformed input status code
 @pytest.mark.parametrize(
     "item_ids, expected_status_code",
     [
@@ -186,10 +201,114 @@ async def test_get_items_not_found(client: TestClient, mocker: MockFixture) -> N
     ],
 )
 @pytest.mark.asyncio
-async def test_get_items_malformed_input(
+async def test_get_items_malformed_input_status_code(
     client: TestClient, mocker: MockFixture, item_ids: list[int], expected_status_code: int
 ) -> None:
     mock_items: list[Item] = []
     mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": item_ids})
+    assert response.status_code == expected_status_code
+
+
+# CREATE ITEM TESTS
+
+
+# test create_item success status code
+@pytest.mark.parametrize(
+    "item_in, expected_status_code",
+    [
+        (ItemIn(name="test item 1", price=1.0), 201),
+        (ItemIn(name="test item 2", price=2.0), 201),
+    ],
+)
+@pytest.mark.asyncio
+async def test_create_item_success_status_code(
+    client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
+) -> None:
+    mocker.patch("src.routers.items.items_repo.create_item", return_value=get_mock_item())
+    response = client.post("/api/items", json={"data": json.loads(item_in.json())})
+    assert response.status_code == expected_status_code
+
+
+# test create_item success response shape
+@pytest.mark.parametrize(
+    "item_in, item_id, expected_response",
+    [
+        (
+            ItemIn(name="test item 1", price=1.0),
+            1,
+            {
+                "data": json.loads(get_mock_item(1).json()),
+                "meta": {"created": True},
+            },
+        ),
+        (
+            ItemIn(name="test item 2", price=2.0),
+            2,
+            {
+                "data": json.loads(get_mock_item(2).json()),
+                "meta": {"created": True},
+            },
+        ),
+    ],
+)
+@pytest.mark.asyncio
+async def test_create_item_success_response_shape(
+    client: TestClient,
+    mocker: MockFixture,
+    item_in: ItemIn,
+    item_id: int,
+    expected_response: dict[str, Any],
+) -> None:
+    mocker.patch("src.routers.items.items_repo.create_item", return_value=get_mock_item(item_id))
+    response = client.post("/api/items", json={"data": json.loads(item_in.json())})
+    assert response.json() == expected_response
+
+
+# test create item failure status code
+@pytest.mark.parametrize(
+    "item_in, expected_status_code",
+    [
+        (ItemIn(name="test item 1", price=1.0), 500),
+        (ItemIn(name="test item 2", price=2.0), 500),
+    ],
+)
+@pytest.mark.asyncio
+async def test_create_item_failure_status_code(
+    client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
+) -> None:
+    mocker.patch("src.routers.items.items_repo.create_item", side_effect=Exception)
+    response = client.post("/api/items", json={"data": json.loads(item_in.json())})
+    assert response.status_code == expected_status_code
+
+
+# test create item when item already exists
+@pytest.mark.asyncio
+async def test_create_item_already_exists(client: TestClient, mocker: MockFixture) -> None:
+    mocker.patch(
+        "src.routers.items.items_repo.create_item",
+        side_effect=asyncpg.exceptions.UniqueViolationError,
+    )
+    response = client.post(
+        "/api/items", json={"data": json.loads(ItemIn(name="test item 1", price=1.0).json())}
+    )
+    assert response.status_code == 409
+
+
+# test create item malformed input status code
+@pytest.mark.parametrize(
+    "input_data, expected_status_code",
+    [
+        ({}, 422),
+        ({"foo": "bar"}, 422),
+        ({"data": "malformed"}, 422),
+        ({"data": {"foo": "bar"}}, 422),
+    ],
+)
+@pytest.mark.asyncio
+async def test_create_item_malformed_input_status_code(
+    client: TestClient, mocker: MockFixture, input_data: dict[str, Any], expected_status_code: int
+) -> None:
+    mocker.patch("src.routers.items.items_repo.create_item", return_value=[])
+    response = client.post("/api/items", json=input_data)
     assert response.status_code == expected_status_code

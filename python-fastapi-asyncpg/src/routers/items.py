@@ -49,6 +49,7 @@ async def get_items(
         "409": {"description": "Resource already exists"},
     },
     tags=["items"],
+    status_code=201,
 )
 async def create_item(
     input: models.ItemInput, db: Database = Depends(get_database)
@@ -60,6 +61,9 @@ async def create_item(
         item_created = await items_repo.create_item(db, item_in)
     except asyncpg.exceptions.UniqueViolationError:
         raise HTTPException(status_code=409, detail="Resource already exists")
+    except Exception as e:
+        logger.exception("Error while creating item", extra={"error": e})
+        raise HTTPException(status_code=500)
 
     logger.info("Created item", extra={"item": dict(item_created)})
     return models.ItemOutput(data=item_created, meta={"created": True})
