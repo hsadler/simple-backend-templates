@@ -25,7 +25,11 @@ async def get_item(
     item_id: int = Path(gt=0, example=1), db: Database = Depends(get_database)
 ) -> models.ItemOutput:
     logger.info("Fetching item by id", extra={"item_id": item_id})
-    item = await items_repo.fetch_item_by_id(db, item_id)
+    try:
+        item = await items_repo.fetch_item_by_id(db, item_id)
+    except Exception as e:
+        logger.exception("Error fetching item by id", extra={"item_id": item_id, "error": e})
+        raise HTTPException(status_code=500)
     if item is None:
         raise HTTPException(status_code=404, detail="Item resource not found")
     logger.info("Item fetched", extra={"item": dict(item)})
@@ -37,7 +41,11 @@ async def get_items(
     item_ids: list[int] = Query(gt=0, example=[1, 2]), db: Database = Depends(get_database)
 ) -> models.ItemsOutput:
     logger.info("Fetching items by ids", extra={"item_ids": item_ids})
-    items = await items_repo.fetch_items_by_ids(db, item_ids)
+    try:
+        items = await items_repo.fetch_items_by_ids(db, item_ids)
+    except Exception as e:
+        logger.exception("Error fetching items by ids", extra={"item_ids": item_ids, "error": e})
+        raise HTTPException(status_code=500)
     logger.info("Items fetched", extra={"items": [dict(item) for item in items]})
     return models.ItemsOutput(data=items, meta={})
 
