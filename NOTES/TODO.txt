@@ -2,13 +2,13 @@
 TODO:
 
 python-fastapi-asyncpg:
-    - api call example
+    - api call example:
+        https://wttr.in/Stockholm?format=3
     - long-running task example
     - migrations with Alembic
-    - api tests
-    - unit tests
     - load tests
     - pre-commit hooks
+    - decide whether or not to test repository functions
 
 golang-gin-pgx:
     - logging levels:
