@@ -51,6 +51,48 @@ GET multiple items:
 http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 ```
 
+## Database migrations
+
+Alembic is used to manage raw SQL migrations. Migrations are not automatically
+run when doing local development, but are run automatically when a production
+container is started.
+
+The process for creating new migration files, dry-run testing, and application
+of a new migration is as follows.
+
+make sure you have the containers up and running in a terminal tab:
+```sh
+docker compose up
+```
+
+open a poetry shell:
+
+```sh
+poetry shell
+```
+
+create a new migration file:
+
+```sh
+alembic revision -m "my new migration"
+# and also write your `upgrade` and `downgrade` queries
+```
+
+dry run your migration:
+```sh
+docker compose exec app alembic upgrade head --sql
+```
+
+apply your new migration:
+```sh
+docker compose exec app alembic upgrade head
+```
+
+(optional) roll-back your migration:
+```sh
+docker compose exec app alembic downgrade -1
+```
+
 ## Other dev commands
 
 enter poetry shell:

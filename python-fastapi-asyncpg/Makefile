@@ -4,6 +4,15 @@ build:
 up:
 	docker compose up
 
+app-shell:
+	docker compose exec app bash
+
+db-migrate:
+	docker compose exec app alembic upgrade head
+
+db-migrate-dry-run:
+	docker compose exec app alembic upgrade head --sql
+
 black:
 	poetry run black .
 
