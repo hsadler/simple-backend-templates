@@ -6,8 +6,8 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from src import models
 from src.database import get_database, run_migrations
 from src.log import setup_logging
-from src.routers.items import router as items_router
 from src.routers.examples import router as examples_router
+from src.routers.items import router as items_router
 from src.settings import settings
 
 setup_logging()
