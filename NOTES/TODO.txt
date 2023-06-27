@@ -4,7 +4,7 @@ TODO:
 python-fastapi-asyncpg:
     X migrations with Alembic
     - api call example:
-        https://wttr.in/Stockholm?format=3
+        https://wttr.in/stockholm?format=3
     - long-running task example
     - load tests
     - pre-commit hooks

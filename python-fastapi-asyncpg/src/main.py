@@ -7,6 +7,7 @@ from src import models
 from src.database import get_database, run_migrations
 from src.log import setup_logging
 from src.routers.items import router as items_router
+from src.routers.examples import router as examples_router
 from src.settings import settings
 
 setup_logging()
@@ -39,6 +40,7 @@ async def status() -> models.StatusOutput:
 
 
 app.include_router(items_router)
+app.include_router(examples_router)
 
 
 Instrumentator().instrument(app).expose(app)
