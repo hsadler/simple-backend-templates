@@ -8,7 +8,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DEBUG: "true"
       DATABASE_URL: postgresql://user:password@db:5432/example_db
@@ -23,6 +24,11 @@ services:
       - POSTGRES_DB=example_db
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d example_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5433:5432"
 
