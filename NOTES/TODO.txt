@@ -6,8 +6,8 @@ python-fastapi-asyncpg:
     X api call example:
         https://wttr.in/stockholm?format=3
     X long-running task example
-    - load tests
     - pre-commit hooks
+    - load tests
     - decide whether or not to test repository functions
 
 golang-gin-pgx:
