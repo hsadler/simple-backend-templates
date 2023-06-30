@@ -2,16 +2,10 @@
 TODO:
 
 python-fastapi-asyncpg:
-    X migrations with Alembic
-    X api call example:
-        https://wttr.in/stockholm?format=3
-    X long-running task example
-    X pre-commit hooks
     - load tests
     - decide whether or not to test repository functions
 
 golang-gin-pgx:
-    X pre-commit hooks
     - tests
     - logging levels:
         https://github.com/uber-go/zap

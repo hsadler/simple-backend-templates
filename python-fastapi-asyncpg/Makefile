@@ -29,3 +29,9 @@ lint: black flake8 isort mypy
 
 test:
 	poetry run pytest
+
+loadtest:
+	poetry run locust -f locustfile.py --headless --tag=status \
+	-u=10 -r=100 --run-time=10s --host=http://localhost:8000 && \
+	poetry run locust -f locustfile.py --headless --tag=create-item \
+	-u=1 -r=10 --run-time=10s --host=http://localhost:8000
