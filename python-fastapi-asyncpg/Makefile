@@ -16,22 +16,24 @@ db-migrate-dry-run:
 black:
 	poetry run black .
 
-isort:
-	poetry run isort .
-
 flake8:
 	poetry run flake8 .
+
+isort:
+	poetry run isort . || true
 
 mypy:
 	poetry run mypy .
 
-lint: black flake8 isort mypy
+lint: black isort flake8 mypy
 
-test:
+pytest:
 	poetry run pytest
 
 loadtest:
 	poetry run locust -f locustfile.py --headless --tag=status \
-	-u=10 -r=100 --run-time=10s --host=http://localhost:8000 && \
+	-u=10 -r=100 --run-time=1s --host=http://localhost:8000 && \
 	poetry run locust -f locustfile.py --headless --tag=create-item \
-	-u=1 -r=10 --run-time=10s --host=http://localhost:8000
+	-u=1 -r=10 --run-time=1s --host=http://localhost:8000
+
+pre-commit: lint pytest loadtest

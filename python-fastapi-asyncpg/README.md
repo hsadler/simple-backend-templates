@@ -95,17 +95,7 @@ docker compose exec app alembic downgrade -1
 
 ## Other dev commands
 
-enter poetry shell:
-
-```sh
-poetry shell
-```
-
-before you commit code, make sure to lint:
-
-```sh
-make lint
-```
+See the [Makefile](./Makefile)
 
 if you get isort errors, run the command alone to fix:
 

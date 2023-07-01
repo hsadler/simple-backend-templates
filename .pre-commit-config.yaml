@@ -1,9 +1,9 @@
 repos:
 - repo: local
   hooks:
-    - id: lint-and-pytest
-      name: Run linter and pytest for python-fastapi-asyncpg
-      entry: bash -c 'cd python-fastapi-asyncpg/ && make lint && make test'
+    - id: lint-pytest-loadtest
+      name: Run linter, pytest, and loadtest for python-fastapi-asyncpg
+      entry: bash -c 'cd python-fastapi-asyncpg/ && make pre-commit'
       language: system
       pass_filenames: false
     - id: go-formatter
