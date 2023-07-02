@@ -32,8 +32,10 @@ pytest:
 
 loadtest:
 	poetry run locust -f locustfile.py --headless --tag=status \
-	-u=10 -r=100 --run-time=1s --host=http://localhost:8000 && \
-	poetry run locust -f locustfile.py --headless --tag=create-item \
+	-u=1 -r=10 --run-time=1s --host=http://localhost:8000 && \
+	poetry run locust -f locustfile.py --headless --tag=long-running \
+	-u=1 -r=10 --run-time=5s --host=http://localhost:8000 && \
+	poetry run locust -f locustfile.py --headless --tag=item \
 	-u=1 -r=10 --run-time=1s --host=http://localhost:8000
 
-pre-commit: lint pytest loadtest
+pre-commit: lint pytest

@@ -1,12 +1,12 @@
 repos:
 - repo: local
   hooks:
-    - id: lint-pytest-loadtest
-      name: Run linter, pytest, and loadtest for python-fastapi-asyncpg
+    - id: python-fastapi-asyncpg-lint-pytest
+      name: Run linter and pytest for python-fastapi-asyncpg
       entry: bash -c 'cd python-fastapi-asyncpg/ && make pre-commit'
       language: system
       pass_filenames: false
-    - id: go-formatter
+    - id: golang-gin-pgx-go-formatter
       name: Run formatter for golang-gin-pgx
       entry: bash -c 'cd golang-gin-pgx/ && make format'
       language: system

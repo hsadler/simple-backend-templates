@@ -1,9 +1,11 @@
 
 TODO:
 
+general:
+    - github actions
+
 python-fastapi-asyncpg:
-    - load tests
-    - decide whether or not to test repository functions
+    - more?
 
 golang-gin-pgx:
     - tests

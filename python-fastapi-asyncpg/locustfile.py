@@ -12,11 +12,13 @@ class User(HttpUser):
     @task
     @tag("long-running")
     def fibonacci(self) -> None:
-        self.client.get("/api/example/long-running/fibonacci/32")
+        self.client.get("/api/example/long-running/fibonacci/20")
 
     @task
-    @tag("create-item")
-    def create_item(self) -> None:
-        self.client.post(
+    @tag("item")
+    def create_then_get_item(self) -> None:
+        res = self.client.post(
             "/api/items", json={"data": {"name": str(uuid.uuid4()), "price": "101.01"}}
         )
+        item_id = res.json()["data"]["id"]
+        self.client.get(f"/api/items/{item_id}")
