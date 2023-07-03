@@ -19,7 +19,6 @@ router: APIRouter = APIRouter(prefix="/api/items", tags=["items"])
     responses={
         "404": {"description": "Resource not found"},
     },
-    tags=["items"],
 )
 async def get_item(
     item_id: int = Path(gt=0, example=1), db: Database = Depends(get_database)
@@ -36,7 +35,7 @@ async def get_item(
     return models.ItemOutput(data=item, meta={})
 
 
-@router.get("", description="Fetch multiple items by ids.", tags=["items"])
+@router.get("", description="Fetch multiple items by ids.")
 async def get_items(
     item_ids: list[int] = Query(gt=0, example=[1, 2]), db: Database = Depends(get_database)
 ) -> models.ItemsOutput:
@@ -56,7 +55,6 @@ async def get_items(
     responses={
         "409": {"description": "Resource already exists"},
     },
-    tags=["items"],
     status_code=201,
 )
 async def create_item(

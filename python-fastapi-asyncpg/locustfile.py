@@ -22,3 +22,14 @@ class User(HttpUser):
         )
         item_id = res.json()["data"]["id"]
         self.client.get(f"/api/items/{item_id}")
+
+    @task
+    @tag("items")
+    def create_then_get_items(self) -> None:
+        item_ids = []
+        for _ in range(5):
+            res = self.client.post(
+                "/api/items", json={"data": {"name": str(uuid.uuid4()), "price": "101.01"}}
+            )
+            item_ids.append(res.json()["data"]["id"])
+        self.client.get(f"/api/items?{'&'.join([f'item_ids={item_id}' for item_id in item_ids])}")

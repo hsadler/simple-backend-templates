@@ -22,7 +22,6 @@ def fibonacci(n: int) -> int:
     "/long-running/fibonacci/{n}",
     description="Calculate the nth fibonacci number.",
     responses={},
-    tags=["examples"],
 )
 async def get_fibonacci(n: int = Path(example=10)) -> Response:
     logger.info("Calculating fibonacci number", extra={"n": n})
@@ -39,7 +38,6 @@ async def get_fibonacci(n: int = Path(example=10)) -> Response:
     "/external_call/weather/{city}",
     description="Fetch weather by city name.",
     responses={},
-    tags=["items"],
 )
 async def get_item(city: str = Path(example="stockholm")) -> Response:
     logger.info("Fetching weather by city", extra={"city": city})
