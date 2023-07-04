@@ -3,9 +3,9 @@ import logging
 import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
-from src import models
-from src.database import Database, get_database
-from src.repos import items as items_repo
+from app import models
+from app.database import Database, get_database
+from app.repos import items as items_repo
 
 logger = logging.getLogger(__name__)
 

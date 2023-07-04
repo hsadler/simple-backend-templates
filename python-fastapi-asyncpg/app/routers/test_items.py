@@ -9,9 +9,9 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockFixture
 
-from src.database import Database, get_database
-from src.main import app
-from src.models import Item, ItemIn
+from app.database import Database, get_database
+from app.main import app
+from app.models import Item, ItemIn
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ async def test_get_item_found_status_code(
     client: TestClient, mocker: MockFixture, item_id: int, expected_status_code: int
 ) -> None:
     mock_item = get_mock_item()
-    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.status_code == expected_status_code
 
@@ -84,7 +84,7 @@ async def test_get_item_found_response_shape(
     client: TestClient, mocker: MockFixture, item_id: int, expected_response: dict[str, Any]
 ) -> None:
     mock_item = get_mock_item(item_id)
-    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.json() == expected_response
 
@@ -99,7 +99,7 @@ async def test_get_item_not_found_status_code(
     client: TestClient, mocker: MockFixture, item_id: int, expected_status_code: int
 ) -> None:
     mock_item = None
-    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.status_code == expected_status_code
 
@@ -107,7 +107,7 @@ async def test_get_item_not_found_status_code(
 # test get_item exception status code
 @pytest.mark.asyncio
 async def test_get_item_exception_status_code(client: TestClient, mocker: MockFixture) -> None:
-    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", side_effect=asyncpg.DataError)
+    mocker.patch("app.routers.items.items_repo.fetch_item_by_id", side_effect=asyncpg.DataError)
     response = client.get("/api/items/1")
     assert response.status_code == 500
 
@@ -122,7 +122,7 @@ async def test_get_item_malformed_id_status_code(
     client: TestClient, mocker: MockFixture, item_id: str, expected_status_code: int
 ) -> None:
     mock_item = get_mock_item()
-    mocker.patch("src.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
+    mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.status_code == expected_status_code
 
@@ -146,7 +146,7 @@ async def test_get_items_found_status_code(
     client: TestClient, mocker: MockFixture, item_ids: list[int], expected_status_code: int
 ) -> None:
     mock_items = [get_mock_item() for _ in item_ids]
-    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": item_ids})
     assert response.status_code == expected_status_code
 
@@ -183,7 +183,7 @@ async def test_get_items_found_response_shape(
     client: TestClient, mocker: MockFixture, item_ids: list[int], expected_response: dict[str, Any]
 ) -> None:
     mock_items = [get_mock_item(id) for id in item_ids]
-    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": item_ids})
     assert response.json() == expected_response
 
@@ -192,7 +192,7 @@ async def test_get_items_found_response_shape(
 @pytest.mark.asyncio
 async def test_get_items_not_found(client: TestClient, mocker: MockFixture) -> None:
     mock_items: list[Item] = []
-    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": [1, 2]})
     assert response.status_code == 200
     assert response.json() == {"data": [], "meta": {}}
@@ -201,7 +201,7 @@ async def test_get_items_not_found(client: TestClient, mocker: MockFixture) -> N
 # test get_items exception status code
 @pytest.mark.asyncio
 async def test_get_items_exception_status_code(client: TestClient, mocker: MockFixture) -> None:
-    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", side_effect=asyncpg.DataError)
+    mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", side_effect=asyncpg.DataError)
     response = client.get("/api/items", params={"item_ids": [1, 2]})
     assert response.status_code == 500
 
@@ -220,7 +220,7 @@ async def test_get_items_malformed_input_status_code(
     client: TestClient, mocker: MockFixture, item_ids: list[int], expected_status_code: int
 ) -> None:
     mock_items: list[Item] = []
-    mocker.patch("src.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
+    mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": item_ids})
     assert response.status_code == expected_status_code
 
@@ -240,7 +240,7 @@ async def test_get_items_malformed_input_status_code(
 async def test_create_item_success_status_code(
     client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
 ) -> None:
-    mocker.patch("src.routers.items.items_repo.create_item", return_value=get_mock_item())
+    mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item())
     response = client.post("/api/items", json={"data": json.loads(item_in.json())})
     assert response.status_code == expected_status_code
 
@@ -275,7 +275,7 @@ async def test_create_item_success_response_shape(
     item_id: int,
     expected_response: dict[str, Any],
 ) -> None:
-    mocker.patch("src.routers.items.items_repo.create_item", return_value=get_mock_item(item_id))
+    mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item(item_id))
     response = client.post("/api/items", json={"data": json.loads(item_in.json())})
     assert response.json() == expected_response
 
@@ -292,7 +292,7 @@ async def test_create_item_success_response_shape(
 async def test_create_item_exception_status_code(
     client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
 ) -> None:
-    mocker.patch("src.routers.items.items_repo.create_item", side_effect=Exception)
+    mocker.patch("app.routers.items.items_repo.create_item", side_effect=Exception)
     response = client.post("/api/items", json={"data": json.loads(item_in.json())})
     assert response.status_code == expected_status_code
 
@@ -301,7 +301,7 @@ async def test_create_item_exception_status_code(
 @pytest.mark.asyncio
 async def test_create_item_already_exists(client: TestClient, mocker: MockFixture) -> None:
     mocker.patch(
-        "src.routers.items.items_repo.create_item",
+        "app.routers.items.items_repo.create_item",
         side_effect=asyncpg.exceptions.UniqueViolationError,
     )
     response = client.post(
@@ -324,6 +324,6 @@ async def test_create_item_already_exists(client: TestClient, mocker: MockFixtur
 async def test_create_item_malformed_input_status_code(
     client: TestClient, mocker: MockFixture, input_data: dict[str, Any], expected_status_code: int
 ) -> None:
-    mocker.patch("src.routers.items.items_repo.create_item", return_value=[])
+    mocker.patch("app.routers.items.items_repo.create_item", return_value=[])
     response = client.post("/api/items", json=input_data)
     assert response.status_code == expected_status_code

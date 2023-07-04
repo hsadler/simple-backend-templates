@@ -2,7 +2,7 @@ import logging
 
 from pythonjsonlogger import jsonlogger
 
-from src.settings import settings
+from app.settings import settings
 
 
 def setup_logging() -> None:

@@ -5,7 +5,7 @@ import asyncpg
 
 from alembic import command
 from alembic.config import Config
-from src.settings import settings
+from app.settings import settings
 
 logger = logging.getLogger(__name__)
 

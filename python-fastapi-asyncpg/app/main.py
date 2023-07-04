@@ -3,12 +3,12 @@ import logging
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from src import models
-from src.database import get_database, run_migrations
-from src.log import setup_logging
-from src.routers.examples import router as examples_router
-from src.routers.items import router as items_router
-from src.settings import settings
+from app import models
+from app.database import get_database, run_migrations
+from app.log import setup_logging
+from app.routers.examples import router as examples_router
+from app.routers.items import router as items_router
+from app.settings import settings
 
 setup_logging()
 logger = logging.getLogger(__name__)

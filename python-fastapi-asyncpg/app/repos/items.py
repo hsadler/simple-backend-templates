@@ -3,8 +3,8 @@ from typing import Union
 
 import asyncpg
 
-from src.database import Database
-from src.models import Item, ItemIn
+from app.database import Database
+from app.models import Item, ItemIn
 
 logger = logging.getLogger(__name__)
 
