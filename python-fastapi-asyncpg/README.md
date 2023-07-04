@@ -31,6 +31,11 @@ verify server is running by hitting the status endpoint:
 http GET http://localhost:8000/status
 ```
 
+Run DB migrations:
+```sh
+docker compose exec app alembic upgrade head
+```
+
 ## Try out the "items" example API
 
 POST an items:
