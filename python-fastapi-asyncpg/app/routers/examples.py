@@ -39,7 +39,7 @@ async def get_fibonacci(n: int = Path(example=10)) -> Response:
     description="Fetch weather by city name.",
     responses={},
 )
-async def get_item(city: str = Path(example="stockholm")) -> Response:
+async def get_weather(city: str = Path(example="stockholm")) -> Response:
     logger.info("Fetching weather by city", extra={"city": city})
     try:
         async with httpx.AsyncClient() as client:
