@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app import models
-from app.database import get_database, run_migrations
+from app.database import get_database
 from app.log import setup_logging
 from app.routers.examples import router as examples_router
 from app.routers.items import router as items_router
@@ -24,7 +24,8 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event() -> None:
     if settings.is_prod:
-        await run_migrations()
+        db = await get_database()
+        await db.run_migrations()
 
 
 @app.on_event("shutdown")
