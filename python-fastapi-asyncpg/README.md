@@ -1,5 +1,17 @@
 # Python + FastAPI + asyncpg Template
 
+## What does this template contain?
+- FastAPI server with an "items" API
+- Postgres Database
+- DB connection pooling and "items" CRUD via asyncpg
+- DB migrations via Alembic
+- Basic server logging setup
+- Swagger docs for all exposed server endpoints
+- API tests via pytest and FastAPI test client
+- Loadtesting basic example via locust
+- Local dev environment with docker-compose
+- Automatic linting and pytest running with pre-commit
+
 ## Getting started
 
 Requirements:
