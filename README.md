@@ -9,7 +9,9 @@ Simple templates for backends.
 Requirements:
 - pre-commit
 
-Install pre-commit hooks:
+1. Install pre-commit hooks
 ```sh
 pre-commit install
 ```
+
+2. Install dependencies for all projects

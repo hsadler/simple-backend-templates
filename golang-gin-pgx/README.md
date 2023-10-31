@@ -7,39 +7,39 @@ Requirements:
 - goenv
 - httpie
 
-ensure this is in your `.zshrc` file or similar
+Ensure this is in your `.zshrc` file or similar
 ```sh
 eval "$(goenv init -)"
 export GOBIN=$(go env GOPATH)/bin
 ```
 
-install golang for this project
+Install golang for this project
 ```sh
 goenv install
 ```
 
-verify the correct go version is running
+Verify the correct go version is running
 ```sh
 go version
 # return should specify 1.19.10
 ```
 
-install dependencies
+Install dependencies
 ```sh
 go install
 ```
 
-build images
+Build images
 ```sh
 docker compose build
 ```
 
-run containers locally
+Run containers locally
 ```sh
 docker compose up
 ```
 
-verify server is running by hitting the status endpoint
+Verify server is running by hitting the status endpoint
 ```sh
 http GET http://localhost:8000/status
 ```
@@ -63,12 +63,12 @@ http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 
 ## Other dev commands
 
-generate API docs
+Generate API docs
 ```sh
 swag init
 ```
 
-before you commit code, make sure to lint
+Before you commit code, make sure to lint
 ```sh
 gofmt -l -s -w .
 ```
