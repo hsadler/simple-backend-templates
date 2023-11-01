@@ -16,10 +16,21 @@
 
 Requirements:
 - docker
+- pyenv
 - poetry
 - httpie
 
-Install dependencies
+Ensure the correct python version is installed
+```sh
+pyenv install
+```
+
+Tell poetry which python to use
+```sh
+poetry env use python
+```
+
+Install dependencies (including dev dependencies)
 ```sh
 poetry install
 ```
@@ -31,7 +42,7 @@ docker compose build
 
 Run containers locally
 ```sh
-docker compose up
+docker compose up -d
 ```
 
 Verify server is running by hitting the status endpoint
@@ -48,7 +59,7 @@ docker compose exec app alembic upgrade head
 
 POST an items
 ```sh
-http POST http://127.0.0.1:8000/api/items item:='{"name": "foo", "price": 3.14}'
+http POST http://127.0.0.1:8000/api/items data:='{"name": "foo", "price": 3.14}'
 ```
 
 GET a single item
@@ -59,6 +70,11 @@ http GET http://127.0.0.1:8000/api/items/1
 GET multiple items
 ```sh
 http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
+```
+
+Spin-down containers when finished
+```sh
+docker compose down
 ```
 
 ### Running the docker containers will spin-up Swagger docs and Adminer
@@ -86,7 +102,7 @@ of a new migration is as follows.
 
 Make sure you have the containers up and running in a terminal tab:
 ```sh
-docker compose up
+docker compose up -d
 ```
 
 Open a poetry shell

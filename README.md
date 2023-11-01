@@ -1,5 +1,5 @@
 # simple-backend-templates
-Simple templates for backends.
+Simple templates for backends. All implement the same "items" example CRUD API.
 
 - [Python + FastAPI + asyncpg](./python-fastapi-asyncpg/)
 - [Golang + Gin + pgx](./golang-gin-pgx/)
@@ -9,9 +9,9 @@ Simple templates for backends.
 Requirements:
 - pre-commit
 
-1. Install pre-commit hooks
+1. Install pre-commit hooks.
 ```sh
 pre-commit install
 ```
 
-2. Install dependencies for all projects
+2. Install dev dependencies for all projects so that pre-commit can run properly.

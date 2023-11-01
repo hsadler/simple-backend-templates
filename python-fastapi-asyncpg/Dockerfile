@@ -1,11 +1,12 @@
 # Base image with common dependencies
-FROM python:3.9-slim-bullseye AS base
+FROM python:3.12-slim-bullseye AS base
 WORKDIR /app
 RUN pip install poetry
 COPY pyproject.toml poetry.lock ./
 
 # Development stage
 FROM base AS development
+RUN apt-get update -y && apt-get install -y make gcc python3-dev
 RUN poetry config virtualenvs.create false && \
     poetry install --no-interaction --no-ansi
 COPY . .

@@ -2,7 +2,10 @@ build:
 	docker compose build
 
 up:
-	docker compose up
+	docker compose up -d
+
+down:
+	docker compose down
 
 app-shell:
 	docker compose exec app bash
