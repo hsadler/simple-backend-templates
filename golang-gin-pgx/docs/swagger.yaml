@@ -3,7 +3,7 @@ definitions:
   main.statusResponse:
     properties:
       status:
-        example: ok!
+        example: ok
         type: string
     type: object
   models.Item:

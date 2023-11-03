@@ -4,16 +4,15 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    restart: always
-    environment:
-      DEBUG: "true"
-      DATABASE_URL: postgresql://user:password@db:5432/example_db
+      target: development
+    volumes:
+      - .:/app
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - .:/app
+    environment:
+      DEBUG: "true"
+      DATABASE_URL: postgresql://user:password@db:5432/example_db
     ports:
       - "8000:8000"
     command: 'CompileDaemon -log-prefix=false -build="go build -o /app/app" -command="/app/app"'
@@ -36,7 +35,6 @@ services:
 
   adminer:
     image: adminer
-    restart: always
     ports:
       - 8080:8080
 

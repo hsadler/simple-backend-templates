@@ -46,7 +46,7 @@ func main() {
 }
 
 type statusResponse struct {
-	Status string `json:"status" example:"ok!"`
+	Status string `json:"status" example:"ok"`
 }
 
 // Status godoc

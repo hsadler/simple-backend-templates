@@ -174,7 +174,7 @@ const docTemplate = `{
             "properties": {
                 "status": {
                     "type": "string",
-                    "example": "ok!"
+                    "example": "ok"
                 }
             }
         },
