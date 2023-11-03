@@ -33,6 +33,8 @@ lint: black isort flake8 mypy
 pytest:
 	poetry run pytest
 
+pre-commit: lint pytest
+
 loadtest:
 	poetry run locust -f locustfile.py --headless --tag=status \
 	-u=1 -r=10 --run-time=1s --host=http://localhost:8000 && \
@@ -43,4 +45,10 @@ loadtest:
 	poetry run locust -f locustfile.py --headless --tag=items \
 	-u=1 -r=10 --run-time=1s --host=http://localhost:8000
 
-pre-commit: lint pytest
+cleanup-images-volumes:
+	@read -p "Are you sure you want to clean up images and volumes? (yes/no): " answer; \
+	if [ "$$answer" = "yes" ]; then \
+		docker compose down --rmi all --volumes --remove-orphans; \
+	else \
+		echo "Cleanup canceled."; \
+	fi
