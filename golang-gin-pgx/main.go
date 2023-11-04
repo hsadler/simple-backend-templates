@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -34,7 +33,7 @@ func main() {
 	// Setup Gin router
 	r := gin.Default()
 	// Status
-	r.GET("/status", HandleStatus)
+	r.GET("/status", routes.HandleStatus)
 	// Prometheus metrics
 	r.GET("/metrics", HandleMetrics(r))
 	// Setup API routes
@@ -43,24 +42,6 @@ func main() {
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	// Run server
 	log.Fatal(r.Run(":8000"))
-}
-
-type statusResponse struct {
-	Status string `json:"status" example:"ok"`
-}
-
-// Status godoc
-// @Summary Status
-// @Description Returns `"ok"` if the server is up.
-// @Tags status
-// @Produce json
-// @Success 200 {object} statusResponse
-// @Router /status [get]
-func HandleStatus(g *gin.Context) {
-	status := statusResponse{
-		Status: "ok",
-	}
-	g.JSON(http.StatusOK, status)
 }
 
 // Metrics godoc
