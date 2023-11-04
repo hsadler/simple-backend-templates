@@ -10,6 +10,9 @@ down:
 format:
 	gofmt -l -s -w .
 
+test:
+	go test ./tests
+
 gen-docs:
 	swag init
 

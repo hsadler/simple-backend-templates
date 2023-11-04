@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -35,22 +34,11 @@ func main() {
 	// Status
 	r.GET("/status", routes.HandleStatus)
 	// Prometheus metrics
-	r.GET("/metrics", HandleMetrics(r))
+	r.GET("/metrics", routes.HandleMetrics(r))
 	// Setup API routes
 	routes.SetupItemsAPIRoutes(r, &deps)
 	// Swagger docs
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	// Run server
 	log.Fatal(r.Run(":8000"))
-}
-
-// Metrics godoc
-// @Summary Metrics
-// @Description Returns Prometheus metrics.
-// @Tags metrics
-// @Produce text/plain
-// @Success 200 {string} string
-// @Router /metrics [get]
-func HandleMetrics(g *gin.Engine) gin.HandlerFunc {
-	return gin.WrapH(promhttp.Handler())
 }
