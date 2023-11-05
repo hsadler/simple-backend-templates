@@ -7,7 +7,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 
+	"example-server/database"
+	"example-server/dependencies"
 	"example-server/routes"
 )
 
@@ -45,6 +48,32 @@ func TestMetrics(t *testing.T) {
 	}
 
 	expectedSubstring := "go_"
+	if !strings.Contains(w.Body.String(), expectedSubstring) {
+		t.Errorf("Expected response body to contain substring %s, but got %s", expectedSubstring, w.Body.String())
+	}
+}
+
+func TestGetItem(t *testing.T) {
+	r := gin.Default()
+	// WORKING
+	mockDBPool, err := database.SetupTestDB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps := dependencies.NewDependencies(
+		validator.New(),
+		mockDBPool,
+	)
+	defer deps.CleanupDependencies()
+	r.GET("/api/items/:id", routes.HandleGetItem(deps))
+
+	w := performRequest(r, "GET", "/api/items/1")
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+	}
+
+	expectedSubstring := `"id":1`
 	if !strings.Contains(w.Body.String(), expectedSubstring) {
 		t.Errorf("Expected response body to contain substring %s, but got %s", expectedSubstring, w.Body.String())
 	}

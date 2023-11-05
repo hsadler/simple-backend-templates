@@ -21,7 +21,7 @@ goenv install
 Verify the correct go version is running
 ```sh
 go version
-# return should specify 1.19.10
+# return should specify 1.21.3
 ```
 
 Install dependencies

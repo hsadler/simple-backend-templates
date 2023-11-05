@@ -22,13 +22,12 @@ import (
 // @schemes http
 func main() {
 	// Setup dependencies
-	validator := validator.New()
-	dbPool := database.SetupDB()
-	defer dbPool.Close()
-	deps := dependencies.Dependencies{
-		Validator: validator,
-		DBPool:    dbPool,
-	}
+	dbPool, _ := database.SetupDB()
+	deps := dependencies.NewDependencies(
+		validator.New(),
+		dbPool,
+	)
+	defer deps.CleanupDependencies()
 	// Setup Gin router
 	r := gin.Default()
 	// Status
@@ -36,7 +35,7 @@ func main() {
 	// Prometheus metrics
 	r.GET("/metrics", routes.HandleMetrics(r))
 	// Setup API routes
-	routes.SetupItemsAPIRoutes(r, &deps)
+	routes.SetupItemsAPIRoutes(r, deps)
 	// Swagger docs
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Run server

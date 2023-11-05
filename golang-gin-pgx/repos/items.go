@@ -7,12 +7,12 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 
+	"example-server/database"
 	"example-server/models"
 )
 
-func FetchItemById(dbPool *pgxpool.Pool, itemId int) (bool, *models.Item) {
+func FetchItemById(dbPool database.PgxPoolIface, itemId int) (bool, *models.Item) {
 	// Fetch Item by ID
 	var item models.Item
 	fetchErr := dbPool.QueryRow(
@@ -33,7 +33,7 @@ func FetchItemById(dbPool *pgxpool.Pool, itemId int) (bool, *models.Item) {
 	return true, &item
 }
 
-func FetchItemsByIds(dbPool *pgxpool.Pool, itemIds []int) (bool, []*models.Item) {
+func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) (bool, []*models.Item) {
 	// Fetch Items by IDs
 	var err error
 	var rows pgx.Rows
@@ -64,7 +64,7 @@ func FetchItemsByIds(dbPool *pgxpool.Pool, itemIds []int) (bool, []*models.Item)
 	return true, items
 }
 
-func InsertItem(dbPool *pgxpool.Pool, itemIn models.ItemIn) (bool, *models.Item, *pgconn.PgError) {
+func InsertItem(dbPool database.PgxPoolIface, itemIn models.ItemIn) (bool, *models.Item, *pgconn.PgError) {
 	// Insert Item
 	var itemId int
 	insertErr := dbPool.QueryRow(

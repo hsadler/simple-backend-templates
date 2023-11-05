@@ -1,11 +1,12 @@
 # Base image with common dependencies
-FROM golang:1.19.10-alpine as base
+FROM golang:1.21.3-bullseye as base
+
 WORKDIR /app
 COPY . .
 
 # Development stage
 FROM base AS development
-RUN apk add --no-cache git
+RUN apt-get update -y && apt-get install -y git
 RUN go install -mod=mod github.com/githubnemo/CompileDaemon
 EXPOSE 8000
 
