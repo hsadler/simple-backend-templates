@@ -158,7 +158,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.statusResponse"
+                            "$ref": "#/definitions/routes.statusResponse"
                         }
                     }
                 }
@@ -166,15 +166,6 @@
         }
     },
     "definitions": {
-        "main.statusResponse": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "example": "ok"
-                }
-            }
-        },
         "models.Item": {
             "type": "object",
             "properties": {
@@ -273,6 +264,15 @@
                 },
                 "meta": {
                     "type": "object"
+                }
+            }
+        },
+        "routes.statusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
                 }
             }
         }

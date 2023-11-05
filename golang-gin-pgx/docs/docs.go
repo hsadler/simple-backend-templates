@@ -161,7 +161,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.statusResponse"
+                            "$ref": "#/definitions/routes.statusResponse"
                         }
                     }
                 }
@@ -169,15 +169,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.statusResponse": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "example": "ok"
-                }
-            }
-        },
         "models.Item": {
             "type": "object",
             "properties": {
@@ -276,6 +267,15 @@ const docTemplate = `{
                 },
                 "meta": {
                     "type": "object"
+                }
+            }
+        },
+        "routes.statusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
                 }
             }
         }

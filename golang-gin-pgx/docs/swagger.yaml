@@ -1,11 +1,5 @@
 basePath: /
 definitions:
-  main.statusResponse:
-    properties:
-      status:
-        example: ok
-        type: string
-    type: object
   models.Item:
     properties:
       created_at:
@@ -75,6 +69,12 @@ definitions:
         type: array
       meta:
         type: object
+    type: object
+  routes.statusResponse:
+    properties:
+      status:
+        example: ok
+        type: string
     type: object
 host: localhost:8000
 info:
@@ -179,7 +179,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.statusResponse'
+            $ref: '#/definitions/routes.statusResponse'
       summary: Status
       tags:
       - status

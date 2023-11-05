@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	swaggerfiles "github.com/swaggo/gin-swagger/swaggerFiles"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	"example-server/database"
 	"example-server/dependencies"
@@ -38,7 +38,7 @@ func main() {
 	// Setup API routes
 	routes.SetupItemsAPIRoutes(r, &deps)
 	// Swagger docs
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Run server
 	log.Fatal(r.Run(":8000"))
 }
