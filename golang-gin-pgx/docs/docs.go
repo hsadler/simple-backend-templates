@@ -47,7 +47,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/routes.GetItemsResponse"
+                                "$ref": "#/definitions/models.GetItemsResponse"
                             }
                         }
                     }
@@ -72,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/routes.CreateItemRequest"
+                            "$ref": "#/definitions/models.CreateItemRequest"
                         }
                     }
                 ],
@@ -80,13 +80,33 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.CreateItemResponse"
+                            "$ref": "#/definitions/models.CreateItemResponse"
                         }
                     },
                     "409": {
                         "description": "Item already exists",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/items/all": {
+            "get": {
+                "description": "Returns all Items.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get All Items",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetItemsResponse"
                         }
                     }
                 }
@@ -115,7 +135,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.GetItemResponse"
+                            "$ref": "#/definitions/models.GetItemResponse"
                         }
                     },
                     "404": {
@@ -161,7 +181,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.statusResponse"
+                            "$ref": "#/definitions/models.StatusResponse"
                         }
                     }
                 }
@@ -169,6 +189,58 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.CreateItemRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.ItemIn"
+                }
+            }
+        },
+        "models.CreateItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Item"
+                },
+                "meta": {
+                    "$ref": "#/definitions/models.CreateItemResponseMeta"
+                }
+            }
+        },
+        "models.CreateItemResponseMeta": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.GetItemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Item"
+                },
+                "meta": {
+                    "type": "object"
+                }
+            }
+        },
+        "models.GetItemsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Item"
+                    }
+                },
+                "meta": {
+                    "type": "object"
+                }
+            }
+        },
         "models.Item": {
             "type": "object",
             "properties": {
@@ -218,59 +290,7 @@ const docTemplate = `{
                 }
             }
         },
-        "routes.CreateItemRequest": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/models.ItemIn"
-                }
-            }
-        },
-        "routes.CreateItemResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/models.Item"
-                },
-                "meta": {
-                    "$ref": "#/definitions/routes.CreateItemResponseMeta"
-                }
-            }
-        },
-        "routes.CreateItemResponseMeta": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "routes.GetItemResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/models.Item"
-                },
-                "meta": {
-                    "type": "object"
-                }
-            }
-        },
-        "routes.GetItemsResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Item"
-                    }
-                },
-                "meta": {
-                    "type": "object"
-                }
-            }
-        },
-        "routes.statusResponse": {
+        "models.StatusResponse": {
             "type": "object",
             "properties": {
                 "status": {

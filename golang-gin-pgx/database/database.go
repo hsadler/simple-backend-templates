@@ -8,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pashagolub/pgxmock/v3"
 )
 
 type PgxPoolIface interface {
@@ -33,10 +32,6 @@ func SetupDB() (PgxPoolIface, error) {
 	CreateTables(dbpool)
 	log.Println("Created tables")
 	return dbpool, err
-}
-
-func SetupTestDB() (PgxPoolIface, error) {
-	return pgxmock.NewPool()
 }
 
 func CreateTables(dbpool *pgxpool.Pool) {

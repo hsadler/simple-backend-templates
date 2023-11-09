@@ -18,6 +18,11 @@ Install golang for this project
 goenv install
 ```
 
+Make sure the latest version of the "swag" documentation generator is installed
+```sh
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
 Verify the correct go version is running
 ```sh
 go version

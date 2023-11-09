@@ -1,10 +1,7 @@
 package dependencies
 
 import (
-	"context"
-
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5"
 
 	"example-server/database"
 )
@@ -23,9 +20,4 @@ func NewDependencies(validator *validator.Validate, pgxPool database.PgxPoolIfac
 
 func (deps *Dependencies) CleanupDependencies() {
 	deps.DBPool.Close()
-}
-
-type PgxIface interface {
-	Begin(context.Context) (pgx.Tx, error)
-	Close(context.Context) error
 }

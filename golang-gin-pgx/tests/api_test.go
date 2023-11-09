@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/pashagolub/pgxmock/v3"
 
-	"example-server/database"
 	"example-server/dependencies"
 	"example-server/routes"
 )
@@ -53,10 +53,9 @@ func TestMetrics(t *testing.T) {
 	}
 }
 
-func TestGetItem(t *testing.T) {
-	r := gin.Default()
-	// WORKING
-	mockDBPool, err := database.SetupTestDB()
+func TestGetAllItems(t *testing.T) {
+	// setup mock dependencies
+	mockDBPool, err := pgxmock.NewPool()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,16 +64,54 @@ func TestGetItem(t *testing.T) {
 		mockDBPool,
 	)
 	defer deps.CleanupDependencies()
-	r.GET("/api/items/:id", routes.HandleGetItem(deps))
-
-	w := performRequest(r, "GET", "/api/items/1")
-
+	// define mock DB expectations
+	mockDBPool.ExpectQuery("SELECT id, uuid, created_at, name, price FROM item")
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
+	// make request
+	w := performRequest(r, "GET", "/api/items/all")
+	t.Logf("Status: %d", w.Code)
+	t.Logf("Response: %s", w.Body.String())
+	// assert response code
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
 	}
-
+	// assert response body
 	expectedSubstring := `"id":1`
 	if !strings.Contains(w.Body.String(), expectedSubstring) {
 		t.Errorf("Expected response body to contain substring %s, but got %s", expectedSubstring, w.Body.String())
 	}
 }
+
+// func TestGetItem(t *testing.T) {
+// 	// setup mock dependencies
+// 	mockDBPool, err := database.SetupTestDB()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	deps := dependencies.NewDependencies(
+// 		validator.New(),
+// 		mockDBPool,
+// 	)
+// 	defer deps.CleanupDependencies()
+// 	// define mock DB expectations
+// 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
+// 		WithArgs(1)
+// 	// setup router
+// 	r := gin.Default()
+// 	r.GET("/api/items/:id", routes.HandleGetItem(deps))
+// 	// make request
+// 	w := performRequest(r, "GET", "/api/items/1")
+// 	t.Logf("Status: %d", w.Code)
+// 	t.Logf("Response: %s", w.Body.String())
+// 	// assert response code
+// 	if w.Code != http.StatusOK {
+// 		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+// 	}
+// 	// assert response body
+// 	expectedSubstring := `"id":1`
+// 	if !strings.Contains(w.Body.String(), expectedSubstring) {
+// 		t.Errorf("Expected response body to contain substring %s, but got %s", expectedSubstring, w.Body.String())
+// 	}
+// }

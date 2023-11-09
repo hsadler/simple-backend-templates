@@ -1,5 +1,38 @@
 basePath: /
 definitions:
+  models.CreateItemRequest:
+    properties:
+      data:
+        $ref: '#/definitions/models.ItemIn'
+    type: object
+  models.CreateItemResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.Item'
+      meta:
+        $ref: '#/definitions/models.CreateItemResponseMeta'
+    type: object
+  models.CreateItemResponseMeta:
+    properties:
+      created:
+        type: boolean
+    type: object
+  models.GetItemResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.Item'
+      meta:
+        type: object
+    type: object
+  models.GetItemsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Item'
+        type: array
+      meta:
+        type: object
+    type: object
   models.Item:
     properties:
       created_at:
@@ -37,40 +70,7 @@ definitions:
     required:
     - name
     type: object
-  routes.CreateItemRequest:
-    properties:
-      data:
-        $ref: '#/definitions/models.ItemIn'
-    type: object
-  routes.CreateItemResponse:
-    properties:
-      data:
-        $ref: '#/definitions/models.Item'
-      meta:
-        $ref: '#/definitions/routes.CreateItemResponseMeta'
-    type: object
-  routes.CreateItemResponseMeta:
-    properties:
-      created:
-        type: boolean
-    type: object
-  routes.GetItemResponse:
-    properties:
-      data:
-        $ref: '#/definitions/models.Item'
-      meta:
-        type: object
-    type: object
-  routes.GetItemsResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/models.Item'
-        type: array
-      meta:
-        type: object
-    type: object
-  routes.statusResponse:
+  models.StatusResponse:
     properties:
       status:
         example: ok
@@ -104,7 +104,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/routes.GetItemsResponse'
+              $ref: '#/definitions/models.GetItemsResponse'
             type: array
       summary: Get Items
       tags:
@@ -119,14 +119,14 @@ paths:
         name: createItemRequest
         required: true
         schema:
-          $ref: '#/definitions/routes.CreateItemRequest'
+          $ref: '#/definitions/models.CreateItemRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.CreateItemResponse'
+            $ref: '#/definitions/models.CreateItemResponse'
         "409":
           description: Item already exists
           schema:
@@ -149,12 +149,25 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.GetItemResponse'
+            $ref: '#/definitions/models.GetItemResponse'
         "404":
           description: Item not found
           schema:
             type: string
       summary: Get Item
+      tags:
+      - items
+  /api/items/all:
+    get:
+      description: Returns all Items.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetItemsResponse'
+      summary: Get All Items
       tags:
       - items
   /metrics:
@@ -179,7 +192,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.statusResponse'
+            $ref: '#/definitions/models.StatusResponse'
       summary: Status
       tags:
       - status

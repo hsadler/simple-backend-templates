@@ -12,6 +12,32 @@ import (
 	"example-server/models"
 )
 
+func FetchAllItems(dbPool database.PgxPoolIface) (bool, []*models.Item) {
+	// Fetch all Items
+	rows, err := dbPool.Query(
+		context.Background(),
+		"SELECT id, uuid, created_at, name, price FROM item",
+	)
+	// Handle Items fetch error
+	if err != nil {
+		log.Println("Error querying Items:", err)
+		return false, nil
+	}
+	defer rows.Close()
+	// Iterate over rows and append Items
+	var items []*models.Item
+	for rows.Next() {
+		var item models.Item
+		// Scan Item and append to Items unless error
+		if err := rows.Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price); err != nil {
+			log.Println("Error scanning Item:", err)
+			return false, nil
+		}
+		items = append(items, &item)
+	}
+	return true, items
+}
+
 func FetchItemById(dbPool database.PgxPoolIface, itemId int) (bool, *models.Item) {
 	// Fetch Item by ID
 	var item models.Item

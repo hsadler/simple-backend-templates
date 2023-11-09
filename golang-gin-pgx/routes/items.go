@@ -18,12 +18,28 @@ func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
 	itemsRouterGroup := router.Group("/api/items")
 	itemsRouterGroup.GET("/:id", HandleGetItem(deps))
 	itemsRouterGroup.GET("", HandleGetItems(deps))
+	itemsRouterGroup.GET("/all", HandleGetAllItems(deps))
 	itemsRouterGroup.POST("", HandleCreateItem(deps))
 }
 
-type GetItemResponse struct {
-	Data *models.Item `json:"data"`
-	Meta struct{}     `json:"meta"`
+// GetAllItems godoc
+// @Summary Get All Items
+// @Description Returns all Items.
+// @Tags items
+// @Produce json
+// @Success 200 {object} models.GetItemsResponse
+// @Router /api/items/all [get]
+func HandleGetAllItems(deps *dependencies.Dependencies) gin.HandlerFunc {
+	return func(g *gin.Context) {
+		// Fetch Items
+		status, items := repos.FetchAllItems(deps.DBPool)
+		if !status {
+			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Items"})
+			return
+		}
+		// Return response
+		g.JSON(http.StatusOK, models.GetItemsResponse{Data: items, Meta: struct{}{}})
+	}
 }
 
 // GetItem godoc
@@ -32,7 +48,7 @@ type GetItemResponse struct {
 // @Tags items
 // @Produce json
 // @Param id path int true "Item ID"
-// @Success 200 {object} routes.GetItemResponse
+// @Success 200 {object} models.GetItemResponse
 // @Failure 404 {object} string "Item not found"
 // @Router /api/items/{id} [get]
 func HandleGetItem(deps *dependencies.Dependencies) gin.HandlerFunc {
@@ -44,24 +60,21 @@ func HandleGetItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 			g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Item ID"})
 			return
 		}
+		log.Println("Fetching item by id:", itemId)
 		// Fetch Item by ID
 		status, item := repos.FetchItemById(deps.DBPool, itemId)
 		if !status {
+			log.Println("Error fetching Item by id:", itemId)
 			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Item"})
 			return
 		}
 		// Return Item if found otherwise 404
 		if item != nil {
-			g.JSON(http.StatusOK, GetItemResponse{Data: item, Meta: struct{}{}})
+			g.JSON(http.StatusOK, models.GetItemResponse{Data: item, Meta: struct{}{}})
 		} else {
 			g.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
 		}
 	}
-}
-
-type GetItemsResponse struct {
-	Data []*models.Item `json:"data"`
-	Meta struct{}       `json:"meta"`
 }
 
 // GetItems godoc
@@ -71,7 +84,7 @@ type GetItemsResponse struct {
 // @Accept json
 // @Produce json
 // @Param item_ids query []int true "Item IDs" collectionFormat(multi)
-// @Success 200 {array} routes.GetItemsResponse
+// @Success 200 {array} models.GetItemsResponse
 // @Router /api/items [get]
 func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -98,21 +111,8 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 			return
 		}
 		// Return response
-		g.JSON(http.StatusOK, GetItemsResponse{Data: items, Meta: struct{}{}})
+		g.JSON(http.StatusOK, models.GetItemsResponse{Data: items, Meta: struct{}{}})
 	}
-}
-
-type CreateItemRequest struct {
-	Data models.ItemIn `json:"data"`
-}
-
-type CreateItemResponseMeta struct {
-	Created bool `json:"created"`
-}
-
-type CreateItemResponse struct {
-	Data *models.Item           `json:"data"`
-	Meta CreateItemResponseMeta `json:"meta"`
 }
 
 // CreateItem godoc
@@ -121,14 +121,14 @@ type CreateItemResponse struct {
 // @Tags items
 // @Accept json
 // @Produce json
-// @Param createItemRequest body routes.CreateItemRequest true "Create Item Request"
-// @Success 200 {object} routes.CreateItemResponse
+// @Param createItemRequest body models.CreateItemRequest true "Create Item Request"
+// @Success 200 {object} models.CreateItemResponse
 // @Failure 409 {object} string "Item already exists"
 // @Router /api/items [post]
 func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		// Deserialize request
-		var createItemRequest CreateItemRequest
+		var createItemRequest models.CreateItemRequest
 		if err := g.ShouldBindJSON(&createItemRequest); err != nil {
 			log.Println("Error deserializing request:", err)
 			g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
@@ -162,7 +162,7 @@ func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 		// Return response
 		g.JSON(
 			http.StatusOK,
-			CreateItemResponse{Data: item, Meta: CreateItemResponseMeta{Created: true}},
+			models.CreateItemResponse{Data: item, Meta: models.CreateItemResponseMeta{Created: true}},
 		)
 	}
 }
