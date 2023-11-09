@@ -12,8 +12,63 @@ import (
 	"github.com/pashagolub/pgxmock/v3"
 
 	"example-server/dependencies"
+	"example-server/models"
 	"example-server/routes"
 )
+
+// MOCKS
+
+const (
+	mockRecord1 = "mockRecord1"
+	mockRecord2 = "mockRecord2"
+)
+
+var mockRecords = map[string]models.Item{
+	mockRecord1: {
+		ID:        1,
+		UUID:      "550e8400-e29b-41d4-a716-446655440000",
+		CreatedAt: time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Name:      "pi",
+		Price:     float32(3.14),
+	},
+	mockRecord2: {
+		ID:        2,
+		UUID:      "550e8400-e29b-41d4-a716-446655440001",
+		CreatedAt: time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Name:      "tree-fiddy",
+		Price:     float32(3.50),
+	},
+}
+
+func getMockDependencies() (*dependencies.Dependencies, pgxmock.PgxPoolIface) {
+	// setup mock dependencies
+	mockDBPool, err := pgxmock.NewPool()
+	if err != nil {
+		panic(err)
+	}
+	deps := dependencies.NewDependencies(
+		validator.New(),
+		mockDBPool,
+	)
+	return deps, mockDBPool
+}
+
+func populateMockDBPool(mockDBPool pgxmock.PgxPoolIface, items []models.Item) *pgxmock.Rows {
+	// define mock DB expectations
+	rows := mockDBPool.NewRows([]string{"id", "uuid", "created_at", "name", "price"})
+	for _, item := range items {
+		rows.AddRow(
+			item.ID,
+			item.UUID,
+			item.CreatedAt,
+			item.Name,
+			item.Price,
+		)
+	}
+	return rows
+}
+
+// HELPERS
 
 func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest(method, path, nil)
@@ -21,6 +76,8 @@ func performRequest(r http.Handler, method, path string) *httptest.ResponseRecor
 	r.ServeHTTP(w, req)
 	return w
 }
+
+// TESTS
 
 func TestStatus(t *testing.T) {
 	r := gin.Default()
@@ -48,33 +105,10 @@ func TestMetrics(t *testing.T) {
 	}
 }
 
-func TestGetAllItems(t *testing.T) {
+func TestGetAllItems200(t *testing.T) {
 	// setup mock dependencies
-	mockDBPool, err := pgxmock.NewPool()
-	if err != nil {
-		t.Fatal(err)
-	}
-	deps := dependencies.NewDependencies(
-		validator.New(),
-		mockDBPool,
-	)
-	defer deps.CleanupDependencies()
-	// define mock DB expectations
-	rows := mockDBPool.NewRows([]string{"id", "uuid", "created_at", "name", "price"}).
-		AddRow(
-			1,
-			"550e8400-e29b-41d4-a716-446655440000",
-			time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC),
-			"pi",
-			float32(3.14),
-		).
-		AddRow(
-			2,
-			"550e8400-e29b-41d4-a716-446655440001",
-			time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC),
-			"tree-fiddy",
-			float32(3.50),
-		)
+	deps, mockDBPool := getMockDependencies()
+	rows := populateMockDBPool(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item").
 		WillReturnRows(rows)
 	// setup router
@@ -97,26 +131,10 @@ func TestGetAllItems(t *testing.T) {
 	}
 }
 
-func TestGetItem(t *testing.T) {
+func TestGetItem200(t *testing.T) {
 	// setup mock dependencies
-	mockDBPool, err := pgxmock.NewPool()
-	if err != nil {
-		t.Fatal(err)
-	}
-	deps := dependencies.NewDependencies(
-		validator.New(),
-		mockDBPool,
-	)
-	defer deps.CleanupDependencies()
-	// define mock DB expectations
-	rows := mockDBPool.NewRows([]string{"id", "uuid", "created_at", "name", "price"}).
-		AddRow(
-			1,
-			"550e8400-e29b-41d4-a716-446655440000",
-			time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC),
-			"pi",
-			float32(3.14),
-		)
+	deps, mockDBPool := getMockDependencies()
+	rows := populateMockDBPool(mockDBPool, []models.Item{mockRecords[mockRecord1]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
 		WithArgs(1).
 		WillReturnRows(rows)
@@ -131,6 +149,33 @@ func TestGetItem(t *testing.T) {
 	}
 	// assert full response body
 	expected := `{"data":{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},"meta":{}}`
+	if w.Body.String() != expected {
+		t.Errorf("Expected %s, but got %s", expected, w.Body.String())
+	}
+	// assert db expectations were met
+	if err := mockDBPool.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled DB expectations: %s", err)
+	}
+}
+
+func TestGetItem404(t *testing.T) {
+	// setup mock dependencies
+	deps, mockDBPool := getMockDependencies()
+	rows := populateMockDBPool(mockDBPool, []models.Item{})
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
+		WithArgs(1).
+		WillReturnRows(rows)
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/:id", routes.HandleGetItem(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/1")
+	// assert response code
+	if w.Code != http.StatusNotFound {
+		t.Errorf("Expected status code %d, but got %d", http.StatusNotFound, w.Code)
+	}
+	// assert full response body
+	expected := `{"error":"Item not found"}`
 	if w.Body.String() != expected {
 		t.Errorf("Expected %s, but got %s", expected, w.Body.String())
 	}
