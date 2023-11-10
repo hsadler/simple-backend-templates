@@ -16,9 +16,9 @@ import (
 
 func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
 	itemsRouterGroup := router.Group("/api/items")
+	itemsRouterGroup.GET("/all", HandleGetAllItems(deps))
 	itemsRouterGroup.GET("/:id", HandleGetItem(deps))
 	itemsRouterGroup.GET("", HandleGetItems(deps))
-	itemsRouterGroup.GET("/all", HandleGetAllItems(deps))
 	itemsRouterGroup.POST("", HandleCreateItem(deps))
 }
 
@@ -92,6 +92,7 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 		var itemIds []int
 		var err error
 		itemIdsStrArr, ok := g.GetQueryArray("item_ids")
+		log.Println("itemIdsStrArr:", itemIdsStrArr)
 		if ok {
 			itemIds = make([]int, len(itemIdsStrArr))
 			for i, itemIdStr := range itemIdsStrArr {
@@ -103,6 +104,9 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 					return
 				}
 			}
+		} else {
+			g.JSON(http.StatusBadRequest, gin.H{"error": "Missing Item IDs"})
+			return
 		}
 		// Fetch Items by IDs
 		status, items := repos.FetchItemsByIds(deps.DBPool, itemIds)

@@ -189,3 +189,91 @@ func TestGetItem404(t *testing.T) {
 		t.Errorf("There were unfulfilled DB expectations: %s", err)
 	}
 }
+
+func TestGetItem400(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/:id", routes.HandleGetItem(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/invalid")
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"error":"Invalid Item ID"}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+}
+
+func TestGetItems200(t *testing.T) {
+	// setup mock dependencies
+	deps, mockDBPool := getMockDependencies()
+	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = ANY(.+)").
+		WithArgs([]int{1, 2}).
+		WillReturnRows(rows)
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items", routes.HandleGetItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items?item_ids=1&item_ids=2")
+	// assert response code
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"data":[{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},{"id":2,"uuid":"550e8400-e29b-41d4-a716-446655440001","created_at":"2021-01-01T00:00:00Z","name":"tree-fiddy","price":3.5}],"meta":{}}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+	// assert db expectations were met
+	if err := mockDBPool.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled DB expectations: %s", err)
+	}
+}
+
+func TestGetItems400MissingItemIds(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items", routes.HandleGetItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items")
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"error":"Missing Item IDs"}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+}
+
+func TestGetItems400InvalidItemIds(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items", routes.HandleGetItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items?item_ids=invalid")
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"error":"Invalid Item ID"}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+}
