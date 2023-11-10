@@ -40,6 +40,8 @@ var mockRecords = map[string]models.Item{
 	},
 }
 
+// HELPERS
+
 func getMockDependencies() (*dependencies.Dependencies, pgxmock.PgxPoolIface) {
 	// setup mock dependencies
 	mockDBPool, err := pgxmock.NewPool()
@@ -53,7 +55,7 @@ func getMockDependencies() (*dependencies.Dependencies, pgxmock.PgxPoolIface) {
 	return deps, mockDBPool
 }
 
-func populateMockDBPool(mockDBPool pgxmock.PgxPoolIface, items []models.Item) *pgxmock.Rows {
+func getMockRows(mockDBPool pgxmock.PgxPoolIface, items []models.Item) *pgxmock.Rows {
 	// define mock DB expectations
 	rows := mockDBPool.NewRows([]string{"id", "uuid", "created_at", "name", "price"})
 	for _, item := range items {
@@ -68,8 +70,6 @@ func populateMockDBPool(mockDBPool pgxmock.PgxPoolIface, items []models.Item) *p
 	return rows
 }
 
-// HELPERS
-
 func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest(method, path, nil)
 	w := httptest.NewRecorder()
@@ -83,12 +83,13 @@ func TestStatus(t *testing.T) {
 	r := gin.Default()
 	r.GET("/status", routes.HandleStatus)
 	w := performRequest(r, "GET", "/status")
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
-	expected := `{"status":"ok"}`
-	if w.Body.String() != expected {
-		t.Errorf("Expected %s, but got %s", expected, w.Body.String())
+	expectedBody := `{"status":"ok"}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
 	}
 }
 
@@ -96,8 +97,9 @@ func TestMetrics(t *testing.T) {
 	r := gin.Default()
 	r.GET("/metrics", routes.HandleMetrics(r))
 	w := performRequest(r, "GET", "/metrics")
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 	expectedSubstring := "go_"
 	if !strings.Contains(w.Body.String(), expectedSubstring) {
@@ -108,7 +110,7 @@ func TestMetrics(t *testing.T) {
 func TestGetAllItems200(t *testing.T) {
 	// setup mock dependencies
 	deps, mockDBPool := getMockDependencies()
-	rows := populateMockDBPool(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
+	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item").
 		WillReturnRows(rows)
 	// setup router
@@ -117,13 +119,14 @@ func TestGetAllItems200(t *testing.T) {
 	// exec request
 	w := performRequest(r, "GET", "/api/items/all")
 	// assert response code
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 	// assert full response body
-	expected := `{"data":[{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},{"id":2,"uuid":"550e8400-e29b-41d4-a716-446655440001","created_at":"2021-01-01T00:00:00Z","name":"tree-fiddy","price":3.5}],"meta":{}}`
-	if w.Body.String() != expected {
-		t.Errorf("Expected %s, but got %s", expected, w.Body.String())
+	expectedBody := `{"data":[{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},{"id":2,"uuid":"550e8400-e29b-41d4-a716-446655440001","created_at":"2021-01-01T00:00:00Z","name":"tree-fiddy","price":3.5}],"meta":{}}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
 	}
 	// assert db expectations were met
 	if err := mockDBPool.ExpectationsWereMet(); err != nil {
@@ -134,7 +137,7 @@ func TestGetAllItems200(t *testing.T) {
 func TestGetItem200(t *testing.T) {
 	// setup mock dependencies
 	deps, mockDBPool := getMockDependencies()
-	rows := populateMockDBPool(mockDBPool, []models.Item{mockRecords[mockRecord1]})
+	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
 		WithArgs(1).
 		WillReturnRows(rows)
@@ -144,13 +147,14 @@ func TestGetItem200(t *testing.T) {
 	// exec request
 	w := performRequest(r, "GET", "/api/items/1")
 	// assert response code
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 	// assert full response body
-	expected := `{"data":{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},"meta":{}}`
-	if w.Body.String() != expected {
-		t.Errorf("Expected %s, but got %s", expected, w.Body.String())
+	expectedBody := `{"data":{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},"meta":{}}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
 	}
 	// assert db expectations were met
 	if err := mockDBPool.ExpectationsWereMet(); err != nil {
@@ -161,7 +165,7 @@ func TestGetItem200(t *testing.T) {
 func TestGetItem404(t *testing.T) {
 	// setup mock dependencies
 	deps, mockDBPool := getMockDependencies()
-	rows := populateMockDBPool(mockDBPool, []models.Item{})
+	rows := getMockRows(mockDBPool, []models.Item{})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
 		WithArgs(1).
 		WillReturnRows(rows)
@@ -171,13 +175,14 @@ func TestGetItem404(t *testing.T) {
 	// exec request
 	w := performRequest(r, "GET", "/api/items/1")
 	// assert response code
-	if w.Code != http.StatusNotFound {
-		t.Errorf("Expected status code %d, but got %d", http.StatusNotFound, w.Code)
+	expectedStatusCode := http.StatusNotFound
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 	// assert full response body
-	expected := `{"error":"Item not found"}`
-	if w.Body.String() != expected {
-		t.Errorf("Expected %s, but got %s", expected, w.Body.String())
+	expectedBody := `{"error":"Item not found"}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
 	}
 	// assert db expectations were met
 	if err := mockDBPool.ExpectationsWereMet(); err != nil {
