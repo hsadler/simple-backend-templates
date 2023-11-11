@@ -114,7 +114,7 @@ func TestMetrics(t *testing.T) {
 }
 
 func TestGetAllItems200(t *testing.T) {
-	// setup mock dependencies
+	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
 	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item").
@@ -141,7 +141,7 @@ func TestGetAllItems200(t *testing.T) {
 }
 
 func TestGetItem200(t *testing.T) {
-	// setup mock dependencies
+	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
 	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
@@ -169,7 +169,7 @@ func TestGetItem200(t *testing.T) {
 }
 
 func TestGetItem404(t *testing.T) {
-	// setup mock dependencies
+	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
 	rows := getMockRows(mockDBPool, []models.Item{})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
@@ -217,7 +217,7 @@ func TestGetItem400(t *testing.T) {
 }
 
 func TestGetItems200(t *testing.T) {
-	// setup mock dependencies
+	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
 	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = ANY(.+)").
@@ -285,7 +285,7 @@ func TestGetItems400InvalidItemIds(t *testing.T) {
 }
 
 func TestCreateItem201(t *testing.T) {
-	// setup mock dependencies
+	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
 	mockCreateRecord := mockRecords[mockRecord1]
 	rows := getMockRows(mockDBPool, []models.Item{mockCreateRecord})
