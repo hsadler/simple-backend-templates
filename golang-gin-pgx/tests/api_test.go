@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -287,25 +288,32 @@ func TestCreateItem201(t *testing.T) {
 	// setup mock dependencies
 	deps, mockDBPool := getMockDependencies()
 	mockCreateRecord := mockRecords[mockRecord1]
-	// rows := getMockRows(mockDBPool, []models.Item{mockCreateRecord})
+	rows := getMockRows(mockDBPool, []models.Item{mockCreateRecord})
 	mockDBPool.ExpectQuery("INSERT INTO item (.+) VALUES (.+) RETURNING id").
 		WithArgs(mockCreateRecord.Name, mockCreateRecord.Price).
 		WillReturnRows(mockDBPool.NewRows([]string{"id"}).AddRow(mockCreateRecord.ID))
 	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
 		WithArgs(mockCreateRecord.ID).
-		WillReturnRows(getMockRows(mockDBPool, []models.Item{mockCreateRecord}))
+		WillReturnRows(rows)
 	// setup router
 	r := gin.Default()
 	r.POST("/api/items", routes.HandleCreateItem(deps))
 	// exec request
-	w := performRequest(r, "POST", "/api/items", `{"name":"pi","price":3.14}`)
+	createItemRequest := models.CreateItemRequest{
+		Data: models.ItemIn{
+			Name:  mockCreateRecord.Name,
+			Price: mockCreateRecord.Price,
+		},
+	}
+	createItemRequestJson, _ := json.Marshal(createItemRequest)
+	w := performRequest(r, "POST", "/api/items", string(createItemRequestJson))
 	// assert response code
 	expectedStatusCode := http.StatusCreated
 	if w.Code != expectedStatusCode {
 		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 	// assert full response body
-	expectedBody := `{"data":{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},"meta":{}}`
+	expectedBody := `{"data":{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},"meta":{"created":true}}`
 	if w.Body.String() != expectedBody {
 		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
 	}

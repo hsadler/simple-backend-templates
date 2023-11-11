@@ -5,8 +5,8 @@ import "time"
 // Resource Entity Models
 
 type ItemIn struct {
-	Name  string   `json:"name" example:"foo" format:"string" validate:"required"`
-	Price *float32 `json:"price" example:"3.14" format:"float64" validate:"min=0"`
+	Name  string  `json:"name" example:"foo" format:"string" validate:"required"`
+	Price float32 `json:"price" example:"3.14" format:"float64" validate:"min=0"`
 }
 
 type Item struct {

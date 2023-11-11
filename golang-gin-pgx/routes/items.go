@@ -126,7 +126,7 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param createItemRequest body models.CreateItemRequest true "Create Item Request"
-// @Success 200 {object} models.CreateItemResponse
+// @Success 201 {object} models.CreateItemResponse
 // @Failure 409 {object} string "Item already exists"
 // @Router /api/items [post]
 func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
@@ -165,7 +165,7 @@ func HandleCreateItem(deps *dependencies.Dependencies) gin.HandlerFunc {
 		}
 		// Return response
 		g.JSON(
-			http.StatusOK,
+			http.StatusCreated,
 			models.CreateItemResponse{Data: item, Meta: models.CreateItemResponseMeta{Created: true}},
 		)
 	}
