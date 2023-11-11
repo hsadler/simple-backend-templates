@@ -70,8 +70,13 @@ func getMockRows(mockDBPool pgxmock.PgxPoolIface, items []models.Item) *pgxmock.
 	return rows
 }
 
-func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest(method, path, nil)
+func performRequest(r http.Handler, method, path string, body ...string) *httptest.ResponseRecorder {
+	var req *http.Request
+	if len(body) > 0 {
+		req, _ = http.NewRequest(method, path, strings.NewReader(body[0]))
+	} else {
+		req, _ = http.NewRequest(method, path, nil)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	return w
@@ -275,5 +280,37 @@ func TestGetItems400InvalidItemIds(t *testing.T) {
 	expectedBody := `{"error":"Invalid Item ID"}`
 	if w.Body.String() != expectedBody {
 		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+}
+
+func TestCreateItem201(t *testing.T) {
+	// setup mock dependencies
+	deps, mockDBPool := getMockDependencies()
+	mockCreateRecord := mockRecords[mockRecord1]
+	// rows := getMockRows(mockDBPool, []models.Item{mockCreateRecord})
+	mockDBPool.ExpectQuery("INSERT INTO item (.+) VALUES (.+) RETURNING id").
+		WithArgs(mockCreateRecord.Name, mockCreateRecord.Price).
+		WillReturnRows(mockDBPool.NewRows([]string{"id"}).AddRow(mockCreateRecord.ID))
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
+		WithArgs(mockCreateRecord.ID).
+		WillReturnRows(getMockRows(mockDBPool, []models.Item{mockCreateRecord}))
+	// setup router
+	r := gin.Default()
+	r.POST("/api/items", routes.HandleCreateItem(deps))
+	// exec request
+	w := performRequest(r, "POST", "/api/items", `{"name":"pi","price":3.14}`)
+	// assert response code
+	expectedStatusCode := http.StatusCreated
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"data":{"id":1,"uuid":"550e8400-e29b-41d4-a716-446655440000","created_at":"2021-01-01T00:00:00Z","name":"pi","price":3.14},"meta":{}}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+	// assert db expectations were met
+	if err := mockDBPool.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled DB expectations: %s", err)
 	}
 }
