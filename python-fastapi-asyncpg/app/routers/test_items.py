@@ -26,7 +26,7 @@ def client(mocker: MockFixture) -> Generator[TestClient, None, None]:
     del app.dependency_overrides[get_database]
 
 
-def get_mock_item(id: int = 1) -> Item:
+def get_mock_item(id: int) -> Item:
     return Item(
         id=id,
         uuid=uuid.UUID("00000000-0000-0000-0000-000000000000"),
@@ -53,7 +53,7 @@ def get_mock_item(id: int = 1) -> Item:
 async def test_get_item_found_status_code(
     client: TestClient, mocker: MockFixture, item_id: int, expected_status_code: int
 ) -> None:
-    mock_item = get_mock_item()
+    mock_item = get_mock_item(id=1)
     mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.status_code == expected_status_code
@@ -66,14 +66,14 @@ async def test_get_item_found_status_code(
         (
             1,
             {
-                "data": json.loads(get_mock_item(1).json()),
+                "data": json.loads(get_mock_item(id=1).json()),
                 "meta": {},
             },
         ),
         (
             2,
             {
-                "data": json.loads(get_mock_item(2).json()),
+                "data": json.loads(get_mock_item(id=2).json()),
                 "meta": {},
             },
         ),
@@ -83,9 +83,9 @@ async def test_get_item_found_status_code(
 async def test_get_item_found_response_shape(
     client: TestClient, mocker: MockFixture, item_id: int, expected_response: dict[str, Any]
 ) -> None:
-    mock_item = get_mock_item(item_id)
+    mock_item = get_mock_item(id=item_id)
     mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
-    response = client.get(f"/api/items/{item_id}")
+    response = client.get(f"/api/items/{mock_item.id}")
     assert response.json() == expected_response
 
 
@@ -121,7 +121,7 @@ async def test_get_item_exception_status_code(client: TestClient, mocker: MockFi
 async def test_get_item_malformed_id_status_code(
     client: TestClient, mocker: MockFixture, item_id: str, expected_status_code: int
 ) -> None:
-    mock_item = get_mock_item()
+    mock_item = get_mock_item(id=1)
     mocker.patch("app.routers.items.items_repo.fetch_item_by_id", return_value=mock_item)
     response = client.get(f"/api/items/{item_id}")
     assert response.status_code == expected_status_code
@@ -145,7 +145,7 @@ async def test_get_item_malformed_id_status_code(
 async def test_get_items_found_status_code(
     client: TestClient, mocker: MockFixture, item_ids: list[int], expected_status_code: int
 ) -> None:
-    mock_items = [get_mock_item() for _ in item_ids]
+    mock_items = [get_mock_item(id=1) for _ in item_ids]
     mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": item_ids})
     assert response.status_code == expected_status_code
@@ -159,8 +159,8 @@ async def test_get_items_found_status_code(
             [1, 2],
             {
                 "data": [
-                    json.loads(get_mock_item(1).json()),
-                    json.loads(get_mock_item(2).json()),
+                    json.loads(get_mock_item(id=1).json()),
+                    json.loads(get_mock_item(id=2).json()),
                 ],
                 "meta": {},
             },
@@ -169,9 +169,9 @@ async def test_get_items_found_status_code(
             [1, 2, 3],
             {
                 "data": [
-                    json.loads(get_mock_item(1).json()),
-                    json.loads(get_mock_item(2).json()),
-                    json.loads(get_mock_item(3).json()),
+                    json.loads(get_mock_item(id=1).json()),
+                    json.loads(get_mock_item(id=2).json()),
+                    json.loads(get_mock_item(id=3).json()),
                 ],
                 "meta": {},
             },
@@ -182,7 +182,7 @@ async def test_get_items_found_status_code(
 async def test_get_items_found_response_shape(
     client: TestClient, mocker: MockFixture, item_ids: list[int], expected_response: dict[str, Any]
 ) -> None:
-    mock_items = [get_mock_item(id) for id in item_ids]
+    mock_items = [get_mock_item(id=id) for id in item_ids]
     mocker.patch("app.routers.items.items_repo.fetch_items_by_ids", return_value=mock_items)
     response = client.get("/api/items", params={"item_ids": item_ids})
     assert response.json() == expected_response
@@ -240,7 +240,7 @@ async def test_get_items_malformed_input_status_code(
 async def test_create_item_success_status_code(
     client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
 ) -> None:
-    mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item())
+    mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item(id=1))
     response = client.post("/api/items", json={"data": json.loads(item_in.json())})
     assert response.status_code == expected_status_code
 
@@ -253,7 +253,7 @@ async def test_create_item_success_status_code(
             ItemIn(name="test item 1", price=1.0),
             1,
             {
-                "data": json.loads(get_mock_item(1).json()),
+                "data": json.loads(get_mock_item(id=1).json()),
                 "meta": {"created": True},
             },
         ),
@@ -261,7 +261,7 @@ async def test_create_item_success_status_code(
             ItemIn(name="test item 2", price=2.0),
             2,
             {
-                "data": json.loads(get_mock_item(2).json()),
+                "data": json.loads(get_mock_item(id=2).json()),
                 "meta": {"created": True},
             },
         ),
@@ -275,7 +275,7 @@ async def test_create_item_success_response_shape(
     item_id: int,
     expected_response: dict[str, Any],
 ) -> None:
-    mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item(item_id))
+    mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item(id=item_id))
     response = client.post("/api/items", json={"data": json.loads(item_in.json())})
     assert response.json() == expected_response
 

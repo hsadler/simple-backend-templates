@@ -71,7 +71,7 @@ func getMockRows(mockDBPool pgxmock.PgxPoolIface, items []models.Item) *pgxmock.
 	return rows
 }
 
-func performRequest(r http.Handler, method, path string, body ...string) *httptest.ResponseRecorder {
+func performRequest(r http.Handler, method string, path string, body ...string) *httptest.ResponseRecorder {
 	var req *http.Request
 	if len(body) > 0 {
 		req, _ = http.NewRequest(method, path, strings.NewReader(body[0]))
