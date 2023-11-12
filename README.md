@@ -14,4 +14,4 @@ Requirements:
 pre-commit install
 ```
 
-2. Install dev dependencies for all projects so that pre-commit can run properly.
+2. Install dev dependencies for all template projects so that pre-commit can run properly.
