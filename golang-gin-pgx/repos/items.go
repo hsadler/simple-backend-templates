@@ -12,11 +12,12 @@ import (
 	"example-server/models"
 )
 
-func FetchAllItems(dbPool database.PgxPoolIface) (bool, []*models.Item) {
-	// Fetch all Items
+func FetchPaginatedItems(dbPool database.PgxPoolIface, offset, chunkSize int) (bool, []*models.Item) {
+	// Fetch paginated Items
 	rows, err := dbPool.Query(
 		context.Background(),
-		"SELECT id, uuid, created_at, name, price FROM item",
+		"SELECT id, uuid, created_at, name, price FROM item ORDER BY id OFFSET $1 LIMIT $2",
+		offset, chunkSize,
 	)
 	// Handle Items fetch error
 	if err != nil {
@@ -34,6 +35,15 @@ func FetchAllItems(dbPool database.PgxPoolIface) (bool, []*models.Item) {
 			return false, nil
 		}
 		items = append(items, &item)
+	}
+	// Handle row iteration error
+	if err := rows.Err(); err != nil {
+		log.Println("Error iterating over paginated Items:", err)
+		return true, nil
+	}
+	// Check if the slice is nil and replace it with an empty slice
+	if items == nil {
+		items = []*models.Item{}
 	}
 	return true, items
 }

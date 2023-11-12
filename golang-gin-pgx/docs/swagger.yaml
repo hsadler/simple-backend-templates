@@ -160,6 +160,19 @@ paths:
   /api/items/all:
     get:
       description: Returns all Items.
+      parameters:
+      - description: Offset
+        in: query
+        minimum: 0
+        name: offset
+        required: true
+        type: integer
+      - description: Chunk size
+        in: query
+        minimum: 1
+        name: chunkSize
+        required: true
+        type: integer
       produces:
       - application/json
       responses:

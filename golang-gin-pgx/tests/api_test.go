@@ -118,13 +118,14 @@ func TestGetAllItems200(t *testing.T) {
 	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
 	rows := getMockRows(mockDBPool, []models.Item{mockRecords[mockRecord1], mockRecords[mockRecord2]})
-	mockDBPool.ExpectQuery("SELECT (.+) FROM item").
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item ORDER BY id OFFSET (.+) LIMIT (.)").
+		WithArgs(0, 2).
 		WillReturnRows(rows)
 	// setup router
 	r := gin.Default()
 	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
 	// exec request
-	w := performRequest(r, "GET", "/api/items/all")
+	w := performRequest(r, "GET", "/api/items/all?offset=0&chunkSize=2")
 	// assert response code
 	expectedStatusCode := http.StatusOK
 	if w.Code != expectedStatusCode {

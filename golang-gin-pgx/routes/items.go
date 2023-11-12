@@ -12,6 +12,16 @@ import (
 	"example-server/repos"
 )
 
+// HELPERS
+
+func parseQueryParam(g *gin.Context, key string, defaultValue interface{}) interface{} {
+	valueStr := g.Query(key)
+	if value, err := strconv.Atoi(valueStr); err == nil {
+		return value
+	}
+	return defaultValue
+}
+
 // ITEMS API
 
 func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
@@ -27,16 +37,29 @@ func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
 // @Description Returns all Items.
 // @Tags items
 // @Produce json
+// @Param offset query int true "Offset" minimum(0)
+// @Param chunkSize query int true "Chunk size" minimum(1)
 // @Success 200 {object} models.GetItemsResponse
 // @Router /api/items/all [get]
 func HandleGetAllItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 	return func(g *gin.Context) {
+		// Parse query params and validate
+		offsetParam := parseQueryParam(g, "offset", -1)
+		chunkSizeParam := parseQueryParam(g, "chunkSize", -1)
+		offset, offsetOk := offsetParam.(int)
+		chunkSize, chunkSizeOk := chunkSizeParam.(int)
+		if !offsetOk || !chunkSizeOk || offset < 0 || chunkSize < 1 {
+			g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+			return
+		}
+		log.Println("Fetching all items with offset:", offset, "and chunk size:", chunkSize)
 		// Fetch Items
-		status, items := repos.FetchAllItems(deps.DBPool)
+		status, items := repos.FetchPaginatedItems(deps.DBPool, offset, chunkSize)
 		if !status {
 			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Items"})
 			return
 		}
+		log.Println("Fetched", len(items), "items")
 		// Return response
 		g.JSON(http.StatusOK, models.GetItemsResponse{Data: items, Meta: struct{}{}})
 	}

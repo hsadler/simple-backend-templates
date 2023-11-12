@@ -10,14 +10,14 @@ python-fastapi-asyncpg:
 
 golang-gin-pgx:
     X update go version to 1.21
-    - tests
+    X tests
+    X add pagination to items/all
+    - DB migrations:
+        https://github.com/golang-migrate/migrate
     - logging levels:
         https://github.com/rs/zerolog
         https://github.com/uber-go/zap
         https://github.com/sirupsen/logrus
-    - DB migrations:
-        https://github.com/golang-migrate/migrate
-    - pagination example
     - api call example
     - long-running task example
     - concurrency example

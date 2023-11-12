@@ -102,6 +102,24 @@ const docTemplate = `{
                     "items"
                 ],
                 "summary": "Get All Items",
+                "parameters": [
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Chunk size",
+                        "name": "chunkSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

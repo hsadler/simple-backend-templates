@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -13,6 +14,15 @@ import (
 	_ "example-server/docs"
 	"example-server/routes"
 )
+
+func init() {
+	// Setup logger
+	log.SetOutput(os.Stdout)
+	// Set Gin to production mode
+	gin.SetMode(gin.DebugMode)
+	// Setup Gin logger
+	gin.DefaultWriter = os.Stdout
+}
 
 // @title Example Server API
 // @description Example Go+Gin+pgx JSON API server.
