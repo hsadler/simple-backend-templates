@@ -6,8 +6,8 @@ repos:
       entry: bash -c 'cd python-fastapi-asyncpg/ && make pre-commit'
       language: system
       pass_filenames: false
-    - id: golang-gin-pgx-go-formatter
-      name: Run formatter for golang-gin-pgx
-      entry: bash -c 'cd golang-gin-pgx/ && make format'
+    - id: golang-gin-pgx-formatter-tests
+      name: Run formatter and tests for golang-gin-pgx
+      entry: bash -c 'cd golang-gin-pgx/ && make format && make test'
       language: system
       pass_filenames: false

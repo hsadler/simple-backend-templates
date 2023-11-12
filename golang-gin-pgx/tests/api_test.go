@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pashagolub/pgxmock/v3"
 
 	"example-server/dependencies"
@@ -320,5 +321,94 @@ func TestCreateItem201(t *testing.T) {
 	// assert db expectations were met
 	if err := mockDBPool.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled DB expectations: %s", err)
+	}
+}
+
+func TestCreateItem400InvalidJson(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.POST("/api/items", routes.HandleCreateItem(deps))
+	// exec request
+	w := performRequest(r, "POST", "/api/items", `{"data":{"invalid":"payload"}}`)
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
+func TestCreateItem400InvalidItemIn(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.POST("/api/items", routes.HandleCreateItem(deps))
+	// exec request
+	createItemRequest := models.CreateItemRequest{
+		Data: models.ItemIn{
+			Name:  "invalid price",
+			Price: float32(-1),
+		},
+	}
+	createItemRequestJson, _ := json.Marshal(createItemRequest)
+	w := performRequest(r, "POST", "/api/items", string(createItemRequestJson))
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
+func TestCreateItem409Duplicate(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	mockCreateRecord := mockRecords[mockRecord1]
+	mockDBPool.ExpectQuery("INSERT INTO item (.+) VALUES (.+) RETURNING id").
+		WithArgs(mockCreateRecord.Name, mockCreateRecord.Price).
+		WillReturnError(&pgconn.PgError{Code: "23505"})
+	// setup router
+	r := gin.Default()
+	r.POST("/api/items", routes.HandleCreateItem(deps))
+	// exec request
+	createItemRequest := models.CreateItemRequest{
+		Data: models.ItemIn{
+			Name:  mockCreateRecord.Name,
+			Price: mockCreateRecord.Price,
+		},
+	}
+	createItemRequestJson, _ := json.Marshal(createItemRequest)
+	w := performRequest(r, "POST", "/api/items", string(createItemRequestJson))
+	// assert response code
+	expectedStatusCode := http.StatusConflict
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
+func TestCreateItem500PostgresError(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	mockCreateRecord := mockRecords[mockRecord1]
+	mockDBPool.ExpectQuery("INSERT INTO item (.+) VALUES (.+) RETURNING id").
+		WithArgs(mockCreateRecord.Name, mockCreateRecord.Price).
+		WillReturnError(&pgconn.PgError{Code: "12345"})
+	// setup router
+	r := gin.Default()
+	r.POST("/api/items", routes.HandleCreateItem(deps))
+	// exec request
+	createItemRequest := models.CreateItemRequest{
+		Data: models.ItemIn{
+			Name:  mockCreateRecord.Name,
+			Price: mockCreateRecord.Price,
+		},
+	}
+	createItemRequestJson, _ := json.Marshal(createItemRequest)
+	w := performRequest(r, "POST", "/api/items", string(createItemRequestJson))
+	// assert response code
+	expectedStatusCode := http.StatusInternalServerError
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 }
