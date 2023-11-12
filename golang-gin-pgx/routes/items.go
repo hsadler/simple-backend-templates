@@ -56,6 +56,7 @@ func HandleGetAllItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 		// Fetch Items
 		status, items := repos.FetchPaginatedItems(deps.DBPool, offset, chunkSize)
 		if !status {
+			log.Println("Error fetching Items")
 			g.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query Items"})
 			return
 		}

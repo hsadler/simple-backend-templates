@@ -39,7 +39,7 @@ func FetchPaginatedItems(dbPool database.PgxPoolIface, offset, chunkSize int) (b
 	// Handle row iteration error
 	if err := rows.Err(); err != nil {
 		log.Println("Error iterating over paginated Items:", err)
-		return true, nil
+		return false, nil
 	}
 	// Check if the slice is nil and replace it with an empty slice
 	if items == nil {
@@ -96,6 +96,11 @@ func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) (bool, []*mode
 			return false, nil
 		}
 		items = append(items, &item)
+	}
+	// Handle row iteration error
+	if err := rows.Err(); err != nil {
+		log.Println("Error iterating over paginated Items:", err)
+		return false, nil
 	}
 	return true, items
 }

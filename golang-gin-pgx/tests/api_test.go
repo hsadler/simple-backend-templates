@@ -142,6 +142,82 @@ func TestGetAllItems200(t *testing.T) {
 	}
 }
 
+func TestGetAllItems200Empty(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	rows := getMockRows(mockDBPool, nil)
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item ORDER BY id OFFSET (.+) LIMIT (.)").
+		WithArgs(0, 2).
+		WillReturnRows(rows)
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/all?offset=0&chunkSize=2")
+	// assert response code
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"data":[],"meta":{}}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+	// assert db expectations were met
+	if err := mockDBPool.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled DB expectations: %s", err)
+	}
+}
+
+func TestGetAllItems400InvalidChunkSize(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/all?offset=5&chunkSize=0")
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
+func TestGetAllItems400MissingQueryParams(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/all")
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
+func TestGetAllItems500PostgresError(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item ORDER BY id OFFSET (.+) LIMIT (.)").
+		WithArgs(0, 2).
+		WillReturnError(&pgconn.PgError{Code: "12345"})
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/all?offset=0&chunkSize=2")
+	// assert response code
+	expectedStatusCode := http.StatusInternalServerError
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
 func TestGetItem200(t *testing.T) {
 	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
@@ -218,6 +294,24 @@ func TestGetItem400(t *testing.T) {
 	}
 }
 
+func TestGetItem500PostgresError(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = (.+)").
+		WithArgs(1).
+		WillReturnError(&pgconn.PgError{Code: "12345"})
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/:id", routes.HandleGetItem(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/1")
+	// assert response code
+	expectedStatusCode := http.StatusInternalServerError
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
 func TestGetItems200(t *testing.T) {
 	// setup mock dependencies and DB query expectations
 	deps, mockDBPool := getMockDependencies()
@@ -283,6 +377,24 @@ func TestGetItems400InvalidItemIds(t *testing.T) {
 	expectedBody := `{"error":"Invalid Item ID"}`
 	if w.Body.String() != expectedBody {
 		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+}
+
+func TestGetItems500PostgresError(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = ANY(.+)").
+		WithArgs([]int{1, 2}).
+		WillReturnError(&pgconn.PgError{Code: "12345"})
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items", routes.HandleGetItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items?item_ids=1&item_ids=2")
+	// assert response code
+	expectedStatusCode := http.StatusInternalServerError
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
 	}
 }
 
