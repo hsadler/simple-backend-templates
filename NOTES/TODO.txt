@@ -2,7 +2,10 @@
 TODO:
 
 general:
-    - github actions
+    - github actions:
+        - run tests
+        - run mock CI
+    - caching example
 
 python-fastapi-asyncpg:
     - pagination example
@@ -14,6 +17,8 @@ golang-gin-pgx:
     X add pagination to items/all
     - DB migrations:
         https://github.com/golang-migrate/migrate
+    - Maybe GORM for ORM and migrations:
+        https://github.com/go-gorm/gorm
     - logging levels:
         https://github.com/rs/zerolog
         https://github.com/uber-go/zap
