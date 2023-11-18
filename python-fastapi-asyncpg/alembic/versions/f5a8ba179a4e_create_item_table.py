@@ -32,6 +32,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute(
         """
-        DROP TABLE item;
+        DROP TABLE IF EXISTS item;
+        DROP EXTENSION IF EXISTS "uuid-ossp";
     """
     )

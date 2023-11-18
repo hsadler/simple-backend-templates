@@ -44,6 +44,11 @@ Run containers locally
 docker compose up
 ```
 
+Run DB migrations
+```sh
+make db-migrate-up
+```
+
 Verify server is running by hitting the status endpoint
 ```sh
 http GET http://localhost:8000/status
@@ -64,6 +69,23 @@ http GET http://127.0.0.1:8000/api/items/1
 GET multiple items
 ```sh
 http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
+```
+
+## DB migrations
+
+To create a new DB migration...
+
+Create migration SQL files
+```sh
+docker compose run app migrate create -ext sql -dir ./migrations -seq <migration_name>
+```
+
+Write your "up" and "down" SQL into the new migration files
+
+Run the migrations on the DB
+```sh
+docker compose run app sh -c \
+'migrate -path=./migrations -database="$DATABASE_URL?sslmode=disable" up'
 ```
 
 ## Other dev commands

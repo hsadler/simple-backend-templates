@@ -7,6 +7,21 @@ up:
 down:
 	docker compose down
 
+app-shell:
+	docker compose run app sh
+
+db-migrate-up:
+	docker compose run app sh -c \
+	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" up'
+
+db-migrate-down-1:
+	docker compose run app sh -c \
+	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" down 1'
+
+db-migrate-down-all:
+	docker compose run app sh -c \
+	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" down -all'
+
 format:
 	gofmt -l -s -w .
 

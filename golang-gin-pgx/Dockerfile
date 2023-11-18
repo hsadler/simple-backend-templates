@@ -4,9 +4,12 @@ FROM golang:1.21.3-bullseye as base
 WORKDIR /app
 COPY . .
 
+RUN apt-get update -y
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
 # Development stage
 FROM base AS development
-RUN apt-get update -y && apt-get install -y git
+RUN apt-get install -y git
 RUN go install -mod=mod github.com/githubnemo/CompileDaemon
 EXPOSE 8000
 

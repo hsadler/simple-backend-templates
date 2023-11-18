@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-playground/validator/v10 v10.14.1
 	github.com/jackc/pgx/v5 v5.4.3
+	github.com/pashagolub/pgxmock/v3 v3.2.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.16.1
@@ -35,12 +36,9 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/pashagolub/pgxmock/v3 v3.2.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
-	github.com/rogpeppe/go-internal v1.11.0 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/net v0.11.0 // indirect
