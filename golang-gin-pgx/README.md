@@ -73,6 +73,8 @@ http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 
 ## DB migrations
 
+First, you must have all docker-compose containers running with `make up`.
+
 To create a new DB migration...
 
 Create migration SQL files
@@ -80,7 +82,7 @@ Create migration SQL files
 docker compose run app migrate create -ext sql -dir ./migrations -seq <migration_name>
 ```
 
-Write your "up" and "down" SQL into the new migration files
+Write your "up" and "down" SQL into the new migration files.
 
 Run the migrations on the DB
 ```sh

@@ -18,4 +18,4 @@ FROM base AS production
 RUN go build -o app .
 ENV IS_PROD=true
 EXPOSE 8000
-ENTRYPOINT ["./app"]
+ENTRYPOINT migrate -path=./migrations -database="$DATABASE_URL?sslmode=disable" up && ./app
