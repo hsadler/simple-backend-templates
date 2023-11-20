@@ -18,13 +18,11 @@ golang-gin-pgx:
     X DB migrations:
         https://github.com/golang-migrate/migrate
         X make migrations run on prod image startup
-    - logging levels:
+    X logging levels:
         https://github.com/rs/zerolog
-        https://github.com/uber-go/zap
-        https://github.com/sirupsen/logrus
-    - Maybe GORM for ORM and migrations:
-        https://github.com/go-gorm/gorm
     - api call example
     - long-running task example
     - concurrency example
     - load tests
+    - Maybe GORM for ORM and migrations:
+        https://github.com/go-gorm/gorm

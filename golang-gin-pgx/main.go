@@ -1,27 +1,27 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog/log"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	"example-server/database"
 	"example-server/dependencies"
 	_ "example-server/docs"
+	"example-server/logger"
 	"example-server/routes"
 )
 
 func init() {
-	// Setup logger
-	log.SetOutput(os.Stdout)
-	// Set Gin to production mode
-	gin.SetMode(gin.DebugMode)
-	// Setup Gin logger
+	// Setup global logger
+	logger.SetupGlobalLogger()
+	// Gin settings
 	gin.DefaultWriter = os.Stdout
+	gin.SetMode(gin.DebugMode)
 }
 
 // @title Example Server API
@@ -44,10 +44,14 @@ func main() {
 	r.GET("/status", routes.HandleStatus)
 	// Prometheus metrics
 	r.GET("/metrics", routes.HandleMetrics(r))
-	// Setup API routes
-	routes.SetupItemsAPIRoutes(r, deps)
 	// Swagger docs
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Setup API routes
+	routes.SetupItemsAPIRoutes(r, deps)
 	// Run server
-	log.Fatal(r.Run(":8000"))
+	log.Info().Msg("Starting server")
+	err := r.Run(":8000")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to start server")
+	}
 }

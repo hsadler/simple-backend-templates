@@ -2,17 +2,24 @@ package repos
 
 import (
 	"context"
-	"errors"
-	"log"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/pkg/errors"
 
 	"example-server/database"
+	"example-server/logger"
 	"example-server/models"
 )
 
-func FetchPaginatedItems(dbPool database.PgxPoolIface, offset, chunkSize int) (bool, []*models.Item) {
+var (
+	ErrorItemNotFound = errors.New("Item not found")
+	ErrorItemExists   = errors.New("Item already exists")
+	ErrorItemInsert   = errors.New("Error inserting Item")
+	ErrorItemsQuery   = errors.New("Error querying Items")
+)
+
+func FetchPaginatedItems(dbPool database.PgxPoolIface, offset, chunkSize int) ([]*models.Item, error) {
 	// Fetch paginated Items
 	rows, err := dbPool.Query(
 		context.Background(),
@@ -21,8 +28,8 @@ func FetchPaginatedItems(dbPool database.PgxPoolIface, offset, chunkSize int) (b
 	)
 	// Handle Items fetch error
 	if err != nil {
-		log.Println("Error querying Items:", err)
-		return false, nil
+		logger.LogErrorWithStacktrace(err, "Error querying Items")
+		return nil, ErrorItemsQuery
 	}
 	defer rows.Close()
 	// Iterate over rows and append Items
@@ -31,45 +38,43 @@ func FetchPaginatedItems(dbPool database.PgxPoolIface, offset, chunkSize int) (b
 		var item models.Item
 		// Scan Item and append to Items unless error
 		if err := rows.Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price); err != nil {
-			log.Println("Error scanning Item:", err)
-			return false, nil
+			logger.LogErrorWithStacktrace(err, "Error scanning Item")
+			return nil, ErrorItemsQuery
 		}
 		items = append(items, &item)
 	}
 	// Handle row iteration error
 	if err := rows.Err(); err != nil {
-		log.Println("Error iterating over paginated Items:", err)
-		return false, nil
+		logger.LogErrorWithStacktrace(err, "Error iterating over paginated Items")
+		return nil, ErrorItemsQuery
 	}
 	// Check if the slice is nil and replace it with an empty slice
 	if items == nil {
 		items = []*models.Item{}
 	}
-	return true, items
+	return items, nil
 }
 
-func FetchItemById(dbPool database.PgxPoolIface, itemId int) (bool, *models.Item) {
+func FetchItemById(dbPool database.PgxPoolIface, itemId int) (*models.Item, error) {
 	// Fetch Item by ID
 	var item models.Item
-	fetchErr := dbPool.QueryRow(
+	err := dbPool.QueryRow(
 		context.Background(),
 		"SELECT id, uuid, created_at, name, price FROM item WHERE id = $1",
 		itemId,
 	).Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price)
 	// Handle Item fetch error
-	if fetchErr != nil {
-		// Handle Item not found error
-		if fetchErr == pgx.ErrNoRows {
-			log.Println("Item not found")
-			return true, nil
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrorItemNotFound
 		}
-		log.Println("Error querying Item:", fetchErr)
-		return false, nil
+		logger.LogErrorWithStacktrace(err, "Error querying Item")
+		return nil, ErrorItemsQuery
 	}
-	return true, &item
+	return &item, nil
 }
 
-func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) (bool, []*models.Item) {
+func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) ([]*models.Item, error) {
 	// Fetch Items by IDs
 	var err error
 	var rows pgx.Rows
@@ -82,8 +87,8 @@ func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) (bool, []*mode
 	}
 	// Handle Items fetch error
 	if err != nil {
-		log.Println("Error querying Items:", err)
-		return false, nil
+		logger.LogErrorWithStacktrace(err, "Error querying Items")
+		return nil, ErrorItemsQuery
 	}
 	defer rows.Close()
 	// Iterate over rows and append Items
@@ -92,47 +97,44 @@ func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) (bool, []*mode
 		var item models.Item
 		// Scan Item and append to Items unless error
 		if err := rows.Scan(&item.ID, &item.UUID, &item.CreatedAt, &item.Name, &item.Price); err != nil {
-			log.Println("Error scanning Item:", err)
-			return false, nil
+			logger.LogErrorWithStacktrace(err, "Error scanning Item")
+			return nil, ErrorItemsQuery
 		}
 		items = append(items, &item)
 	}
 	// Handle row iteration error
 	if err := rows.Err(); err != nil {
-		log.Println("Error iterating over paginated Items:", err)
-		return false, nil
+		logger.LogErrorWithStacktrace(err, "Error iterating over Items")
+		return nil, ErrorItemsQuery
 	}
-	return true, items
+	return items, nil
 }
 
-func InsertItem(dbPool database.PgxPoolIface, itemIn models.ItemIn) (bool, *models.Item, *pgconn.PgError) {
+func InsertItem(dbPool database.PgxPoolIface, itemIn models.ItemIn) (*models.Item, error) {
 	// Insert Item
 	var itemId int
-	insertErr := dbPool.QueryRow(
+	err := dbPool.QueryRow(
 		context.Background(),
 		"INSERT INTO item (name, price) VALUES ($1, $2) RETURNING id",
 		itemIn.Name,
 		itemIn.Price,
 	).Scan(&itemId)
 	// Handle Item insert error
-	if insertErr != nil {
+	if err != nil {
 		var pgErr *pgconn.PgError
-		if errors.As(insertErr, &pgErr) {
+		if errors.As(err, &pgErr) {
 			// Duplicate entry error handling
 			if pgErr.Code == "23505" {
-				log.Println("Duplicate Item entry error:", pgErr)
+				return nil, ErrorItemExists
 			}
-		} else {
-			log.Println("Error inserting Item:", insertErr)
 		}
-		return false, nil, pgErr
+		logger.LogErrorWithStacktrace(err, "Error inserting Item")
+		return nil, ErrorItemInsert
 	}
-	log.Printf("Inserted itemId: %+v\n", itemId)
 	// Fetch Item by ID
-	var item *models.Item
-	status, item := FetchItemById(dbPool, itemId)
-	if !status {
-		return false, nil, nil
+	item, err := FetchItemById(dbPool, itemId)
+	if err != nil {
+		return nil, err
 	}
-	return true, item, nil
+	return item, nil
 }

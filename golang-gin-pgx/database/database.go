@@ -2,12 +2,12 @@ package database
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog/log"
 )
 
 type PgxPoolIface interface {
@@ -20,15 +20,13 @@ type PgxPoolIface interface {
 }
 
 func SetupDB() (PgxPoolIface, error) {
-	// Connect to database and create tables
 	var dbpool *pgxpool.Pool
 	var err error
 	dbpool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("Failed to connect to database")
 		os.Exit(1)
 	}
-	log.Println("Connected to database")
-	log.Println("Created tables")
+	log.Info().Msg("Database setup complete")
 	return dbpool, err
 }

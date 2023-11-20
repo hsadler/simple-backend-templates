@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 // Status godoc
@@ -15,6 +16,7 @@ import (
 // @Success 200 {object} models.StatusResponse
 // @Router /status [get]
 func HandleStatus(g *gin.Context) {
+	log.Info().Msg("Request to /status")
 	status := models.StatusResponse{
 		Status: "ok",
 	}

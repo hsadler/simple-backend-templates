@@ -11,7 +11,10 @@ type Dependencies struct {
 	DBPool    database.PgxPoolIface
 }
 
-func NewDependencies(validator *validator.Validate, pgxPool database.PgxPoolIface) *Dependencies {
+func NewDependencies(
+	validator *validator.Validate,
+	pgxPool database.PgxPoolIface,
+) *Dependencies {
 	return &Dependencies{
 		Validator: validator,
 		DBPool:    pgxPool,
