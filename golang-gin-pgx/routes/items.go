@@ -39,7 +39,7 @@ func SetupItemsAPIRoutes(router *gin.Engine, deps *dependencies.Dependencies) {
 // @Tags items
 // @Produce json
 // @Param offset query int true "Offset" minimum(0)
-// @Param chunkSize query int true "Chunk size" minimum(1)
+// @Param chunkSize query int true "Chunk size" minimum(1) maximum(20)
 // @Success 200 {object} models.GetItemsResponse
 // @Router /api/items/all [get]
 func HandleGetAllItems(deps *dependencies.Dependencies) gin.HandlerFunc {
@@ -49,7 +49,7 @@ func HandleGetAllItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 		chunkSizeParam := parseQueryParam(g, "chunkSize", -1)
 		offset, offsetOk := offsetParam.(int)
 		chunkSize, chunkSizeOk := chunkSizeParam.(int)
-		if !offsetOk || !chunkSizeOk || offset < 0 || chunkSize < 1 {
+		if !offsetOk || !chunkSizeOk || offset < 0 || chunkSize < 1 || chunkSize > 20 {
 			log.Warn().
 				Msg("Invalid query parameters received on /api/items/all")
 			g.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})

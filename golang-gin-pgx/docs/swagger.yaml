@@ -169,6 +169,7 @@ paths:
         type: integer
       - description: Chunk size
         in: query
+        maximum: 20
         minimum: 1
         name: chunkSize
         required: true

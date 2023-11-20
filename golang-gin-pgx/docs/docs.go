@@ -112,6 +112,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "maximum": 20,
                         "minimum": 1,
                         "type": "integer",
                         "description": "Chunk size",

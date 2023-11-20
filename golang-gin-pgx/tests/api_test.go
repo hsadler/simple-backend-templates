@@ -170,7 +170,7 @@ func TestGetAllItems200Empty(t *testing.T) {
 	}
 }
 
-func TestGetAllItems400InvalidChunkSize(t *testing.T) {
+func TestGetAllItems400InvalidChunkSizeZero(t *testing.T) {
 	// setup mock dependencies
 	deps, _ := getMockDependencies()
 	// setup router
@@ -178,6 +178,21 @@ func TestGetAllItems400InvalidChunkSize(t *testing.T) {
 	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
 	// exec request
 	w := performRequest(r, "GET", "/api/items/all?offset=5&chunkSize=0")
+	// assert response code
+	expectedStatusCode := http.StatusBadRequest
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+}
+
+func TestGetAllItems400InvalidChunkSizeTooLarge(t *testing.T) {
+	// setup mock dependencies
+	deps, _ := getMockDependencies()
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items/all", routes.HandleGetAllItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items/all?offset=5&chunkSize=21")
 	// assert response code
 	expectedStatusCode := http.StatusBadRequest
 	if w.Code != expectedStatusCode {
