@@ -340,6 +340,34 @@ func TestGetItems200(t *testing.T) {
 	}
 }
 
+func TestGetItems200Empty(t *testing.T) {
+	// setup mock dependencies and DB query expectations
+	deps, mockDBPool := getMockDependencies()
+	rows := getMockRows(mockDBPool, nil)
+	mockDBPool.ExpectQuery("SELECT (.+) FROM item WHERE id = ANY(.+)").
+		WithArgs([]int{1, 2}).
+		WillReturnRows(rows)
+	// setup router
+	r := gin.Default()
+	r.GET("/api/items", routes.HandleGetItems(deps))
+	// exec request
+	w := performRequest(r, "GET", "/api/items?item_ids=1&item_ids=2")
+	// assert response code
+	expectedStatusCode := http.StatusOK
+	if w.Code != expectedStatusCode {
+		t.Errorf("Expected status code %d, but got %d", expectedStatusCode, w.Code)
+	}
+	// assert full response body
+	expectedBody := `{"data":[],"meta":{}}`
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected %s, but got %s", expectedBody, w.Body.String())
+	}
+	// assert db expectations were met
+	if err := mockDBPool.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled DB expectations: %s", err)
+	}
+}
+
 func TestGetItems400MissingItemIds(t *testing.T) {
 	// setup mock dependencies
 	deps, _ := getMockDependencies()

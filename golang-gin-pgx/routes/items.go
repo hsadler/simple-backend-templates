@@ -171,6 +171,7 @@ func HandleGetItems(deps *dependencies.Dependencies) gin.HandlerFunc {
 			return
 		}
 		// Return response
+
 		g.JSON(http.StatusOK, models.GetItemsResponse{Data: items, Meta: struct{}{}})
 	}
 }

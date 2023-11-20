@@ -107,6 +107,10 @@ func FetchItemsByIds(dbPool database.PgxPoolIface, itemIds []int) ([]*models.Ite
 		logger.LogErrorWithStacktrace(err, "Error iterating over Items")
 		return nil, ErrorItemsQuery
 	}
+	// Check if the slice is nil and replace it with an empty slice
+	if items == nil {
+		items = []*models.Item{}
+	}
 	return items, nil
 }
 
