@@ -1,6 +1,7 @@
 [tool.poetry]
 name = "python-fastapi-asyncpg"
 version = "0.1.0"
+package-mode = false
 description = "python-fastapi-asyncpg template"
 authors = ["Harry Sadler <harrysadlermusic@gmail.com>"]
 readme = "README.md"
