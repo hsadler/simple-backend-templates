@@ -1,5 +1,5 @@
 # Base image with common dependencies
-FROM python:3.12-slim-bullseye AS base
+FROM python:3.13.2-slim-bullseye AS base
 WORKDIR /app
 RUN pip install poetry
 COPY pyproject.toml poetry.lock ./

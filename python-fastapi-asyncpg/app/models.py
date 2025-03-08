@@ -4,9 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
-class StatusOutput(BaseModel):
-    status: str = Field(description="Status of the service.")
+# Resource models
 
 
 class ItemIn(BaseModel):
@@ -26,15 +24,22 @@ class Item(BaseModel):
     price: float = Field(gt=0, description="Item price.", example="3.14")
 
 
+# API i/o models
+
+
+class StatusOutput(BaseModel):
+    status: str = Field(description="Status of the service.")
+
+
 class ItemInput(BaseModel):
     data: ItemIn = Field(description="Item to be created.")
 
 
 class ItemOutput(BaseModel):
-    data: Item = Field(description="Item created.")
+    data: Item = Field(description="Item.")
     meta: dict[str, Any] = Field(description="Metadata about the item.")
 
 
 class ItemsOutput(BaseModel):
-    data: list[Item] = Field(description="Items fetched.")
+    data: list[Item] = Field(description="Items.")
     meta: dict[str, Any] = Field(description="Metadata about the items.")

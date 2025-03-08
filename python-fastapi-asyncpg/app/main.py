@@ -1,4 +1,6 @@
 import logging
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -6,7 +8,6 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from app import models
 from app.database import get_database
 from app.log import setup_logging
-from app.routers.examples import router as examples_router
 from app.routers.items import router as items_router
 from app.settings import settings
 
@@ -14,24 +15,24 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Startup logic
+    if settings.is_prod:
+        db = await get_database()
+        await db.run_migrations()
+    yield
+    # Shutdown logic
+    db = await get_database()
+    await db.cleanup()
+
+
 app = FastAPI(
     docs_url="/docs",
     title="Example Python FastAPI Server",
     version="0.1.0",
+    lifespan=lifespan,
 )
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    if settings.is_prod:
-        db = await get_database()
-        await db.run_migrations()
-
-
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    db = await get_database()
-    await db.cleanup()
 
 
 @app.get("/status", description='Returns `"ok"` if the server is up', tags=["status"])
@@ -41,7 +42,6 @@ async def status() -> models.StatusOutput:
 
 
 app.include_router(items_router)
-app.include_router(examples_router)
 
 
 Instrumentator().instrument(app).expose(app)
