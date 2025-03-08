@@ -3,30 +3,19 @@
 ## Getting started
 
 Requirements:
+- golang 1.24.0 or higher
 - docker
-- goenv
 - httpie
 
-Ensure this is in your `.zshrc` file or similar
-```sh
-eval "$(goenv init -)"
-export GOBIN=$(go env GOPATH)/bin
-```
-
-Install golang for this project
-```sh
-goenv install
-```
 
 Make sure the latest version of the "swag" documentation generator is installed
 ```sh
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
-Verify the correct go version is running
+Ensure you have the following in your `.zshrc` file or similar
 ```sh
-go version
-# return should specify 1.21.3
+PATH=$(go env GOPATH)/bin:$PATH
 ```
 
 Install dependencies

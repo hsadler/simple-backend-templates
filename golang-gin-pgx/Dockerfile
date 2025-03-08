@@ -1,11 +1,11 @@
 # Base image with common dependencies
-FROM golang:1.21.3-bullseye as base
+FROM golang:1.24.0-bullseye AS base
 
 WORKDIR /app
 COPY . .
 
 RUN apt-get update -y
-RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.2
 
 # Development stage
 FROM base AS development
