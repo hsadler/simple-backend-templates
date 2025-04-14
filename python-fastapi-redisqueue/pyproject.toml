@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "python-fastapi-redisqueue"
+version = "0.1.0"
+description = "FastAPI Redis Queue Example"
+authors = ["hsadler <harrysadlermusic@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+redis = "^5.2.1"
+rq = "^2.3.2"
+fastapi = "^0.115.12"
+uvicorn = {extras = ["standard"], version = "^0.34.1"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
