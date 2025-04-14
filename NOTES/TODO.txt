@@ -1,28 +1,4 @@
 
 TODO:
 
-general:
-    - github actions:
-        - run tests
-        - run mock CI
-    - caching example
-
-python-fastapi-asyncpg:
-    - pagination example
-    - more?
-
-golang-gin-pgx:
-    X update go version to 1.21
-    X tests
-    X add pagination to items/all
-    X DB migrations:
-        https://github.com/golang-migrate/migrate
-        X make migrations run on prod image startup
-    X logging levels:
-        https://github.com/rs/zerolog
-    - api call example
-    - long-running task example
-    - concurrency example
-    - load tests
-    - Maybe GORM for ORM and migrations:
-        https://github.com/go-gorm/gorm
+- Add golang-ogen-pgx example
