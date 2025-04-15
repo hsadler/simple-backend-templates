@@ -4,6 +4,10 @@ Simple templates for backends. All implement the same "items" example CRUD API.
 - [Python + FastAPI + asyncpg](./python-fastapi-asyncpg/)
 - [Golang + Gin + pgx](./golang-gin-pgx/)
 
+POCs:
+
+- [Python + FastAPI + Redis Job Queue](./python-fastapi-redisjobqueue/)
+
 ## If you would like to contribute
 
 Requirements:

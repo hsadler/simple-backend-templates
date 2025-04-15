@@ -1,4 +1,4 @@
-# Python FastAPI Redis Job Queue (WIP)
+# Python FastAPI Redis Job Queue (POC)
 
 This project demonstrates a FastAPI application with Redis for background job processing.
 
