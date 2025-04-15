@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.server
     ports:
       - "8000:8000"
     depends_on:
@@ -29,8 +27,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: Dockerfile
-    command: poetry run rq worker --url redis://redis:6379
+      dockerfile: Dockerfile.worker
     depends_on:
       - redis
     environment:
@@ -46,4 +43,4 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge 
+    driver: bridge
