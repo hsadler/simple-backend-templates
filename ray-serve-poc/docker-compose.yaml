@@ -1,0 +1,10 @@
+services:
+  sentiment_service:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    shm_size: '8gb'
+    command: poetry run python app.py
+    # command: poetry run ray start --head --block --dashboard-host=0.0.0.0

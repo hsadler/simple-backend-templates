@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ray-serve-poc"
+version = "0.1.0"
+description = "Ray Serve POC"
+authors = ["hsadler <harrysadlermusic@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+fastapi = "^0.115.12"
+ray = {extras = ["serve"], version = "2.44.1"}
+uvicorn = {extras = ["standard"], version = "^0.34.1"}
+black = "^25.1.0"
+transformers = "^4.51.3"
+torch = "^2.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
