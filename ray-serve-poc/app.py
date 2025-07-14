@@ -1,33 +1,31 @@
 import logging
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 from transformers import pipeline
 from ray import serve
-from ray.serve.handle import DeploymentHandle, DeploymentResponse
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-class InputText(BaseModel):
-    text: str
-
 @serve.deployment()
+@serve.ingress(app)
 class SentimentAnalysisDeployment:
     def __init__(self):
-        self.model = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+        self.model = pipeline(
+            "sentiment-analysis",
+            model="distilbert-base-uncased-finetuned-sst-2-english",
+            tokenizer="distilbert-base-uncased-finetuned-sst-2-english",
+        )
 
-    async def __call__(self, text: str):
+    @app.get("/analyze/{text}")
+    async def analyze(self, text: str):
+        logger.info(f"INPUT: {text}")
+        return {"text": f"Hello {text}"}
         return self.model(text)
 
-app = SentimentAnalysisDeployment.bind()
-handle: DeploymentHandle = serve.run(app, route_prefix="/analyze")
+serve.run(SentimentAnalysisDeployment.bind(), name="sentiment-analysis")
 
-# Test the service
-text = "I love this product!"
-logger.info(f"Starting sentiment analysis for text: {text}")
-response: DeploymentResponse = handle.remote(text)
-logger.info(f"Sentiment analysis result: {response.result()}")
-
-# TODO: serve the model using the Ray Serve API
+# resp = requests.post("http://localhost:8000/analyze/I love this product!")
+# logger.info(resp.json())

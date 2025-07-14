@@ -1,10 +1,61 @@
 services:
-  sentiment_service:
-    build: .
+  # sentiment_service:
+  #   build: .
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./:/app
+  #   # shm_size: '8gb'
+  #   command: poetry run python app.py
+  
+  ray-head:
+    image: rayproject/ray:latest
+    platform: linux/amd64
     ports:
-      - "8000:8000"
-    volumes:
-      - ./:/app
-    shm_size: '8gb'
+      - "8265:8265"  # Ray dashboard
+      - "10001:10001"  # Ray Serve proxy
+      - "8000:8000"    # Your application endpoint
+    environment:
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    healthcheck:
+      test: ["CMD", "ray", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ray-network
+    command: >
+      bash -c "ray start --head --port=6379 --dashboard-host=0.0.0.0 --block"
+    # volumes:
+    #   - ray-data:/tmp/ray
+
+  ray-worker:
+    image: rayproject/ray:latest
+    platform: linux/amd64
+    depends_on:
+      - ray-head
+    environment:
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    deploy:
+      replicas: 2
+    networks:
+      - ray-network
+    command: >
+      bash -c "ray start --address=ray-head:6379 --block"
+    # volumes:
+    #   - ray-data:/tmp/ray
+
+  ray-deploy:
+    build: .
+    depends_on:
+      - ray-head
+    networks:
+      - ray-network
     command: poetry run python app.py
-    # command: poetry run ray start --head --block --dashboard-host=0.0.0.0
+
+# volumes:
+#   ray-data:
+
+networks:
+  ray-network:
+    driver: bridge
