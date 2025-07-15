@@ -40,11 +40,6 @@ db-migrate-down-all:
 	docker compose run app sh -c \
 	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" down -all'
 
-# Documentation
-
-gen-docs:
-	swag init
-
 # Cleanup
 
 cleanup-images-volumes:

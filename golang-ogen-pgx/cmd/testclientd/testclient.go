@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 
@@ -19,35 +18,70 @@ func run(ctx context.Context) error {
 	if err := testPing(ctx, client); err != nil {
 		return err
 	}
+	if err := testCreateItem(ctx, client); err != nil {
+		return err
+	}
+	if err := testItemsAllGet(ctx, client); err != nil {
+		return err
+	}
+	if err := testItemsIDGet(ctx, client); err != nil {
+		return err
+	}
 	return nil
 }
 
 func testPing(ctx context.Context, client *ogen.Client) error {
 	resp, err := client.PingGet(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to ping: %v", err)
+		color.New(color.FgRed).Println(err)
+		return err
 	}
-	fmt.Println(resp)
+	color.New(color.FgGreen).Println(resp)
 	return nil
 }
 
-// func testCreateItem(ctx context.Context, client *ogen.Client) error {
-// 	req := &ogen.CreateItemRequest{
-// 		Data: ogen.ItemIn{
-// 			Name:  "Test Item",
-// 			Price: 19.99,
-// 		},
-// 	}
-// 	resp, err := client.ItemsPost(ctx, req)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to create item: %v", err)
-// 	}
-// 	fmt.Println(resp)
-// 	return nil
-// }
+func testCreateItem(ctx context.Context, client *ogen.Client) error {
+	req := &ogen.CreateItemRequest{
+		Data: ogen.ItemIn{
+			Name:  "Test Item",
+			Price: 19.99,
+		},
+	}
+	resp, err := client.ItemsPost(ctx, req)
+	if err != nil {
+		color.New(color.FgRed).Println(err)
+		return err
+	}
+	color.New(color.FgGreen).Println(resp.Data)
+	return nil
+}
+
+func testItemsAllGet(ctx context.Context, client *ogen.Client) error {
+	resp, err := client.ItemsAllGet(ctx, ogen.ItemsAllGetParams{
+		ChunkSize: 10,
+		Offset:    0,
+	})
+	if err != nil {
+		color.New(color.FgRed).Println(err)
+		return err
+	}
+	color.New(color.FgGreen).Println(resp.Data)
+	return nil
+}
+
+func testItemsIDGet(ctx context.Context, client *ogen.Client) error {
+	resp, err := client.ItemsIDGet(ctx, ogen.ItemsIDGetParams{
+		ID: 2,
+	})
+	if err != nil {
+		color.New(color.FgRed).Println(err)
+		return err
+	}
+	color.New(color.FgGreen).Println(resp.Data)
+	return nil
+}
 
 func main() {
-	flag.Parse()
 	ctx := context.Background()
 	err := run(ctx)
 	if err != nil {

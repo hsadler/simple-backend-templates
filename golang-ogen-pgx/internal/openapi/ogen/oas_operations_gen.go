@@ -6,5 +6,9 @@ package ogen
 type OperationName = string
 
 const (
-	PingGetOperation OperationName = "PingGet"
+	ItemsAllGetOperation OperationName = "ItemsAllGet"
+	ItemsGetOperation    OperationName = "ItemsGet"
+	ItemsIDGetOperation  OperationName = "ItemsIDGet"
+	ItemsPostOperation   OperationName = "ItemsPost"
+	PingGetOperation     OperationName = "PingGet"
 )
