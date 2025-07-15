@@ -40,7 +40,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.notFound(w, r)
 		return
 	}
-	args := [1]string{}
 
 	// Static code generated router with unwrapped path search.
 	switch {
@@ -49,84 +48,24 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/items"
+		case '/': // Prefix: "/ping"
 
-			if l := len("/items"); len(elem) >= l && elem[0:l] == "/items" {
+			if l := len("/ping"); len(elem) >= l && elem[0:l] == "/ping" {
 				elem = elem[l:]
 			} else {
 				break
 			}
 
 			if len(elem) == 0 {
+				// Leaf node.
 				switch r.Method {
 				case "GET":
-					s.handleGetItemsRequest([0]string{}, elemIsEscaped, w, r)
-				case "POST":
-					s.handleCreateItemRequest([0]string{}, elemIsEscaped, w, r)
+					s.handlePingGetRequest([0]string{}, elemIsEscaped, w, r)
 				default:
-					s.notAllowed(w, r, "GET,POST")
+					s.notAllowed(w, r, "GET")
 				}
 
 				return
-			}
-			switch elem[0] {
-			case '/': // Prefix: "/"
-
-				if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-					elem = elem[l:]
-				} else {
-					break
-				}
-
-				if len(elem) == 0 {
-					break
-				}
-				switch elem[0] {
-				case 'a': // Prefix: "all"
-					origElem := elem
-					if l := len("all"); len(elem) >= l && elem[0:l] == "all" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch r.Method {
-						case "GET":
-							s.handleGetAllItemsRequest([0]string{}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, "GET")
-						}
-
-						return
-					}
-
-					elem = origElem
-				}
-				// Param: "id"
-				// Leaf parameter, slashes are prohibited
-				idx := strings.IndexByte(elem, '/')
-				if idx >= 0 {
-					break
-				}
-				args[0] = elem
-				elem = ""
-
-				if len(elem) == 0 {
-					// Leaf node.
-					switch r.Method {
-					case "GET":
-						s.handleGetItemRequest([1]string{
-							args[0],
-						}, elemIsEscaped, w, r)
-					default:
-						s.notAllowed(w, r, "GET")
-					}
-
-					return
-				}
-
 			}
 
 		}
@@ -141,7 +80,7 @@ type Route struct {
 	operationID string
 	pathPattern string
 	count       int
-	args        [1]string
+	args        [0]string
 }
 
 // Name returns ogen operation name.
@@ -209,100 +148,28 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/items"
+		case '/': // Prefix: "/ping"
 
-			if l := len("/items"); len(elem) >= l && elem[0:l] == "/items" {
+			if l := len("/ping"); len(elem) >= l && elem[0:l] == "/ping" {
 				elem = elem[l:]
 			} else {
 				break
 			}
 
 			if len(elem) == 0 {
+				// Leaf node.
 				switch method {
 				case "GET":
-					r.name = GetItemsOperation
-					r.summary = "Get Items"
-					r.operationID = "getItems"
-					r.pathPattern = "/items"
-					r.args = args
-					r.count = 0
-					return r, true
-				case "POST":
-					r.name = CreateItemOperation
-					r.summary = "Create Item"
-					r.operationID = "createItem"
-					r.pathPattern = "/items"
+					r.name = PingGetOperation
+					r.summary = ""
+					r.operationID = ""
+					r.pathPattern = "/ping"
 					r.args = args
 					r.count = 0
 					return r, true
 				default:
 					return
 				}
-			}
-			switch elem[0] {
-			case '/': // Prefix: "/"
-
-				if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-					elem = elem[l:]
-				} else {
-					break
-				}
-
-				if len(elem) == 0 {
-					break
-				}
-				switch elem[0] {
-				case 'a': // Prefix: "all"
-					origElem := elem
-					if l := len("all"); len(elem) >= l && elem[0:l] == "all" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch method {
-						case "GET":
-							r.name = GetAllItemsOperation
-							r.summary = "Get All Items"
-							r.operationID = "getAllItems"
-							r.pathPattern = "/items/all"
-							r.args = args
-							r.count = 0
-							return r, true
-						default:
-							return
-						}
-					}
-
-					elem = origElem
-				}
-				// Param: "id"
-				// Leaf parameter, slashes are prohibited
-				idx := strings.IndexByte(elem, '/')
-				if idx >= 0 {
-					break
-				}
-				args[0] = elem
-				elem = ""
-
-				if len(elem) == 0 {
-					// Leaf node.
-					switch method {
-					case "GET":
-						r.name = GetItemOperation
-						r.summary = "Get Item"
-						r.operationID = "getItem"
-						r.pathPattern = "/items/{id}"
-						r.args = args
-						r.count = 1
-						return r, true
-					default:
-						return
-					}
-				}
-
 			}
 
 		}

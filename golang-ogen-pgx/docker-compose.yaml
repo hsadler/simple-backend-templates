@@ -2,21 +2,28 @@ services:
   app:
     build:
       context: .
+      target: development
+    volumes:
+      - .:/app
     # depends_on:
     #   db:
     #     condition: service_healthy
     environment:
       DEBUG: "true"
       DATABASE_URL: postgresql://user:password@db:5432/example_db
-      PORT: "8000"
     ports:
       - "8000:8000"
-    # develop:
-    #   watch:
-    #     - action: rebuild
-    #       path: .
-    #       ignore:
-    #         - .git/
+    command: >
+      CompileDaemon
+        -color=true
+        -build="make compile-binaries"
+        -command="build/serverd"
+        -exclude-dir=.git
+        -exclude-dir=./build
+        -exclude-dir=./internal/openapi/ogen
+        -include=openapi-schema.yaml
+        -include=go.mod
+        -include=go.sum
   
   # db:
   #   image: postgres:15.3-alpine3.18
@@ -34,22 +41,10 @@ services:
   #   ports:
   #     - "5433:5432"
 
-  # migrate:
-  #   image: migrate/migrate
-  #   volumes:
-  #     - ./migrations:/migrations
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   command: ["-path", "/migrations", "-database", "postgres://user:password@db:5432/example_db?sslmode=disable", "up"]
-  #   restart: on-failure
-
   # adminer:
   #   image: adminer
   #   ports:
   #     - 8080:8080
-  #   depends_on:
-  #     - db
 
-volumes:
-  db_data:
+# volumes:
+#   db_data:

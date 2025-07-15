@@ -1,37 +1,21 @@
-FROM golang:1.24.1-alpine AS builder
+# Base image with common dependencies
+FROM golang:1.24.5-bullseye AS base
 
 WORKDIR /app
-
-# Install dependencies
-RUN apk add --no-cache git
-
-# Copy go.mod and go.sum
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy source code
 COPY . .
 
-# Build the application
-RUN go build -o app ./cmd/serverd
+RUN apt-get update -y
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.2
 
-# Create a minimal production image
-FROM alpine:3.18
-
-WORKDIR /app
-
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates
-
-# Copy the binary from the builder stage
-COPY --from=builder /app/app .
-# COPY --from=builder /app/migrations ./migrations
-
-# Set environment variables
-ENV PORT=8000
-
-# Expose the port
+# Development stage
+FROM base AS development
+RUN apt-get install -y git
+RUN go install -mod=mod github.com/githubnemo/CompileDaemon
 EXPOSE 8000
 
-# Run the application
-CMD ["./app"]
+# Production stage
+FROM base AS production
+RUN go build -o app .
+ENV IS_PROD=true
+EXPOSE 8000
+ENTRYPOINT migrate -path=./migrations -database="$DATABASE_URL?sslmode=disable" up && ./app

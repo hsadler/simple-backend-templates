@@ -10,11 +10,15 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+
+	"example-server/internal/logger"
+	"example-server/internal/openapi"
+	"example-server/internal/openapi/ogen"
 )
 
 func main() {
 	// Initialize logger
-	// logger.Setup()
+	logger.SetupGlobalLogger()
 
 	// Create context that listens for the interrupt signal from the OS
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -30,36 +34,28 @@ func main() {
 	// Create repository
 	// itemRepo := repository.NewItemRepository(dbPool)
 
-	// Create service
-	// svc := service.NewService(itemRepo)
-
-	// Create API handler
-	// handler, err := api.NewServer(svc)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Failed to create API server")
-	// }
-
 	// Get port from environment or use default
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8000"
 	}
 
-	// Create HTTP server
-	server := &http.Server{
-		Addr: fmt.Sprintf(":%s", port),
-		// Handler: handler,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"message": "Hello, World!"}`))
-		}),
+	// Create OGEN server for items API
+	itemsOgenServer, err := ogen.NewServer(&openapi.ItemsService{})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to create OGEN server")
 	}
 
-	// Start server in a goroutine
+	// Create HTTP server for items API
+	itemsHttpServer := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: itemsOgenServer,
+	}
+
+	// Start items API server in a goroutine
 	go func() {
 		log.Info().Str("port", port).Msg("Starting server")
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := itemsHttpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal().Err(err).Msg("Failed to start server")
 		}
 	}()
@@ -73,7 +69,7 @@ func main() {
 	defer cancel()
 
 	// Shutdown server gracefully
-	if err := server.Shutdown(shutdownCtx); err != nil {
+	if err := itemsHttpServer.Shutdown(shutdownCtx); err != nil {
 		log.Fatal().Err(err).Msg("Server forced to shutdown")
 	}
 

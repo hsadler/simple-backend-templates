@@ -1,11 +1,5 @@
-.PHONY: generate build run test clean docker-build docker-run docker-compose-up docker-compose-down up down
+.PHONY: build up down
 
-BINARY_NAME=./build/app
-
-# Main package path
-MAIN_PACKAGE=./cmd/serverd
-
-# Generate API code from OpenAPI spec
 openapi-generate:
 	docker run --rm --volume=".:/workspace" ghcr.io/ogen-go/ogen:latest \
 		--target=/workspace/internal/openapi/ogen \
@@ -14,23 +8,50 @@ openapi-generate:
 		/workspace/openapi-schema.yaml \
 		--generate-wrappers=on
 
-# Build the application
+compile-binaries:
+	go build -v -o build/ ./cmd/...
+
 build:
-	go build -o $(BINARY_NAME) $(MAIN_PACKAGE)
+	docker compose build
 
-# Run tests
-test:
-	go test -v ./...
-
-# Clean build artifacts
-clean:
-	go clean
-	rm -f $(BINARY_NAME)
-
-# Start Docker Compose services
 up:
 	docker compose up -d
 
-# Stop Docker Compose services
 down:
 	docker compose down
+
+testclient:
+	go run cmd/testclientd/testclient.go
+
+test:
+	go test -v ./...
+
+# Database
+
+db-migrate-up:
+	docker compose run app sh -c \
+	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" up'
+
+db-migrate-down-1:
+	docker compose run app sh -c \
+	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" down 1'
+
+db-migrate-down-all:
+	docker compose run app sh -c \
+	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" down -all'
+
+# Documentation
+
+gen-docs:
+	swag init
+
+# Cleanup
+
+cleanup-images-volumes:
+	@read -p "Are you sure you want to clean up images and volumes? (yes/no): " answer; \
+	if [ "$$answer" = "yes" ]; then \
+		docker compose down --rmi all --volumes --remove-orphans; \
+	else \
+		echo "Cleanup canceled."; \
+	fi
+

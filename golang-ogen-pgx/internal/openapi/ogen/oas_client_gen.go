@@ -15,9 +15,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
-	"github.com/ogen-go/ogen/otelogen"
 	"github.com/ogen-go/ogen/uri"
 )
 
@@ -28,30 +26,12 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// CreateItem invokes createItem operation.
+	// PingGet invokes GET /ping operation.
 	//
-	// Creates Item.
+	// Check if the service is running.
 	//
-	// POST /items
-	CreateItem(ctx context.Context, request *CreateItemRequest) (CreateItemRes, error)
-	// GetAllItems invokes getAllItems operation.
-	//
-	// Returns all Items.
-	//
-	// GET /items/all
-	GetAllItems(ctx context.Context, params GetAllItemsParams) (GetAllItemsRes, error)
-	// GetItem invokes getItem operation.
-	//
-	// Returns Item by id.
-	//
-	// GET /items/{id}
-	GetItem(ctx context.Context, params GetItemParams) (GetItemRes, error)
-	// GetItems invokes getItems operation.
-	//
-	// Returns Items by ids. Only returns subset of Items found.
-	//
-	// GET /items
-	GetItems(ctx context.Context, params GetItemsParams) (GetItemsRes, error)
+	// GET /ping
+	PingGet(ctx context.Context) (*PingGetOK, error)
 }
 
 // Client implements OAS client.
@@ -59,8 +39,12 @@ type Client struct {
 	serverURL *url.URL
 	baseClient
 }
+type errorHandler interface {
+	NewError(ctx context.Context, err error) *ErrorResponseStatusCode
+}
 
 var _ Handler = struct {
+	errorHandler
 	*Client
 }{}
 
@@ -97,21 +81,20 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// CreateItem invokes createItem operation.
+// PingGet invokes GET /ping operation.
 //
-// Creates Item.
+// Check if the service is running.
 //
-// POST /items
-func (c *Client) CreateItem(ctx context.Context, request *CreateItemRequest) (CreateItemRes, error) {
-	res, err := c.sendCreateItem(ctx, request)
+// GET /ping
+func (c *Client) PingGet(ctx context.Context) (*PingGetOK, error) {
+	res, err := c.sendPingGet(ctx)
 	return res, err
 }
 
-func (c *Client) sendCreateItem(ctx context.Context, request *CreateItemRequest) (res CreateItemRes, err error) {
+func (c *Client) sendPingGet(ctx context.Context) (res *PingGetOK, err error) {
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("createItem"),
-		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.HTTPRouteKey.String("/items"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/ping"),
 	}
 
 	// Run stopwatch.
@@ -126,7 +109,7 @@ func (c *Client) sendCreateItem(ctx context.Context, request *CreateItemRequest)
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, CreateItemOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, PingGetOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -144,204 +127,7 @@ func (c *Client) sendCreateItem(ctx context.Context, request *CreateItemRequest)
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [1]string
-	pathParts[0] = "/items"
-	uri.AddPathParts(u, pathParts[:]...)
-
-	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "POST", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-	if err := encodeCreateItemRequest(request, r); err != nil {
-		return res, errors.Wrap(err, "encode request")
-	}
-
-	stage = "SendRequest"
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	stage = "DecodeResponse"
-	result, err := decodeCreateItemResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
-// GetAllItems invokes getAllItems operation.
-//
-// Returns all Items.
-//
-// GET /items/all
-func (c *Client) GetAllItems(ctx context.Context, params GetAllItemsParams) (GetAllItemsRes, error) {
-	res, err := c.sendGetAllItems(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendGetAllItems(ctx context.Context, params GetAllItemsParams) (res GetAllItemsRes, err error) {
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("getAllItems"),
-		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/items/all"),
-	}
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		elapsedDuration := time.Since(startTime)
-		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
-	}()
-
-	// Increment request counter.
-	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-
-	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, GetAllItemsOperation,
-		trace.WithAttributes(otelAttrs...),
-		clientSpanKind,
-	)
-	// Track stage for error reporting.
-	var stage string
-	defer func() {
-		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, stage)
-			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-		}
-		span.End()
-	}()
-
-	stage = "BuildURL"
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [1]string
-	pathParts[0] = "/items/all"
-	uri.AddPathParts(u, pathParts[:]...)
-
-	stage = "EncodeQueryParams"
-	q := uri.NewQueryEncoder()
-	{
-		// Encode "offset" parameter.
-		cfg := uri.QueryParameterEncodingConfig{
-			Name:    "offset",
-			Style:   uri.QueryStyleForm,
-			Explode: true,
-		}
-
-		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeValue(conv.IntToString(params.Offset))
-		}); err != nil {
-			return res, errors.Wrap(err, "encode query")
-		}
-	}
-	{
-		// Encode "chunkSize" parameter.
-		cfg := uri.QueryParameterEncodingConfig{
-			Name:    "chunkSize",
-			Style:   uri.QueryStyleForm,
-			Explode: true,
-		}
-
-		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeValue(conv.IntToString(params.ChunkSize))
-		}); err != nil {
-			return res, errors.Wrap(err, "encode query")
-		}
-	}
-	u.RawQuery = q.Values().Encode()
-
-	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "GET", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	stage = "SendRequest"
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	stage = "DecodeResponse"
-	result, err := decodeGetAllItemsResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
-// GetItem invokes getItem operation.
-//
-// Returns Item by id.
-//
-// GET /items/{id}
-func (c *Client) GetItem(ctx context.Context, params GetItemParams) (GetItemRes, error) {
-	res, err := c.sendGetItem(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendGetItem(ctx context.Context, params GetItemParams) (res GetItemRes, err error) {
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("getItem"),
-		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/items/{id}"),
-	}
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		elapsedDuration := time.Since(startTime)
-		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
-	}()
-
-	// Increment request counter.
-	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-
-	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, GetItemOperation,
-		trace.WithAttributes(otelAttrs...),
-		clientSpanKind,
-	)
-	// Track stage for error reporting.
-	var stage string
-	defer func() {
-		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, stage)
-			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-		}
-		span.End()
-	}()
-
-	stage = "BuildURL"
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/items/"
-	{
-		// Encode "id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.IntToString(params.ID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	pathParts[0] = "/ping"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
@@ -358,106 +144,7 @@ func (c *Client) sendGetItem(ctx context.Context, params GetItemParams) (res Get
 	defer resp.Body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeGetItemResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
-// GetItems invokes getItems operation.
-//
-// Returns Items by ids. Only returns subset of Items found.
-//
-// GET /items
-func (c *Client) GetItems(ctx context.Context, params GetItemsParams) (GetItemsRes, error) {
-	res, err := c.sendGetItems(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendGetItems(ctx context.Context, params GetItemsParams) (res GetItemsRes, err error) {
-	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("getItems"),
-		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/items"),
-	}
-
-	// Run stopwatch.
-	startTime := time.Now()
-	defer func() {
-		// Use floating point division here for higher precision (instead of Millisecond method).
-		elapsedDuration := time.Since(startTime)
-		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
-	}()
-
-	// Increment request counter.
-	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-
-	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, GetItemsOperation,
-		trace.WithAttributes(otelAttrs...),
-		clientSpanKind,
-	)
-	// Track stage for error reporting.
-	var stage string
-	defer func() {
-		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, stage)
-			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
-		}
-		span.End()
-	}()
-
-	stage = "BuildURL"
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [1]string
-	pathParts[0] = "/items"
-	uri.AddPathParts(u, pathParts[:]...)
-
-	stage = "EncodeQueryParams"
-	q := uri.NewQueryEncoder()
-	{
-		// Encode "item_ids" parameter.
-		cfg := uri.QueryParameterEncodingConfig{
-			Name:    "item_ids",
-			Style:   uri.QueryStyleForm,
-			Explode: true,
-		}
-
-		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeArray(func(e uri.Encoder) error {
-				for i, item := range params.ItemIds {
-					if err := func() error {
-						return e.EncodeValue(conv.IntToString(item))
-					}(); err != nil {
-						return errors.Wrapf(err, "[%d]", i)
-					}
-				}
-				return nil
-			})
-		}); err != nil {
-			return res, errors.Wrap(err, "encode query")
-		}
-	}
-	u.RawQuery = q.Values().Encode()
-
-	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "GET", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	stage = "SendRequest"
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	stage = "DecodeResponse"
-	result, err := decodeGetItemsResponse(resp)
+	result, err := decodePingGetResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

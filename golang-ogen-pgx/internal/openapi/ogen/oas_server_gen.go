@@ -8,30 +8,16 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// CreateItem implements createItem operation.
+	// PingGet implements GET /ping operation.
 	//
-	// Creates Item.
+	// Check if the service is running.
 	//
-	// POST /items
-	CreateItem(ctx context.Context, req *CreateItemRequest) (CreateItemRes, error)
-	// GetAllItems implements getAllItems operation.
+	// GET /ping
+	PingGet(ctx context.Context) (*PingGetOK, error)
+	// NewError creates *ErrorResponseStatusCode from error returned by handler.
 	//
-	// Returns all Items.
-	//
-	// GET /items/all
-	GetAllItems(ctx context.Context, params GetAllItemsParams) (GetAllItemsRes, error)
-	// GetItem implements getItem operation.
-	//
-	// Returns Item by id.
-	//
-	// GET /items/{id}
-	GetItem(ctx context.Context, params GetItemParams) (GetItemRes, error)
-	// GetItems implements getItems operation.
-	//
-	// Returns Items by ids. Only returns subset of Items found.
-	//
-	// GET /items
-	GetItems(ctx context.Context, params GetItemsParams) (GetItemsRes, error)
+	// Used for common default response.
+	NewError(ctx context.Context, err error) *ErrorResponseStatusCode
 }
 
 // Server implements http server based on OpenAPI v3 specification and

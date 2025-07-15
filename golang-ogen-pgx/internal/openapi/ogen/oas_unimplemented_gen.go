@@ -13,38 +13,19 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// CreateItem implements createItem operation.
+// PingGet implements GET /ping operation.
 //
-// Creates Item.
+// Check if the service is running.
 //
-// POST /items
-func (UnimplementedHandler) CreateItem(ctx context.Context, req *CreateItemRequest) (r CreateItemRes, _ error) {
+// GET /ping
+func (UnimplementedHandler) PingGet(ctx context.Context) (r *PingGetOK, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// GetAllItems implements getAllItems operation.
+// NewError creates *ErrorResponseStatusCode from error returned by handler.
 //
-// Returns all Items.
-//
-// GET /items/all
-func (UnimplementedHandler) GetAllItems(ctx context.Context, params GetAllItemsParams) (r GetAllItemsRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// GetItem implements getItem operation.
-//
-// Returns Item by id.
-//
-// GET /items/{id}
-func (UnimplementedHandler) GetItem(ctx context.Context, params GetItemParams) (r GetItemRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// GetItems implements getItems operation.
-//
-// Returns Items by ids. Only returns subset of Items found.
-//
-// GET /items
-func (UnimplementedHandler) GetItems(ctx context.Context, params GetItemsParams) (r GetItemsRes, _ error) {
-	return r, ht.ErrNotImplemented
+// Used for common default response.
+func (UnimplementedHandler) NewError(ctx context.Context, err error) (r *ErrorResponseStatusCode) {
+	r = new(ErrorResponseStatusCode)
+	return r
 }
