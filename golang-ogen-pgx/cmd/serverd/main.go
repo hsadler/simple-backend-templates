@@ -11,6 +11,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"example-server/internal/database"
+	"example-server/internal/dependencies"
 	"example-server/internal/logger"
 	"example-server/internal/openapi"
 	"example-server/internal/openapi/ogen"
@@ -24,15 +26,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// Initialize database connection
-	// dbPool, err := database.NewPgxPool(ctx)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Failed to connect to database")
-	// }
-	// defer dbPool.Close()
-
-	// Create repository
-	// itemRepo := repository.NewItemRepository(dbPool)
+	// Setup dependencies
+	dbPool, _ := database.SetupDB()
+	deps := dependencies.NewDependencies(
+		dbPool,
+	)
+	defer deps.CleanupDependencies()
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")
