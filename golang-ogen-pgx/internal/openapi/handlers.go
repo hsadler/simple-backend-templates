@@ -3,7 +3,6 @@ package openapi
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -101,16 +100,25 @@ func (s *ItemsService) ItemsIDGet(
 	ctx context.Context,
 	params ogen.ItemsIDGetParams,
 ) (*ogen.GetItemResponse, error) {
-	log.Info().Msg("Handling ItemsIDGet...")
-	// MOCK DATA
+	log.Info().
+		Int("item_id", params.ID).
+		Msg("Handling ItemsIDGet")
+	// Fetch item from DB by ID
+	item, err := itemsrepo.FetchItemById(s.Deps.DBPool, params.ID)
+	if err != nil {
+		return nil, s.NewError(ctx, err)
+	}
+	// Convert models.Item to ogen.Item
+	itemOut := ogen.Item{
+		ID:        int64(item.ID),
+		UUID:      uuid.MustParse(item.UUID),
+		CreatedAt: item.CreatedAt,
+		Name:      item.Name,
+		Price:     item.Price,
+	}
+	// Compose and return response
 	return &ogen.GetItemResponse{
-		Data: ogen.Item{
-			ID:        1,
-			UUID:      uuid.New(),
-			CreatedAt: time.Now(),
-			Name:      "Item 1",
-			Price:     100,
-		},
+		Data: itemOut,
 	}, nil
 }
 
@@ -118,25 +126,27 @@ func (s *ItemsService) ItemsAllGet(
 	ctx context.Context,
 	params ogen.ItemsAllGetParams,
 ) (*ogen.GetItemsResponse, error) {
-	log.Info().Msg("Handling ItemsAllGet...")
-	// MOCK DATA
+	log.Info().Msg("Handling ItemsAllGet")
+	// Fetch all items from DB
+	// Note: Large limit to get all items
+	items, err := itemsrepo.FetchPaginatedItems(s.Deps.DBPool, 0, 1000)
+	if err != nil {
+		return nil, s.NewError(ctx, err)
+	}
+	// Convert models.Items to ogen.Items
+	itemsOut := make([]ogen.Item, len(items))
+	for i, item := range items {
+		itemsOut[i] = ogen.Item{
+			ID:        int64(item.ID),
+			UUID:      uuid.MustParse(item.UUID),
+			CreatedAt: item.CreatedAt,
+			Name:      item.Name,
+			Price:     item.Price,
+		}
+	}
+	// Compose and return response
 	return &ogen.GetItemsResponse{
-		Data: []ogen.Item{
-			{
-				ID:        1,
-				UUID:      uuid.New(),
-				CreatedAt: time.Now(),
-				Name:      "Item 1",
-				Price:     100,
-			},
-			{
-				ID:        2,
-				UUID:      uuid.New(),
-				CreatedAt: time.Now(),
-				Name:      "Item 2",
-				Price:     200,
-			},
-		},
+		Data: itemsOut,
 		Meta: ogen.GetItemsResponseMeta{},
 	}, nil
 }
