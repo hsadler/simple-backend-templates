@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// Create OGEN server for items API
-	itemsOgenServer, err := ogen.NewServer(&openapi.ItemsService{})
+	itemsOgenServer, err := ogen.NewServer(&openapi.ItemsService{Deps: deps})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create OGEN server")
 	}

@@ -43,3 +43,11 @@ go mod download
 ```bash
 make openapi-generate
 ```
+
+### Running the docker containers will spin-up Adminer
+
+- Visit Adminer DB management tool here:
+
+    ```sh
+    http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public
+    ```

@@ -21,10 +21,13 @@ func run(ctx context.Context) error {
 	if err := testCreateItem(ctx, client); err != nil {
 		return err
 	}
-	if err := testItemsAllGet(ctx, client); err != nil {
+	if err := testItemsGet(ctx, client); err != nil {
 		return err
 	}
 	if err := testItemsIDGet(ctx, client); err != nil {
+		return err
+	}
+	if err := testItemsAllGet(ctx, client); err != nil {
 		return err
 	}
 	return nil
@@ -43,7 +46,10 @@ func testPing(ctx context.Context, client *ogen.Client) error {
 func testCreateItem(ctx context.Context, client *ogen.Client) error {
 	req := &ogen.CreateItemRequest{
 		Data: ogen.ItemIn{
-			Name:  "Test Item",
+			Name: fmt.Sprintf(
+				"Item-%d",
+				1000+int64(os.Getpid())+int64(os.Getuid())+int64(os.Geteuid()),
+			),
 			Price: 19.99,
 		},
 	}
@@ -56,10 +62,9 @@ func testCreateItem(ctx context.Context, client *ogen.Client) error {
 	return nil
 }
 
-func testItemsAllGet(ctx context.Context, client *ogen.Client) error {
-	resp, err := client.ItemsAllGet(ctx, ogen.ItemsAllGetParams{
-		ChunkSize: 10,
-		Offset:    0,
+func testItemsGet(ctx context.Context, client *ogen.Client) error {
+	resp, err := client.ItemsGet(ctx, ogen.ItemsGetParams{
+		ItemIds: []int{1, 2, 3},
 	})
 	if err != nil {
 		color.New(color.FgRed).Println(err)
@@ -72,6 +77,19 @@ func testItemsAllGet(ctx context.Context, client *ogen.Client) error {
 func testItemsIDGet(ctx context.Context, client *ogen.Client) error {
 	resp, err := client.ItemsIDGet(ctx, ogen.ItemsIDGetParams{
 		ID: 2,
+	})
+	if err != nil {
+		color.New(color.FgRed).Println(err)
+		return err
+	}
+	color.New(color.FgGreen).Println(resp.Data)
+	return nil
+}
+
+func testItemsAllGet(ctx context.Context, client *ogen.Client) error {
+	resp, err := client.ItemsAllGet(ctx, ogen.ItemsAllGetParams{
+		ChunkSize: 10,
+		Offset:    0,
 	})
 	if err != nil {
 		color.New(color.FgRed).Println(err)
