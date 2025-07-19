@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import json as jsonlogger
 
 from app.settings import settings
 
@@ -12,7 +12,7 @@ def setup_logging() -> None:
 
     # handler for INFO and DEBUG logs to stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_fmt = jsonlogger.JsonFormatter(log_fmt)  # type: ignore
+    stdout_fmt = jsonlogger.JsonFormatter(log_fmt)
     stdout_handler.setFormatter(stdout_fmt)
     # level for stdout logs
     stdout_handler.setLevel(logging.DEBUG)
@@ -22,7 +22,7 @@ def setup_logging() -> None:
 
     # handler for WARNING, ERROR, and CRITICAL to stderr
     stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_fmt = jsonlogger.JsonFormatter(log_fmt)  # type: ignore
+    stderr_fmt = jsonlogger.JsonFormatter(log_fmt)
     stderr_handler.setFormatter(stderr_fmt)
     # level for stderr logs
     stderr_handler.setLevel(logging.WARNING)
