@@ -9,3 +9,6 @@ down:
 
 logs:
 	docker compose logs -f
+
+format:
+	poetry run black .
