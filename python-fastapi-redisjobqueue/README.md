@@ -7,7 +7,8 @@ This project demonstrates a FastAPI application with Redis for background job pr
 ### Local Development
 
 ```bash
-poetry install --no-root
+uv venv
+uv pip sync requirements.txt
 ```
 
 ### Docker Setup
@@ -50,5 +51,5 @@ Or...
 
 You can also use the provided Python client:
 ```bash
-poetry run python client.py add --x=5 --y=3
+uv run python client.py add --x=5 --y=3
 ```

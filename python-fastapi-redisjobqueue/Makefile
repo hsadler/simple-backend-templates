@@ -11,4 +11,4 @@ logs:
 	docker compose logs -f
 
 format:
-	poetry run black .
+	uv run black .

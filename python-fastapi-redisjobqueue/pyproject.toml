@@ -1,19 +1,16 @@
-[tool.poetry]
+[project]
 name = "python-fastapi-redisjobqueue"
 version = "0.1.0"
 description = "FastAPI Redis Job Queue Example"
-authors = ["hsadler <harrysadlermusic@gmail.com>"]
-readme = "README.md"
+requires-python = ">=3.13"
 
-[tool.poetry.dependencies]
-python = ">=3.12"
-redis = "^5.2.1"
-fastapi = "^0.115.12"
-uvicorn = {extras = ["standard"], version = "^0.34.1"}
-requests = "^2.31.0"
-fire = "^0.5.0"
-black = "^25.1.0"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "redis",
+    "requests",
+    "fire",
+]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[project.optional-dependencies]
+dev = ["pytest", "black"]

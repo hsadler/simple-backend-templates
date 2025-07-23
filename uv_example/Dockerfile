@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS base
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -9,9 +9,6 @@ RUN apt-get update && apt-get install -y curl gcc libc6-dev ca-certificates && \
 COPY requirements.txt .
 RUN uv pip install --system -r requirements.txt
 
-
-FROM base AS build
-
 COPY . .
 
-CMD ["python", "worker.py"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
