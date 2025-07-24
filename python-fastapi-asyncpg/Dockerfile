@@ -1,23 +1,37 @@
-# Base image with common dependencies
-FROM python:3.13.2-slim-bullseye AS base
+FROM python:3.13-slim AS base
+
 WORKDIR /app
-RUN pip install poetry
-COPY pyproject.toml poetry.lock ./
 
-# Development stage
+RUN apt-get update && apt-get install -y curl gcc libc6-dev ca-certificates && \
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    ln -s /root/.local/bin/uv /usr/local/bin/uv
+
+
 FROM base AS development
-RUN apt-get update -y && apt-get install -y make gcc python3-dev
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
-COPY . .
-EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
-# Production stage
-FROM base AS production
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-dev --no-interaction --no-ansi
+COPY requirements.txt .
+
+RUN uv venv
+RUN uv pip install -r requirements.txt
+
 COPY . .
-ENV IS_PROD=true
+
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+
+FROM base AS production
+
+COPY requirements.txt .
+
+RUN uv venv
+RUN uv pip install -r requirements.txt
+
+COPY . .
+
+ENV IS_PROD=true
+
+EXPOSE 8000
+
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

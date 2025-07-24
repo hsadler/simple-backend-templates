@@ -15,24 +15,23 @@
 
 Requirements:
 - docker
-- pyenv
-- poetry
+- uv
 - httpie
 
-Ensure the correct python version is installed
-```sh
-pyenv install
-```
-
-Tell poetry which python to use
-```sh
-poetry env use python
-```
+### Local Development
 
 Install dependencies (including dev dependencies)
-```sh
-poetry install
+```bash
+uv venv
+uv pip sync requirements.txt
 ```
+
+Relock (if needed)
+```bash
+uv pip compile pyproject.toml --extra dev -o requirements.txt
+```
+
+### Docker Setup
 
 Build images
 ```sh

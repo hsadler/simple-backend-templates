@@ -6,6 +6,7 @@ This project demonstrates a FastAPI application with Redis for background job pr
 
 ### Local Development
 
+Install dependencies (including dev dependencies)
 ```bash
 uv venv
 uv pip sync requirements.txt

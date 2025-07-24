@@ -1,4 +1,5 @@
 import logging
+from typing import Annotated
 
 import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
@@ -37,8 +38,13 @@ async def get_item(
 
 @router.get("", description="Fetch multiple items by ids.")
 async def get_items(
-    item_ids: list[int] = Query(gt=0, examples=[[1, 2]]), db: Database = Depends(get_database)
+    item_ids: Annotated[list[int] | None, Query(examples=[[1, 2]])] = None,
+    db: Database = Depends(get_database),
 ) -> models.ItemsOutput:
+    # Validate that we have item_ids and each is > 0
+    if not item_ids or any(item_id <= 0 for item_id in item_ids):
+        raise HTTPException(status_code=422, detail="All item_ids must be greater than 0")
+
     logger.info("Fetching items by ids", extra={"item_ids": item_ids})
     try:
         items = await items_repo.fetch_items_by_ids(db, item_ids)

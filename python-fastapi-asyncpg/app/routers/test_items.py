@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 import uuid
 from typing import Any, Generator
@@ -36,6 +35,17 @@ def get_mock_item(id: int) -> Item:
     )
 
 
+def get_expected_item_dict(id: int) -> dict[str, Any]:
+    """Get the expected serialized item dict for API responses"""
+    return {
+        "id": id,
+        "uuid": "00000000-0000-0000-0000-000000000000",
+        "created_at": "2021-08-15T18:00:00",
+        "name": "mock item",
+        "price": 1.99,
+    }
+
+
 # GET ITEM TESTS
 
 
@@ -66,14 +76,14 @@ async def test_get_item_found_status_code(
         (
             1,
             {
-                "data": json.loads(get_mock_item(id=1).json()),
+                "data": get_expected_item_dict(id=1),
                 "meta": {},
             },
         ),
         (
             2,
             {
-                "data": json.loads(get_mock_item(id=2).json()),
+                "data": get_expected_item_dict(id=2),
                 "meta": {},
             },
         ),
@@ -159,8 +169,8 @@ async def test_get_items_found_status_code(
             [1, 2],
             {
                 "data": [
-                    json.loads(get_mock_item(id=1).json()),
-                    json.loads(get_mock_item(id=2).json()),
+                    get_expected_item_dict(id=1),
+                    get_expected_item_dict(id=2),
                 ],
                 "meta": {},
             },
@@ -169,9 +179,9 @@ async def test_get_items_found_status_code(
             [1, 2, 3],
             {
                 "data": [
-                    json.loads(get_mock_item(id=1).json()),
-                    json.loads(get_mock_item(id=2).json()),
-                    json.loads(get_mock_item(id=3).json()),
+                    get_expected_item_dict(id=1),
+                    get_expected_item_dict(id=2),
+                    get_expected_item_dict(id=3),
                 ],
                 "meta": {},
             },
@@ -241,7 +251,7 @@ async def test_create_item_success_status_code(
     client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
 ) -> None:
     mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item(id=1))
-    response = client.post("/api/items", json={"data": json.loads(item_in.json())})
+    response = client.post("/api/items", json={"data": item_in.model_dump()})
     assert response.status_code == expected_status_code
 
 
@@ -253,7 +263,7 @@ async def test_create_item_success_status_code(
             ItemIn(name="test item 1", price=1.0),
             1,
             {
-                "data": json.loads(get_mock_item(id=1).json()),
+                "data": get_expected_item_dict(id=1),
                 "meta": {"created": True},
             },
         ),
@@ -261,7 +271,7 @@ async def test_create_item_success_status_code(
             ItemIn(name="test item 2", price=2.0),
             2,
             {
-                "data": json.loads(get_mock_item(id=2).json()),
+                "data": get_expected_item_dict(id=2),
                 "meta": {"created": True},
             },
         ),
@@ -276,7 +286,7 @@ async def test_create_item_success_response_shape(
     expected_response: dict[str, Any],
 ) -> None:
     mocker.patch("app.routers.items.items_repo.create_item", return_value=get_mock_item(id=item_id))
-    response = client.post("/api/items", json={"data": json.loads(item_in.json())})
+    response = client.post("/api/items", json={"data": item_in.model_dump()})
     assert response.json() == expected_response
 
 
@@ -293,7 +303,7 @@ async def test_create_item_exception_status_code(
     client: TestClient, mocker: MockFixture, item_in: ItemIn, expected_status_code: int
 ) -> None:
     mocker.patch("app.routers.items.items_repo.create_item", side_effect=Exception)
-    response = client.post("/api/items", json={"data": json.loads(item_in.json())})
+    response = client.post("/api/items", json={"data": item_in.model_dump()})
     assert response.status_code == expected_status_code
 
 
@@ -305,7 +315,7 @@ async def test_create_item_already_exists(client: TestClient, mocker: MockFixtur
         side_effect=asyncpg.exceptions.UniqueViolationError,
     )
     response = client.post(
-        "/api/items", json={"data": json.loads(ItemIn(name="test item 1", price=1.0).json())}
+        "/api/items", json={"data": ItemIn(name="test item 1", price=1.0).model_dump()}
     )
     assert response.status_code == 409
 

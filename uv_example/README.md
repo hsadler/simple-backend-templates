@@ -7,7 +7,7 @@ create a virtual environment
 uv venv
 ```
 
-compile dependencies for local development
+relock (if needed)
 ```bash
 uv pip compile pyproject.toml --extra dev -o requirements.txt
 ```

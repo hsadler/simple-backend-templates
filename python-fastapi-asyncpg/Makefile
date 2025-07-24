@@ -17,21 +17,21 @@ db-migrate-dry-run:
 	docker compose exec app alembic upgrade head --sql
 
 black:
-	poetry run black .
+	uv run black .
 
 flake8:
-	poetry run flake8 .
+	uv run flake8 .
 
 isort:
-	poetry run isort . || true
+	uv run isort .
 
 mypy:
-	poetry run mypy .
+	uv run mypy .
 
 lint: black isort flake8 mypy
 
 pytest:
-	poetry run pytest
+	uv run pytest
 
 pre-commit: lint pytest
 
