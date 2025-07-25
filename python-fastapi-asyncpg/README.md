@@ -6,7 +6,7 @@
 - DB connection pooling and "items" CRUD via asyncpg
 - DB migrations via Alembic
 - Basic server logging setup
-- Swagger docs for all exposed server endpoints
+- Swagger docs for all exposed endpoints
 - API tests via pytest and FastAPI test client
 - Local dev environment with docker-compose
 - Automatic linting and pytest running with pre-commit

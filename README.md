@@ -10,7 +10,12 @@ POCs:
 
 - [Python + FastAPI + Redis Job Queue](./python-fastapi-redisjobqueue/)
 
-## If you would like to contribute
+Tooling examples:
+
+- [uv example](./uv-example/) - A simple example of a Python project using uv.
+
+
+## Development
 
 Requirements:
 - pre-commit
