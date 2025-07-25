@@ -103,15 +103,10 @@ Make sure you have the containers up and running in a terminal tab:
 docker compose up -d
 ```
 
-Open a poetry shell
-```sh
-poetry shell
-```
-
 Create a new migration file
 ```sh
-alembic revision -m "my new migration"
-# and also write your `upgrade` and `downgrade` queries
+uv run alembic revision -m "my new migration"
+# and write your `upgrade` and `downgrade` queries
 ```
 
 Dry run your migration
@@ -132,8 +127,3 @@ docker compose exec app alembic downgrade -1
 ## Other dev commands
 
 See the [Makefile](./Makefile)
-
-If you get isort errors, run this command alone to fix
-```sh
-poetry run isort .
-```
