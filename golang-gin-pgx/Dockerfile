@@ -1,5 +1,5 @@
 # Base image with common dependencies
-FROM golang:1.24.0-bullseye AS base
+FROM golang:1.24.5-bullseye AS base
 
 WORKDIR /app
 COPY . .

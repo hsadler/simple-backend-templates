@@ -1,106 +1,89 @@
 # Golang + Gin + pgx Template
 
-## Getting started
+A simple "items" CRUD API implementation using:
+- [Golang](https://golang.org/) - Programming language
+- [Gin](https://github.com/gin-gonic/gin) - Web framework
+- [pgx](https://github.com/jackc/pgx) - PostgreSQL driver and toolkit for Go
 
-Requirements:
-- golang 1.24.0 or higher
-- docker
-- httpie
+## Requirements
 
+- Go 1.24+
+- Docker and Docker Compose
+- Make
 
-Make sure the latest version of the "swag" documentation generator is installed
-```sh
-go install github.com/swaggo/swag/cmd/swag@latest
-```
+## Getting Started
 
-Ensure you have the following in your `.zshrc` file or similar
-```sh
-PATH=$(go env GOPATH)/bin:$PATH
-```
-
-Install dependencies
-```sh
-go install
-```
+### Running application
 
 Build images
-```sh
+```bash
 docker compose build
 ```
 
 Run containers locally
-```sh
+```bash
 docker compose up
 ```
 
-Run DB migrations
-```sh
-make db-migrate-up
-```
-
-Verify server is running by hitting the status endpoint
-```sh
+Verify server is running
+```bash
 http GET http://localhost:8000/status
 ```
+
+Running the docker containers will also spin-up:
+- [Swagger docs](http://localhost:8000/docs/index.html)
+- [Adminer](http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public)
 
 ## Try out the "items" example API
 
 POST an item
-```sh
+```bash
 http POST http://127.0.0.1:8000/api/items data:='{"name": "foo", "price": 3.14}'
 ```
 
 GET a single item
-```sh
+```bash
 http GET http://127.0.0.1:8000/api/items/1
 ```
 
 GET multiple items
-```sh
+```bash
 http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
 ```
 
-## DB migrations
+### Development
 
-First, you must have all docker-compose containers running with `make up`.
+Install dependencies
+```bash
+go mod download
+```
 
-To create a new DB migration...
+Make sure the latest version of the "swag" documentation generator is installed
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
 
-Create migration SQL files
-```sh
+Generate API docs from the code annotations
+```bash
+make gen-docs
+```
+
+### Database migrations
+
+First, have all docker-compose containers running with `make up`.
+
+Create a new migration
+```bash
 docker compose run app migrate create -ext sql -dir ./migrations -seq <migration_name>
 ```
 
 Write your "up" and "down" SQL into the new migration files.
 
-Run the migrations on the DB
-```sh
-docker compose run app sh -c \
-'migrate -path=./migrations -database="$DATABASE_URL?sslmode=disable" up'
+Run all migrations
+```bash
+make db-migrate-up
 ```
 
 ## Other dev commands
 
-Generate API docs
-```sh
-swag init
-```
-
-Before you commit code, make sure to lint
-```sh
-gofmt -l -s -w .
-```
-
-### Running the docker containers will spin-up Swagger docs and Adminer
-
-- Visit Swagger docs here:
-
-    ```sh
-    http://localhost:8000/docs/index.html
-    ```
-
-- Visit Adminer DB management tool here:
-
-    ```sh
-    http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public
-    ```
+See the Makefile.

@@ -2,9 +2,9 @@
 
 Simple templates for backends. All implement the same "items" example CRUD API.
 
-- [Python + FastAPI + asyncpg](./python-fastapi-asyncpg/)
-- [Golang + Gin + pgx](./golang-gin-pgx/)
 - [Golang + ogen + pgx](./golang-ogen-pgx/)
+- [Golang + Gin + pgx](./golang-gin-pgx/)
+- [Python + FastAPI + asyncpg](./python-fastapi-asyncpg/)
 
 POCs:
 

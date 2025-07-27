@@ -9,7 +9,7 @@ openapi-generate:
 		--generate-wrappers=on
 
 compile-binaries:
-	go build -v -o build/ ./cmd/...
+	go build -v -o build/ -command="/app/app
 
 build:
 	docker compose build
@@ -26,7 +26,7 @@ testclient:
 test:
 	go test -v ./...
 
-# Database
+# Database migrations
 
 db-migrate-up:
 	docker compose run app sh -c \

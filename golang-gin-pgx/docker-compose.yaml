@@ -13,7 +13,15 @@ services:
       DATABASE_URL: postgresql://user:password@db:5432/example_db
     ports:
       - "8000:8000"
-    command: 'CompileDaemon -log-prefix=false -build="go build -o /app/app" -command="/app/app"'
+    command: >
+      CompileDaemon
+        -color=true
+        -build="make compile-binaries"
+        -command="build/main"
+        -exclude-dir=.git
+        -exclude-dir=./build
+        -include=go.mod
+        -include=go.sum
   
   db:
     image: postgres:15.3-alpine3.18

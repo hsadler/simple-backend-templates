@@ -1,13 +1,13 @@
 # Golang + ogen + pgx
 
-This is a simple CRUD API for items implemented using:
+A simple "items" CRUD API implementation using:
 - [Golang](https://golang.org/) - Programming language
 - [ogen](https://github.com/ogen-go/ogen) - OpenAPI code generator for Go
 - [pgx](https://github.com/jackc/pgx) - PostgreSQL driver and toolkit for Go
 
 ## Requirements
 
-- Go 1.21+
+- Go 1.24+
 - Docker and Docker Compose
 - Make
 
@@ -15,39 +15,48 @@ This is a simple CRUD API for items implemented using:
 
 ### Running application
 
-Spin up the application with:
+Spin up the application
 ```bash
 make up
 ```
 
 This will start:
-- The API server on port 8000
-- PostgreSQL database on port 5433
-- Adminer (database management tool) on port 8080
+- The [API server](http://127.0.0.1:8000/ping) on port `8000`
+- PostgreSQL database on port `5433`
+- [Adminer](http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public)
+    database management tool on port `8080`
 
-Spin down the application with:
+Spin down the application
 ```bash
 make down
 ```
 
-### Development Setup
+## Development
 
-1. Install dependencies:
+### Setup
 
+Install dependencies
 ```bash
 go mod download
 ```
 
-2. Generate API code from OpenAPI spec:
-
+Generate API code from OpenAPI spec
 ```bash
 make openapi-generate
 ```
 
-### Running the docker containers will spin-up Adminer
+### Database migrations
 
-- Visit Adminer DB management tool here:
+First, have all docker-compose containers running with `make up`.
 
-    ```sh
-    http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public
-    ```
+Create a new migration
+```bash
+docker compose run app migrate create -ext sql -dir ./migrations -seq <migration_name>
+```
+
+Write your "up" and "down" SQL into the new migration files.
+
+Run all migrations
+```bash
+make db-migrate-up
+```

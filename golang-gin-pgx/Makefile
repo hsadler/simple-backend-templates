@@ -1,3 +1,8 @@
+.PHONY: build up down test format
+
+compile-binaries:
+	go build -v -o build/ ./main.go
+
 build:
 	docker compose build
 
@@ -7,8 +12,13 @@ up:
 down:
 	docker compose down
 
-app-shell:
-	docker compose run app sh
+test:
+	go test ./tests
+
+gen-docs:
+	swag init
+
+# Database migrations
 
 db-migrate-up:
 	docker compose run app sh -c \
@@ -22,14 +32,7 @@ db-migrate-down-all:
 	docker compose run app sh -c \
 	'migrate -path=./migrations -database="$${DATABASE_URL}?sslmode=disable" down -all'
 
-format:
-	gofmt -l -s -w .
-
-test:
-	go test ./tests
-
-gen-docs:
-	swag init
+# Cleanup
 
 cleanup-images-volumes:
 	@read -p "Are you sure you want to clean up images and volumes? (yes/no): " answer; \
