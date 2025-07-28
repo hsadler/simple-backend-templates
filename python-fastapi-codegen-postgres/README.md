@@ -57,19 +57,24 @@ docker compose exec app alembic upgrade head
 
 ## Try out the "items" example API
 
-POST an items
+POST item
 ```sh
-http POST http://127.0.0.1:8000/api/items data:='{"name": "foo", "price": 3.14}'
+http POST http://127.0.0.1:8000/items data:='{"name": "foo", "price": 3.14}'
 ```
 
-GET a single item
+GET item
 ```sh
-http GET http://127.0.0.1:8000/api/items/1
+http GET http://127.0.0.1:8000/items/1
 ```
 
-GET multiple items
+PATCH item
 ```sh
-http GET 'http://127.0.0.1:8000/api/items' item_ids==1 item_ids==2
+http PATCH http://127.0.0.1:8000/items/1 data:='{"name": "bar", "price": 1.23}'
+```
+
+DELETE item
+```sh
+http DELETE http://127.0.0.1:8000/items/1
 ```
 
 Spin-down containers when finished

@@ -1,5 +1,4 @@
 import logging
-from typing import Union
 
 import asyncpg
 
@@ -9,17 +8,12 @@ from app.models import Item, ItemIn
 logger = logging.getLogger(__name__)
 
 
-async def fetch_item_by_id(db: Database, item_id: int) -> Union[Item, None]:
-    FETCH_ITEM_BY_ID_COMMAND = """
-        SELECT * FROM item
-        WHERE id = $1
-    """
+class UniqueViolationError(Exception):
+    """Raised when a database operation violates a unique constraint."""
 
-    con: asyncpg.Connection
-    async with db.pool.acquire() as con:
-        item_record = await con.fetchrow(FETCH_ITEM_BY_ID_COMMAND, item_id)
-
-    return Item(**item_record) if item_record is not None else None
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 
 async def create_item(db: Database, input_item: ItemIn) -> Item:
@@ -38,17 +32,47 @@ async def create_item(db: Database, input_item: ItemIn) -> Item:
         con: asyncpg.Connection
         async with db.pool.acquire() as con:
             item_id = await con.fetchval(INSERT_ITEM_COMMAND, input_item.name, input_item.price)
-            logger.info("Item record inserted", extra={"item_id": item_id})
             item_created_record = await con.fetchrow(FETCH_ITEM_BY_ID_COMMAND, item_id)
-
         return Item(**item_created_record)
 
-    except asyncpg.exceptions.UniqueViolationError as e:
-        logger.info(
-            "Item record could not be created because it violated a unique constraint",
-            extra={"error": e},
-        )
-        raise e
+    except asyncpg.exceptions.UniqueViolationError:
+        raise UniqueViolationError(message="Item violated a unique constraint")
+
+
+async def fetch_item(db: Database, item_id: int) -> Item | None:
+    FETCH_ITEM_BY_ID_COMMAND = """
+        SELECT * FROM item
+        WHERE id = $1
+    """
+
+    con: asyncpg.Connection
+    async with db.pool.acquire() as con:
+        item_record = await con.fetchrow(FETCH_ITEM_BY_ID_COMMAND, item_id)
+
+    return Item(**item_record) if item_record else None
+
+
+async def update_item(db: Database, item_id: int, input_item: ItemIn) -> Item | None:
+    UPDATE_ITEM_COMMAND = """
+        UPDATE item
+        SET name = $1, price = $2
+        WHERE id = $3
+        RETURNING *;
+    """
+
+    try:
+        con: asyncpg.Connection
+        async with db.pool.acquire() as con:
+            item_record = await con.fetchrow(
+                UPDATE_ITEM_COMMAND,
+                input_item.name,
+                input_item.price,
+                item_id,
+            )
+        return Item(**item_record) if item_record else None
+
+    except asyncpg.exceptions.UniqueViolationError:
+        raise UniqueViolationError(message="Item violated a unique constraint")
 
 
 async def delete_item(db: Database, item_id: int) -> None:
