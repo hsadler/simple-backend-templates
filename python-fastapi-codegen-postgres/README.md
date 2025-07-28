@@ -45,9 +45,9 @@ Run containers locally
 docker compose up -d
 ```
 
-Verify server is running by hitting the status endpoint
+Verify server is running by hitting the ping endpoint
 ```sh
-http GET http://localhost:8000/status
+http GET http://localhost:8000/ping
 ```
 
 Run DB migrations
