@@ -7,7 +7,6 @@ requires-python = ">=3.13"
 dependencies = [
     "uvicorn",
     "fastapi",
-    "datamodel-code-generator",
     "asyncpg",
     "alembic",
     "psycopg2-binary",
@@ -25,6 +24,7 @@ dev = [
     "pytest-mock",
     "pytest-asyncio",
     "isort",
+    "datamodel-code-generator",
 ]
 
 [tool.black]

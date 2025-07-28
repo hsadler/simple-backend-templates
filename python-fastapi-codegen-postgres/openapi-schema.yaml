@@ -1,39 +1,190 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: Example API
+  title: Items API
+  description: An example CRUD API for Items
   version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
 paths:
-  /user:
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
+  /ping:
+    get:
+      description: Check if the service is running.
       responses:
         '200':
-          description: Success
+          description: OK.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/PingResponse'
+        'default':
+          description: Unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /items:
+    post:
+      description: Creates Item.
+      requestBody:
+        description: Item to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItemRequest'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateItemResponse'
+        'default':
+          description: Unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Get Item
+      description: Returns a single Item by id.
+      parameters:
+        - name: item_id
+          in: query
+          description: Item ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetItemResponse'
+        'default':
+          description: Unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      description: Deletes Item.
+      parameters:
+        - name: item_id
+          in: query
+          description: Item ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
-    UserCreate:
+    PingResponse:
       type: object
       properties:
-        name:
+        message:
           type: string
-        age:
-          type: integer
+          example: "pong"
       required:
-        - name
-    UserResponse:
+        - message
+
+    Item:
       type: object
       properties:
         id:
+          type: integer
+          format: int64
+          example: 1
+        uuid:
           type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        created_at:
+          type: string
+          format: date-time
+          example: 2021-01-01T00:00:00.000Z
         name:
           type: string
-        age:
-          type: integer
+          example: foo
+        price:
+          type: number
+          format: float
+          example: 3.14
+      required:
+        - id
+        - uuid
+        - created_at
+        - name
+        - price
+
+    ItemIn:
+      type: object
+      properties:
+        name:
+          type: string
+          example: foo
+        price:
+          type: number
+          format: float
+          example: 3.14
+          minimum: 0
+      required:
+        - name
+        - price
+
+    GetItemResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Item'
+        meta:
+          type: object
+      required:
+        - data
+        - meta
+
+    CreateItemRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ItemIn'
+      required:
+        - data
+
+    CreateItemResponseMeta:
+      type: object
+      properties:
+        created:
+          type: boolean
+      required:
+        - created
+
+    CreateItemResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Item'
+        meta:
+          $ref: '#/components/schemas/CreateItemResponseMeta'
+      required:
+        - data
+        - meta
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

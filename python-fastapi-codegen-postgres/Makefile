@@ -12,12 +12,12 @@ down:
 # Code generation
 
 gen-models:
-	docker compose run --rm app \
-		uv run datamodel-codegen \
-			--input openapi-schema.yaml \
-			--input-file-type openapi \
-			--output app/models.py \
-			--target-python-version 3.13
+	docker compose run --rm app datamodel-codegen \
+		--input openapi-schema.yaml \
+		--input-file-type openapi \
+		--output app/models.py \
+		--target-python-version 3.13 \
+		--field-constraints
 
 # Database migrations
 
