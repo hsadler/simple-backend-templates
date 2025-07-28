@@ -1,0 +1,39 @@
+[project]
+name = "python-fastapi-codegen-postgres"
+version = "0.1.0"
+description = "python-fastapi-codegen-postgres template"
+requires-python = ">=3.13"
+
+dependencies = [
+    "uvicorn",
+    "fastapi",
+    "datamodel-code-generator",
+    "asyncpg",
+    "alembic",
+    "psycopg2-binary",
+    "pydantic-settings",
+    "python-json-logger",
+    "prometheus-fastapi-instrumentator",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "mypy",
+    "flake8",
+    "pytest",
+    "pytest-mock",
+    "pytest-asyncio",
+    "isort",
+]
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile="black"
+line_length = 100
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
