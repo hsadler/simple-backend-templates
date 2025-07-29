@@ -88,6 +88,12 @@ docker compose down
 make test-runner
 ```
 
+## Model generation based on OpenAPI schema
+
+```bash
+make gen-models
+```
+
 ### Running the docker containers will spin-up Swagger docs and Adminer
 
 - Visit Swagger docs here:

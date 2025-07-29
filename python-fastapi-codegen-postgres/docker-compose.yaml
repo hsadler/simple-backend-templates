@@ -36,6 +36,20 @@ services:
     ports:
       - 8080:8080
 
+  gen-models:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+    command: >
+      datamodel-codegen
+        --input openapi-schema.yaml
+        --input-file-type openapi
+        --output app/models.py
+        --target-python-version 3.13
+        --field-constraints
+
   test-runner:
     build:
       context: .
