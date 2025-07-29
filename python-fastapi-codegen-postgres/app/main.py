@@ -141,6 +141,9 @@ async def delete_item(
                 detail="Item resource not found",
             )
         await items_repo.delete_item(db, item_id)
+    except HTTPException:
+        # Re-raise HTTPExceptions (like 404) so they don't get caught by the general handler
+        raise
     except Exception as e:
         logger.error(
             "Unexpected error deleting item by id",

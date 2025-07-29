@@ -13,16 +13,16 @@ from pydantic import BaseModel, Field
 
 
 class Item(BaseModel):
-    id: int = Field(..., example=1)
-    uuid: UUID = Field(..., example="550e8400-e29b-41d4-a716-446655440000")
-    created_at: datetime = Field(..., example="2021-01-01T00:00:00.000Z")
-    name: str = Field(..., example="foo")
-    price: float = Field(..., example=3.14)
+    id: int = Field(examples=[1])
+    uuid: UUID = Field(examples=["550e8400-e29b-41d4-a716-446655440000"])
+    created_at: datetime = Field(examples=["2021-01-01T00:00:00.000Z"])
+    name: str = Field(examples=["foo"])
+    price: float = Field(examples=[3.14])
 
 
 class ItemIn(BaseModel):
-    name: str = Field(..., example="foo")
-    price: float = Field(..., example=3.14, ge=0.0)
+    name: str = Field(examples=["foo"])
+    price: float = Field(examples=[3.14], ge=0.0)
 
 
 class ItemStatus(Enum):
@@ -33,7 +33,7 @@ class ItemStatus(Enum):
 
 
 class ItemMeta(BaseModel):
-    item_status: Optional[ItemStatus] = Field(None, example="created")
+    item_status: Optional[ItemStatus] = Field(None, examples=["created"])
 
 
 class ItemGetResponse(BaseModel):
@@ -65,7 +65,7 @@ class ItemDeleteResponse(BaseModel):
 
 
 class PingResponse(BaseModel):
-    message: str = Field(..., example="pong")
+    message: str = Field(examples=["pong"])
 
 
 class ErrorResponse(BaseModel):

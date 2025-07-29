@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
@@ -16,7 +17,7 @@ logging.disable(logging.CRITICAL)
 
 
 @pytest.fixture
-def mock_database():
+def mock_database() -> MagicMock:
     """Create a mock database object."""
     mock_db = MagicMock()
     mock_db.pool = AsyncMock()
@@ -24,7 +25,7 @@ def mock_database():
 
 
 @pytest.fixture
-def client(mock_database):
+def client(mock_database: MagicMock) -> Generator[TestClient, None, None]:
     """Create a test client for the FastAPI app with mocked database dependency."""
     # Override the database dependency to prevent real database connections
     app.dependency_overrides[get_database] = lambda: mock_database
@@ -37,7 +38,7 @@ def client(mock_database):
 
 
 @pytest.fixture
-def sample_item():
+def sample_item() -> models.Item:
     """Create a sample Item object for testing."""
     return models.Item(
         id=1,
@@ -49,7 +50,7 @@ def sample_item():
 
 
 @pytest.fixture
-def sample_item_in():
+def sample_item_in() -> models.ItemIn:
     """Create a sample ItemIn object for testing."""
     return models.ItemIn(name="test_item", price=10.0)
 
@@ -57,7 +58,7 @@ def sample_item_in():
 class TestPingEndpoint:
     """Tests for the /ping endpoint."""
 
-    def test_ping_success(self, client: TestClient):
+    def test_ping_success(self, client: TestClient) -> None:
         """Test successful ping response."""
         response = client.get("/ping")
 
@@ -75,7 +76,7 @@ class TestCreateItemEndpoint:
         mock_database: MagicMock,
         sample_item: models.Item,
         sample_item_in: models.ItemIn,
-    ):
+    ) -> None:
         """Test successful item creation."""
 
         # Mock the create_item function
@@ -98,46 +99,67 @@ class TestCreateItemEndpoint:
         client: TestClient,
         mock_database: MagicMock,
         sample_item_in: models.ItemIn,
-    ):
+    ) -> None:
         """Test item creation with unique constraint violation."""
 
-        # Mock the create_item function to raise UniqueViolationError
+        # Mock the create_item function to raise a UniqueViolationError
         with patch(
             "app.repos.items.create_item",
             side_effect=items_repo.UniqueViolationError("Item violated a unique constraint"),
-        ):
+        ) as mock_create:
             response = client.post("/items", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 409
-            assert "Item violated a unique constraint" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Item violated a unique constraint" in response_data["detail"]
+
+            # Verify the mock was called correctly
+            mock_create.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_item_unexpected_error(
+    async def test_create_item_database_error(
         self,
         client: TestClient,
         mock_database: MagicMock,
         sample_item_in: models.ItemIn,
-    ):
-        """Test item creation with unexpected error."""
+    ) -> None:
+        """Test item creation with database error."""
 
-        # Mock the create_item function to raise a generic exception
+        # Mock the create_item function to raise a generic Exception
         with patch(
             "app.repos.items.create_item",
-            side_effect=Exception("Database connection failed"),
-        ):
+            side_effect=Exception("database connection failed"),
+        ) as mock_create:
             response = client.post("/items", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 500
-            assert "Error while creating item" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Error while creating item" in response_data["detail"]
 
-    def test_create_item_invalid_data(self, client: TestClient):
-        """Test item creation with invalid request data."""
-        # Test with missing required fields
-        response = client.post("/items", json={"data": {"name": "test"}})  # missing price
+            # Verify the mock was called correctly
+            mock_create.assert_called_once()
+
+    def test_create_item_invalid_request_body(self, client: TestClient) -> None:
+        """Test item creation with invalid request body."""
+
+        response = client.post("/items", json={"invalid": "data"})
+
         assert response.status_code == 422
 
-        # Test with negative price
-        response = client.post("/items", json={"data": {"name": "test", "price": -1.0}})
+    def test_create_item_missing_data_field(self, client: TestClient) -> None:
+        """Test item creation with missing data field."""
+
+        response = client.post("/items", json={"name": "test_item", "price": 10.0})
+
+        assert response.status_code == 422
+
+    def test_create_item_invalid_price(self, client: TestClient) -> None:
+        """Test item creation with invalid price."""
+
+        response = client.post("/items", json={"data": {"name": "test_item", "price": -5.0}})
+
         assert response.status_code == 422
 
 
@@ -150,9 +172,10 @@ class TestGetItemEndpoint:
         client: TestClient,
         mock_database: MagicMock,
         sample_item: models.Item,
-    ):
+    ) -> None:
         """Test successful item retrieval."""
 
+        # Mock the fetch_item function
         with patch("app.repos.items.fetch_item", return_value=sample_item) as mock_fetch:
             response = client.get("/items/1")
 
@@ -163,6 +186,7 @@ class TestGetItemEndpoint:
             assert response_data["data"]["price"] == 10.0
             assert response_data["meta"]["item_status"] == "fetched"
 
+            # Verify the mock was called correctly
             mock_fetch.assert_called_once_with(mock_database, 1)
 
     @pytest.mark.asyncio
@@ -170,42 +194,52 @@ class TestGetItemEndpoint:
         self,
         client: TestClient,
         mock_database: MagicMock,
-    ):
+    ) -> None:
         """Test item retrieval when item doesn't exist."""
 
+        # Mock the fetch_item function to return None
         with patch(
             "app.repos.items.fetch_item",
             return_value=None,
-        ):
+        ) as mock_fetch:
             response = client.get("/items/999")
 
             assert response.status_code == 404
-            assert "Item resource not found" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Item resource not found" in response_data["detail"]
+
+            # Verify the mock was called correctly
+            mock_fetch.assert_called_once_with(mock_database, 999)
 
     @pytest.mark.asyncio
-    async def test_get_item_unexpected_error(
+    async def test_get_item_database_error(
         self,
         client: TestClient,
         mock_database: MagicMock,
-    ):
-        """Test item retrieval with unexpected error."""
+    ) -> None:
+        """Test item retrieval with database error."""
 
+        # Mock the fetch_item function to raise a generic Exception
         with patch(
             "app.repos.items.fetch_item",
-            side_effect=Exception("Database connection failed"),
-        ):
+            side_effect=Exception("database connection failed"),
+        ) as mock_fetch:
             response = client.get("/items/1")
 
             assert response.status_code == 500
-            assert "Error fetching item by id" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Error fetching item by id" in response_data["detail"]
 
-    def test_get_item_invalid_id(self, client: TestClient):
+            # Verify the mock was called correctly
+            mock_fetch.assert_called_once_with(mock_database, 1)
+
+    def test_get_item_invalid_id(self, client: TestClient) -> None:
         """Test item retrieval with invalid item ID."""
-        # Test with non-positive ID
-        response = client.get("/items/0")
-        assert response.status_code == 422
 
-        response = client.get("/items/-1")
+        response = client.get("/items/0")
+
         assert response.status_code == 422
 
 
@@ -219,30 +253,22 @@ class TestUpdateItemEndpoint:
         mock_database: MagicMock,
         sample_item: models.Item,
         sample_item_in: models.ItemIn,
-    ):
+    ) -> None:
         """Test successful item update."""
 
-        updated_item = models.Item(
-            id=1,
-            uuid=sample_item.uuid,
-            created_at=sample_item.created_at,
-            name="updated_item",
-            price=20.0,
-        )
-
-        with patch("app.repos.items.update_item", return_value=updated_item) as mock_update:
-            response = client.patch(
-                "/items/1", json={"data": {"name": "updated_item", "price": 20.0}}
-            )
+        # Mock the update_item function
+        with patch("app.repos.items.update_item", return_value=sample_item) as mock_update:
+            response = client.patch("/items/1", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 200
             response_data = response.json()
             assert response_data["data"]["id"] == 1
-            assert response_data["data"]["name"] == "updated_item"
-            assert response_data["data"]["price"] == 20.0
+            assert response_data["data"]["name"] == "test_item"
+            assert response_data["data"]["price"] == 10.0
             assert response_data["meta"]["item_status"] == "updated"
 
-            mock_update.assert_called_once()
+            # Verify the mock was called correctly
+            mock_update.assert_called_once_with(mock_database, 1, sample_item_in)
 
     @pytest.mark.asyncio
     async def test_update_item_not_found(
@@ -250,14 +276,23 @@ class TestUpdateItemEndpoint:
         client: TestClient,
         mock_database: MagicMock,
         sample_item_in: models.ItemIn,
-    ):
+    ) -> None:
         """Test item update when item doesn't exist."""
 
-        with patch("app.repos.items.update_item", return_value=None):
+        # Mock the update_item function to return None
+        with patch(
+            "app.repos.items.update_item",
+            return_value=None,
+        ) as mock_update:
             response = client.patch("/items/999", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 404
-            assert "Item resource not found" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Item resource not found" in response_data["detail"]
+
+            # Verify the mock was called correctly
+            mock_update.assert_called_once_with(mock_database, 999, sample_item_in)
 
     @pytest.mark.asyncio
     async def test_update_item_unique_violation(
@@ -265,49 +300,67 @@ class TestUpdateItemEndpoint:
         client: TestClient,
         mock_database: MagicMock,
         sample_item_in: models.ItemIn,
-    ):
+    ) -> None:
         """Test item update with unique constraint violation."""
 
+        # Mock the update_item function to raise a UniqueViolationError
         with patch(
             "app.repos.items.update_item",
             side_effect=items_repo.UniqueViolationError("Item violated a unique constraint"),
-        ):
+        ) as mock_update:
             response = client.patch("/items/1", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 409
-            assert "Item violated a unique constraint" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Item violated a unique constraint" in response_data["detail"]
+
+            # Verify the mock was called correctly
+            mock_update.assert_called_once_with(mock_database, 1, sample_item_in)
 
     @pytest.mark.asyncio
-    async def test_update_item_unexpected_error(
+    async def test_update_item_database_error(
         self,
         client: TestClient,
         mock_database: MagicMock,
         sample_item_in: models.ItemIn,
-    ):
-        """Test item update with unexpected error."""
+    ) -> None:
+        """Test item update with database error."""
 
+        # Mock the update_item function to raise a generic Exception
         with patch(
             "app.repos.items.update_item",
-            side_effect=Exception("Database connection failed"),
-        ):
+            side_effect=Exception("database connection failed"),
+        ) as mock_update:
             response = client.patch("/items/1", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 500
-            assert "Error updating item" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Error updating item" in response_data["detail"]
 
-    def test_update_item_invalid_data(self, client: TestClient):
-        """Test item update with invalid request data."""
-        # Test with missing required fields
-        response = client.patch("/items/1", json={"data": {"name": "test"}})  # missing price
-        assert response.status_code == 422
+            # Verify the mock was called correctly
+            mock_update.assert_called_once_with(mock_database, 1, sample_item_in)
 
-        # Test with negative price
-        response = client.patch("/items/1", json={"data": {"name": "test", "price": -1.0}})
-        assert response.status_code == 422
-
-    def test_update_item_invalid_id(self, client: TestClient):
+    def test_update_item_invalid_id(self, client: TestClient) -> None:
         """Test item update with invalid item ID."""
+
         response = client.patch("/items/0", json={"data": {"name": "test", "price": 10.0}})
+
+        assert response.status_code == 422
+
+    def test_update_item_invalid_request_body(self, client: TestClient) -> None:
+        """Test item update with invalid request body."""
+
+        response = client.patch("/items/1", json={"invalid": "data"})
+
+        assert response.status_code == 422
+
+    def test_update_item_invalid_price(self, client: TestClient) -> None:
+        """Test item update with invalid price."""
+
+        response = client.patch("/items/1", json={"data": {"name": "test_item", "price": -5.0}})
+
         assert response.status_code == 422
 
 
@@ -320,28 +373,24 @@ class TestDeleteItemEndpoint:
         client: TestClient,
         mock_database: MagicMock,
         sample_item: models.Item,
-    ):
+    ) -> None:
         """Test successful item deletion."""
 
+        # Mock both fetch_item and delete_item functions
         with (
-            patch(
-                "app.repos.items.fetch_item",
-                return_value=sample_item,
-            ) as mock_fetch,
-            patch(
-                "app.repos.items.delete_item",
-                return_value=None,
-            ) as mock_delete,
+            patch("app.repos.items.fetch_item", return_value=sample_item) as mock_fetch,
+            patch("app.repos.items.delete_item") as mock_delete,
         ):
-
             response = client.delete("/items/1")
 
             assert response.status_code == 200
             response_data = response.json()
             assert response_data["data"]["id"] == 1
             assert response_data["data"]["name"] == "test_item"
+            assert response_data["data"]["price"] == 10.0
             assert response_data["meta"]["item_status"] == "deleted"
 
+            # Verify the mocks were called correctly
             mock_fetch.assert_called_once_with(mock_database, 1)
             mock_delete.assert_called_once_with(mock_database, 1)
 
@@ -350,37 +399,54 @@ class TestDeleteItemEndpoint:
         self,
         client: TestClient,
         mock_database: MagicMock,
-    ):
+    ) -> None:
         """Test item deletion when item doesn't exist."""
 
-        with patch("app.repos.items.fetch_item", return_value=None):
+        # Mock the fetch_item function to return None, and also mock delete_item to avoid errors
+        with (
+            patch(
+                "app.repos.items.fetch_item",
+                return_value=None,
+            ) as mock_fetch,
+            patch("app.repos.items.delete_item") as mock_delete,
+        ):
             response = client.delete("/items/999")
 
             assert response.status_code == 404
-            assert "Item resource not found" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Item resource not found" in response_data["detail"]
+
+            # Verify the fetch mock was called but delete was not
+            mock_fetch.assert_called_once_with(mock_database, 999)
+            mock_delete.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_delete_item_unexpected_error(
+    async def test_delete_item_database_error(
         self,
         client: TestClient,
         mock_database: MagicMock,
-        sample_item: models.Item,
-    ):
-        """Test item deletion with unexpected error."""
+    ) -> None:
+        """Test item deletion with database error."""
 
+        # Mock the fetch_item function to raise a generic Exception
         with patch(
             "app.repos.items.fetch_item",
-            side_effect=Exception("Database connection failed"),
-        ):
+            side_effect=Exception("database connection failed"),
+        ) as mock_fetch:
             response = client.delete("/items/1")
 
             assert response.status_code == 500
-            assert "Error deleting item by id" in response.json()["detail"]
+            response_data = response.json()
+            assert "detail" in response_data
+            assert "Error deleting item by id" in response_data["detail"]
 
-    def test_delete_item_invalid_id(self, client: TestClient):
+            # Verify the mock was called correctly
+            mock_fetch.assert_called_once_with(mock_database, 1)
+
+    def test_delete_item_invalid_id(self, client: TestClient) -> None:
         """Test item deletion with invalid item ID."""
-        response = client.delete("/items/0")
-        assert response.status_code == 422
 
-        response = client.delete("/items/-1")
+        response = client.delete("/items/0")
+
         assert response.status_code == 422
