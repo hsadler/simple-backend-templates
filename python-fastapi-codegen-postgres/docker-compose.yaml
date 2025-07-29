@@ -50,13 +50,15 @@ services:
         --output src/models.py
         --target-python-version 3.13
         --field-constraints
+        --output-model-type pydantic_v2.BaseModel
 
-  test-runner:
+  pre-commit-runner:
     build:
       context: .
       target: development
     volumes:
       - ./src:/app/src
+      - ./pyproject.toml:/app/pyproject.toml
     command: ["make", "lint", "pytest"]
 
 volumes:

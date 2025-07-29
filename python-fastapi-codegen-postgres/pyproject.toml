@@ -17,13 +17,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "httpx",
     "black",
     "mypy",
     "pytest",
     "pytest-mock",
     "pytest-asyncio",
-    "httpx",
-    "datamodel-code-generator",
+    "datamodel-code-generator>=0.32.0",
 ]
 
 [tool.black]
@@ -33,4 +33,7 @@ exclude = "src/models\\.py"
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
-exclude = "src/models\\.py"
+
+[[tool.mypy.overrides]]
+module = "src.models"
+ignore_errors = true

@@ -30,8 +30,8 @@ lint:
 pytest:
 	pytest
 
-test-runner:
-	docker compose run --rm test-runner
+pre-commit-runner:
+	docker compose run --rm -T pre-commit-runner
 
 # Cleanup
 

@@ -1,6 +1,11 @@
 repos:
 - repo: local
   hooks:
+    - id: python-fastapi-codegen-postgres-lint-pytest
+      name: Run linter and pytest for python-fastapi-codegen-postgres
+      entry: bash -c 'cd python-fastapi-codegen-postgres/ && make pre-commit-runner'
+      language: system
+      pass_filenames: false
     - id: python-fastapi-asyncpg-lint-pytest
       name: Run linter and pytest for python-fastapi-asyncpg
       entry: bash -c 'cd python-fastapi-asyncpg/ && make pre-commit'

@@ -80,7 +80,7 @@ class TestCreateItemEndpoint:
         """Test successful item creation."""
 
         # Mock the create_item function
-        with patch("app.repos.items.create_item", return_value=sample_item) as mock_create:
+        with patch("src.repos.items.create_item", return_value=sample_item) as mock_create:
             response = client.post("/items", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 200
@@ -104,7 +104,7 @@ class TestCreateItemEndpoint:
 
         # Mock the create_item function to raise a UniqueViolationError
         with patch(
-            "app.repos.items.create_item",
+            "src.repos.items.create_item",
             side_effect=items_repo.UniqueViolationError("Item violated a unique constraint"),
         ) as mock_create:
             response = client.post("/items", json={"data": sample_item_in.model_dump()})
@@ -128,7 +128,7 @@ class TestCreateItemEndpoint:
 
         # Mock the create_item function to raise a generic Exception
         with patch(
-            "app.repos.items.create_item",
+            "src.repos.items.create_item",
             side_effect=Exception("database connection failed"),
         ) as mock_create:
             response = client.post("/items", json={"data": sample_item_in.model_dump()})
@@ -176,7 +176,7 @@ class TestGetItemEndpoint:
         """Test successful item retrieval."""
 
         # Mock the fetch_item function
-        with patch("app.repos.items.fetch_item", return_value=sample_item) as mock_fetch:
+        with patch("src.repos.items.fetch_item", return_value=sample_item) as mock_fetch:
             response = client.get("/items/1")
 
             assert response.status_code == 200
@@ -199,7 +199,7 @@ class TestGetItemEndpoint:
 
         # Mock the fetch_item function to return None
         with patch(
-            "app.repos.items.fetch_item",
+            "src.repos.items.fetch_item",
             return_value=None,
         ) as mock_fetch:
             response = client.get("/items/999")
@@ -222,7 +222,7 @@ class TestGetItemEndpoint:
 
         # Mock the fetch_item function to raise a generic Exception
         with patch(
-            "app.repos.items.fetch_item",
+            "src.repos.items.fetch_item",
             side_effect=Exception("database connection failed"),
         ) as mock_fetch:
             response = client.get("/items/1")
@@ -257,7 +257,7 @@ class TestUpdateItemEndpoint:
         """Test successful item update."""
 
         # Mock the update_item function
-        with patch("app.repos.items.update_item", return_value=sample_item) as mock_update:
+        with patch("src.repos.items.update_item", return_value=sample_item) as mock_update:
             response = client.patch("/items/1", json={"data": sample_item_in.model_dump()})
 
             assert response.status_code == 200
@@ -281,7 +281,7 @@ class TestUpdateItemEndpoint:
 
         # Mock the update_item function to return None
         with patch(
-            "app.repos.items.update_item",
+            "src.repos.items.update_item",
             return_value=None,
         ) as mock_update:
             response = client.patch("/items/999", json={"data": sample_item_in.model_dump()})
@@ -305,7 +305,7 @@ class TestUpdateItemEndpoint:
 
         # Mock the update_item function to raise a UniqueViolationError
         with patch(
-            "app.repos.items.update_item",
+            "src.repos.items.update_item",
             side_effect=items_repo.UniqueViolationError("Item violated a unique constraint"),
         ) as mock_update:
             response = client.patch("/items/1", json={"data": sample_item_in.model_dump()})
@@ -329,7 +329,7 @@ class TestUpdateItemEndpoint:
 
         # Mock the update_item function to raise a generic Exception
         with patch(
-            "app.repos.items.update_item",
+            "src.repos.items.update_item",
             side_effect=Exception("database connection failed"),
         ) as mock_update:
             response = client.patch("/items/1", json={"data": sample_item_in.model_dump()})
@@ -378,8 +378,8 @@ class TestDeleteItemEndpoint:
 
         # Mock both fetch_item and delete_item functions
         with (
-            patch("app.repos.items.fetch_item", return_value=sample_item) as mock_fetch,
-            patch("app.repos.items.delete_item") as mock_delete,
+            patch("src.repos.items.fetch_item", return_value=sample_item) as mock_fetch,
+            patch("src.repos.items.delete_item") as mock_delete,
         ):
             response = client.delete("/items/1")
 
@@ -405,10 +405,10 @@ class TestDeleteItemEndpoint:
         # Mock the fetch_item function to return None, and also mock delete_item to avoid errors
         with (
             patch(
-                "app.repos.items.fetch_item",
+                "src.repos.items.fetch_item",
                 return_value=None,
             ) as mock_fetch,
-            patch("app.repos.items.delete_item") as mock_delete,
+            patch("src.repos.items.delete_item") as mock_delete,
         ):
             response = client.delete("/items/999")
 
@@ -431,7 +431,7 @@ class TestDeleteItemEndpoint:
 
         # Mock the fetch_item function to raise a generic Exception
         with patch(
-            "app.repos.items.fetch_item",
+            "src.repos.items.fetch_item",
             side_effect=Exception("database connection failed"),
         ) as mock_fetch:
             response = client.delete("/items/1")

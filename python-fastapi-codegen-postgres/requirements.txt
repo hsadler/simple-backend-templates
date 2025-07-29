@@ -24,7 +24,7 @@ click==8.2.1
     # via
     #   black
     #   uvicorn
-datamodel-code-generator==0.30.1
+datamodel-code-generator==0.32.0
     # via python-fastapi-codegen-postgres (pyproject.toml)
 fastapi==0.116.1
     # via python-fastapi-codegen-postgres (pyproject.toml)
