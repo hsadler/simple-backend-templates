@@ -2,10 +2,10 @@ import logging
 from typing import Union
 
 import asyncpg
-
 from alembic import command
 from alembic.config import Config
-from app.settings import settings
+
+from src.settings import settings
 
 logger = logging.getLogger(__name__)
 

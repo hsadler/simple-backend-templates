@@ -7,10 +7,10 @@ from uuid import UUID
 import pytest
 from fastapi.testclient import TestClient
 
-from app import models
-from app.database import get_database
-from app.main import app
-from app.repos import items as items_repo
+from src import models
+from src.database import get_database
+from src.main import app
+from src.repos import items as items_repo
 
 # Disable logging during tests to reduce noise
 logging.disable(logging.CRITICAL)

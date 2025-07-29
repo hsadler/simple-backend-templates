@@ -4,7 +4,7 @@ services:
       context: .
       target: development
     volumes:
-      - .:/app
+      - ./src:/app/src
     depends_on:
       db:
         condition: service_healthy
@@ -14,6 +14,7 @@ services:
       JSON_LOGGING: "false"
     ports:
       - "8000:8000"
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
   db:
     image: postgres:15.3-alpine3.18
@@ -41,12 +42,12 @@ services:
       context: .
       target: development
     volumes:
-      - .:/app
+      - ./src:/app/src
     command: >
       datamodel-codegen
         --input openapi-schema.yaml
         --input-file-type openapi
-        --output app/models.py
+        --output src/models.py
         --target-python-version 3.13
         --field-constraints
 
@@ -55,7 +56,7 @@ services:
       context: .
       target: development
     volumes:
-      - .:/app
+      - ./src:/app/src
     command: ["make", "lint", "pytest"]
 
 volumes:

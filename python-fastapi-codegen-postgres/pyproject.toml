@@ -19,22 +19,18 @@ dependencies = [
 dev = [
     "black",
     "mypy",
-    "flake8",
     "pytest",
     "pytest-mock",
     "pytest-asyncio",
-    "isort",
     "httpx",
     "datamodel-code-generator",
 ]
 
 [tool.black]
 line-length = 100
-
-[tool.isort]
-profile="black"
-line_length = 100
+exclude = "src/models\\.py"
 
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
+exclude = "src/models\\.py"

@@ -2,10 +2,10 @@ import logging
 
 from fastapi import Depends, FastAPI, HTTPException, Path, status
 
-from app import models
-from app.database import Database, get_database
-from app.log import setup_logging
-from app.repos import items as items_repo
+from src import models
+from src.database import Database, get_database
+from src.log import setup_logging
+from src.repos import items as items_repo
 
 setup_logging()
 logger = logging.getLogger(__name__)

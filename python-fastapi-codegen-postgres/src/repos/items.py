@@ -2,8 +2,8 @@ import logging
 
 import asyncpg
 
-from app.database import Database
-from app.models import Item, ItemIn
+from src.database import Database
+from src.models import Item, ItemIn
 
 logger = logging.getLogger(__name__)
 

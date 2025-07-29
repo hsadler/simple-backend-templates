@@ -4,7 +4,7 @@ build:
 	docker compose build --no-cache
 
 up:
-	docker compose up -d
+	docker compose up -d app db adminer
 
 down:
 	docker compose down
@@ -25,7 +25,7 @@ db-migrate-dry-run:
 # Linting, formatting, testing
 
 lint:
-	black . && flake8 . && isort . && mypy .
+	black . && mypy .
 
 pytest:
 	pytest

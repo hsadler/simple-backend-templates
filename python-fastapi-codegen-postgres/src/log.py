@@ -3,7 +3,7 @@ import sys
 
 from pythonjsonlogger import json as jsonlogger
 
-from app.settings import settings
+from src.settings import settings
 
 BASE_LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
 UVICORN_LOGGERS = ["uvicorn", "uvicorn.access"]
