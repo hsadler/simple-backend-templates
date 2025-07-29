@@ -36,5 +36,13 @@ services:
     ports:
       - 8080:8080
 
+  test-runner:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+    command: ["make", "lint", "pytest"]
+
 volumes:
   db_data:

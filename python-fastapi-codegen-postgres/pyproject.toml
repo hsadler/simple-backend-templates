@@ -24,6 +24,7 @@ dev = [
     "pytest-mock",
     "pytest-asyncio",
     "isort",
+    "httpx",
     "datamodel-code-generator",
 ]
 

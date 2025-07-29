@@ -82,6 +82,12 @@ Spin-down containers when finished
 docker compose down
 ```
 
+## Linting, formatting, testing
+
+```bash
+make test-runner
+```
+
 ### Running the docker containers will spin-up Swagger docs and Adminer
 
 - Visit Swagger docs here:

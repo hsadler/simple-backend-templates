@@ -27,26 +27,16 @@ db-migrate:
 db-migrate-dry-run:
 	docker compose exec app alembic upgrade head --sql
 
-# Linting, formatting, etc.
+# Linting, formatting, testing
 
-black:
-	uv run black .
-
-flake8:
-	uv run flake8 .
-
-isort:
-	uv run isort .
-
-mypy:
-	uv run mypy .
-
-lint: black isort flake8 mypy
+lint:
+	black . && flake8 . && isort . && mypy .
 
 pytest:
-	uv run pytest
+	pytest
 
-pre-commit: lint pytest
+test-runner:
+	docker compose run --rm test-runner
 
 # Cleanup
 

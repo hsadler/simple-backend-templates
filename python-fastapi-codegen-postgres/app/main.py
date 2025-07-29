@@ -4,9 +4,8 @@ from fastapi import Depends, FastAPI, HTTPException, Path, status
 
 from app import models
 from app.database import Database, get_database
-from app.repos import items as items_repo
 from app.log import setup_logging
-
+from app.repos import items as items_repo
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -14,7 +13,10 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Python + FastAPI + CodeGen + Postgres",
-    description="A simple FastAPI server with a Postgres database. Models are generated from an OpenAPI schema.",
+    description=(
+        "A simple FastAPI server with a Postgres database. "
+        "Models are generated from an OpenAPI schema."
+    ),
     version="1.0.0",
 )
 

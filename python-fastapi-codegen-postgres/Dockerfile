@@ -2,7 +2,7 @@ FROM python:3.13-slim AS base
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl gcc libc6-dev ca-certificates && \
+RUN apt-get update && apt-get install -y make curl gcc libc6-dev ca-certificates && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
     ln -s /root/.local/bin/uv /usr/local/bin/uv
 
