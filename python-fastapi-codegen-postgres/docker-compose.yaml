@@ -9,8 +9,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DEBUG: "true"
       DATABASE_URL: postgresql://user:password@db:5432/example_db
+      DEBUG: "true"
+      JSON_LOGGING: "false"
     ports:
       - "8000:8000"
 
