@@ -1,4 +1,4 @@
-# Golang + ogen + pgx
+# Golang + Ogen + Postgres
 
 A simple "items" CRUD API implementation using:
 - [Golang](https://golang.org/) - Programming language
@@ -7,9 +7,9 @@ A simple "items" CRUD API implementation using:
 
 ## Requirements
 
-- Go 1.24+
-- Docker and Docker Compose
-- Make
+- go 1.24+
+- docker
+- make
 
 ## Getting Started
 

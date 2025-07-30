@@ -1,13 +1,13 @@
 repos:
 - repo: local
   hooks:
+    - id: golang-gin-postgres-formatter-tests
+      name: Run formatter and tests for golang-gin-postgres
+      entry: bash -c 'cd golang-gin-postgres/ && make format && make test'
+      language: system
+      pass_filenames: false
     - id: python-fastapi-codegen-postgres-lint-pytest
       name: Run linter and pytest for python-fastapi-codegen-postgres
       entry: bash -c 'cd python-fastapi-codegen-postgres/ && make pre-commit-runner'
-      language: system
-      pass_filenames: false
-    - id: golang-gin-pgx-formatter-tests
-      name: Run formatter and tests for golang-gin-pgx
-      entry: bash -c 'cd golang-gin-pgx/ && make format && make test'
       language: system
       pass_filenames: false

@@ -1,4 +1,5 @@
 
 TODO:
-
-- Add golang-ogen-pgx example
+X add golang-ogen-postgres example
+- align apis across all examples
+- tests and pre-commit hooks for golang-gin-postgres
