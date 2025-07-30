@@ -1,4 +1,4 @@
-.PHONY: build up down black flake8 isort mypy lint pytest pre-commit
+.PHONY: build up down lint pytest
 
 build:
 	docker compose build --no-cache
@@ -22,7 +22,7 @@ db-migrate:
 db-migrate-dry-run:
 	docker compose exec app alembic upgrade head --sql
 
-# Linting, formatting, testing
+# Formatting, type checking, testing
 
 lint:
 	black . && mypy .

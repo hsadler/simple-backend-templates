@@ -3,15 +3,15 @@
 ## What does this template contain?
 - FastAPI server with an "items" API
 - OpenAPI schema
-- CodeGen of FastAPI server and models from the OpenAPI schema
+- Code generation of models from the OpenAPI schema
 - Postgres Database
 - DB connection pooling and "items" CRUD via asyncpg
 - DB migrations via Alembic
+- Local dev environment with docker-compose
+- Prometheus metrics exporter for the server
 - Basic server logging setup
 - API tests via pytest and FastAPI test client
-- Local dev environment with docker-compose
 - Automatic linting and pytest running with pre-commit
-- Prometheus metrics exporter for the server
 
 ## Getting started
 
@@ -82,27 +82,27 @@ Spin-down containers when finished
 docker compose down
 ```
 
-## Linting, formatting, testing
-
-```bash
-make test-runner
-```
-
 ## Model generation based on OpenAPI schema
 
 ```bash
 make gen-models
 ```
 
+## Pre-commit hooks (linting, formatting, testing)
+
+```bash
+make pre-commit-runner
+```
+
 ### Running the docker containers will spin-up Swagger docs and Adminer
 
-- Visit Swagger docs here:
+- Swagger docs:
 
     ```sh
     http://127.0.0.1:8000/docs
     ```
 
-- Visit Adminer DB management tool here:
+- Adminer DB management tool:
 
     ```sh
     http://127.0.0.1:8080/?pgsql=db&username=user&db=example_db&ns=public

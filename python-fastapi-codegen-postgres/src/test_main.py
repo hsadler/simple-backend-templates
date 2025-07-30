@@ -12,6 +12,10 @@ from src.database import get_database
 from src.main import app
 from src.repos import items as items_repo
 
+"""
+TESTS WRITTEN BY AN AI ASSISTANT
+"""
+
 # Disable logging during tests to reduce noise
 logging.disable(logging.CRITICAL)
 

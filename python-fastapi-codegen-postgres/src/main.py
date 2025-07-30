@@ -132,18 +132,26 @@ async def delete_item(
     db: Database = Depends(get_database),
 ) -> models.ItemDeleteResponse:
     logger.info("Handling delete item request", extra={"item_id": item_id})
+    ERROR_DETAIL_500: str = "Error deleting item by id"
     try:
         item = await items_repo.fetch_item(db, item_id)
-        if item is None:
-            logger.debug("Item not found for delete", extra={"item_id": item_id})
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Item resource not found",
-            )
+    except Exception as e:
+        logger.error(
+            "Unexpected error fetching item for delete by id",
+            extra={"error": e, "item_id": item_id},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ERROR_DETAIL_500,
+        )
+    if item is None:
+        logger.debug("Item not found for delete", extra={"item_id": item_id})
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item resource not found",
+        )
+    try:
         await items_repo.delete_item(db, item_id)
-    except HTTPException:
-        # Re-raise HTTPExceptions (like 404) so they don't get caught by the general handler
-        raise
     except Exception as e:
         logger.error(
             "Unexpected error deleting item by id",
@@ -151,7 +159,7 @@ async def delete_item(
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error deleting item by id",
+            detail=ERROR_DETAIL_500,
         )
     logger.debug(f"Item deleted: {item.model_dump()}")
     return models.ItemDeleteResponse(
