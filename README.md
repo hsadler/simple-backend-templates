@@ -5,7 +5,6 @@ Simple templates for backends. All implement the same "items" example CRUD API.
 - [Golang + ogen + pgx](./golang-ogen-pgx/)
 - [Golang + Gin + pgx](./golang-gin-pgx/)
 - [Python + FastAPI + CodeGen + Postgres](./python-fastapi-codegen-postgres/)
-- [Python + FastAPI + asyncpg](./python-fastapi-asyncpg/)
 
 POCs:
 
