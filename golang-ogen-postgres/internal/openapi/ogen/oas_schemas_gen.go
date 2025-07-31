@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-faster/errors"
 	"github.com/google/uuid"
 )
 
@@ -13,61 +14,10 @@ func (s *ErrorResponseStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
-// Ref: #/components/schemas/CreateItemRequest
-type CreateItemRequest struct {
-	Data ItemIn `json:"data"`
-}
+// DeleteItemNotFound is response for DeleteItem operation.
+type DeleteItemNotFound struct{}
 
-// GetData returns the value of Data.
-func (s *CreateItemRequest) GetData() ItemIn {
-	return s.Data
-}
-
-// SetData sets the value of Data.
-func (s *CreateItemRequest) SetData(val ItemIn) {
-	s.Data = val
-}
-
-// Ref: #/components/schemas/CreateItemResponse
-type CreateItemResponse struct {
-	Data Item                   `json:"data"`
-	Meta CreateItemResponseMeta `json:"meta"`
-}
-
-// GetData returns the value of Data.
-func (s *CreateItemResponse) GetData() Item {
-	return s.Data
-}
-
-// GetMeta returns the value of Meta.
-func (s *CreateItemResponse) GetMeta() CreateItemResponseMeta {
-	return s.Meta
-}
-
-// SetData sets the value of Data.
-func (s *CreateItemResponse) SetData(val Item) {
-	s.Data = val
-}
-
-// SetMeta sets the value of Meta.
-func (s *CreateItemResponse) SetMeta(val CreateItemResponseMeta) {
-	s.Meta = val
-}
-
-// Ref: #/components/schemas/CreateItemResponseMeta
-type CreateItemResponseMeta struct {
-	Created bool `json:"created"`
-}
-
-// GetCreated returns the value of Created.
-func (s *CreateItemResponseMeta) GetCreated() bool {
-	return s.Created
-}
-
-// SetCreated sets the value of Created.
-func (s *CreateItemResponseMeta) SetCreated(val bool) {
-	s.Created = val
-}
+func (*DeleteItemNotFound) deleteItemRes() {}
 
 // Ref: #/components/schemas/ErrorResponse
 type ErrorResponse struct {
@@ -83,6 +33,9 @@ func (s *ErrorResponse) GetError() string {
 func (s *ErrorResponse) SetError(val string) {
 	s.Error = val
 }
+
+func (*ErrorResponse) createItemRes() {}
+func (*ErrorResponse) updateItemRes() {}
 
 // ErrorResponseStatusCode wraps ErrorResponse with StatusCode.
 type ErrorResponseStatusCode struct {
@@ -110,61 +63,10 @@ func (s *ErrorResponseStatusCode) SetResponse(val ErrorResponse) {
 	s.Response = val
 }
 
-// Ref: #/components/schemas/GetItemResponse
-type GetItemResponse struct {
-	Data Item                `json:"data"`
-	Meta GetItemResponseMeta `json:"meta"`
-}
+// GetItemNotFound is response for GetItem operation.
+type GetItemNotFound struct{}
 
-// GetData returns the value of Data.
-func (s *GetItemResponse) GetData() Item {
-	return s.Data
-}
-
-// GetMeta returns the value of Meta.
-func (s *GetItemResponse) GetMeta() GetItemResponseMeta {
-	return s.Meta
-}
-
-// SetData sets the value of Data.
-func (s *GetItemResponse) SetData(val Item) {
-	s.Data = val
-}
-
-// SetMeta sets the value of Meta.
-func (s *GetItemResponse) SetMeta(val GetItemResponseMeta) {
-	s.Meta = val
-}
-
-type GetItemResponseMeta struct{}
-
-// Ref: #/components/schemas/GetItemsResponse
-type GetItemsResponse struct {
-	Data []Item               `json:"data"`
-	Meta GetItemsResponseMeta `json:"meta"`
-}
-
-// GetData returns the value of Data.
-func (s *GetItemsResponse) GetData() []Item {
-	return s.Data
-}
-
-// GetMeta returns the value of Meta.
-func (s *GetItemsResponse) GetMeta() GetItemsResponseMeta {
-	return s.Meta
-}
-
-// SetData sets the value of Data.
-func (s *GetItemsResponse) SetData(val []Item) {
-	s.Data = val
-}
-
-// SetMeta sets the value of Meta.
-func (s *GetItemsResponse) SetMeta(val GetItemsResponseMeta) {
-	s.Meta = val
-}
-
-type GetItemsResponseMeta struct{}
+func (*GetItemNotFound) getItemRes() {}
 
 // Ref: #/components/schemas/Item
 type Item struct {
@@ -225,6 +127,105 @@ func (s *Item) SetPrice(val float32) {
 	s.Price = val
 }
 
+// Ref: #/components/schemas/ItemCreateRequest
+type ItemCreateRequest struct {
+	Data ItemIn `json:"data"`
+}
+
+// GetData returns the value of Data.
+func (s *ItemCreateRequest) GetData() ItemIn {
+	return s.Data
+}
+
+// SetData sets the value of Data.
+func (s *ItemCreateRequest) SetData(val ItemIn) {
+	s.Data = val
+}
+
+// Ref: #/components/schemas/ItemCreateResponse
+type ItemCreateResponse struct {
+	Data Item     `json:"data"`
+	Meta ItemMeta `json:"meta"`
+}
+
+// GetData returns the value of Data.
+func (s *ItemCreateResponse) GetData() Item {
+	return s.Data
+}
+
+// GetMeta returns the value of Meta.
+func (s *ItemCreateResponse) GetMeta() ItemMeta {
+	return s.Meta
+}
+
+// SetData sets the value of Data.
+func (s *ItemCreateResponse) SetData(val Item) {
+	s.Data = val
+}
+
+// SetMeta sets the value of Meta.
+func (s *ItemCreateResponse) SetMeta(val ItemMeta) {
+	s.Meta = val
+}
+
+func (*ItemCreateResponse) createItemRes() {}
+
+// Ref: #/components/schemas/ItemDeleteResponse
+type ItemDeleteResponse struct {
+	Data Item     `json:"data"`
+	Meta ItemMeta `json:"meta"`
+}
+
+// GetData returns the value of Data.
+func (s *ItemDeleteResponse) GetData() Item {
+	return s.Data
+}
+
+// GetMeta returns the value of Meta.
+func (s *ItemDeleteResponse) GetMeta() ItemMeta {
+	return s.Meta
+}
+
+// SetData sets the value of Data.
+func (s *ItemDeleteResponse) SetData(val Item) {
+	s.Data = val
+}
+
+// SetMeta sets the value of Meta.
+func (s *ItemDeleteResponse) SetMeta(val ItemMeta) {
+	s.Meta = val
+}
+
+func (*ItemDeleteResponse) deleteItemRes() {}
+
+// Ref: #/components/schemas/ItemGetResponse
+type ItemGetResponse struct {
+	Data Item     `json:"data"`
+	Meta ItemMeta `json:"meta"`
+}
+
+// GetData returns the value of Data.
+func (s *ItemGetResponse) GetData() Item {
+	return s.Data
+}
+
+// GetMeta returns the value of Meta.
+func (s *ItemGetResponse) GetMeta() ItemMeta {
+	return s.Meta
+}
+
+// SetData sets the value of Data.
+func (s *ItemGetResponse) SetData(val Item) {
+	s.Data = val
+}
+
+// SetMeta sets the value of Meta.
+func (s *ItemGetResponse) SetMeta(val ItemMeta) {
+	s.Meta = val
+}
+
+func (*ItemGetResponse) getItemRes() {}
+
 // Ref: #/components/schemas/ItemIn
 type ItemIn struct {
 	Name  string  `json:"name"`
@@ -251,16 +252,181 @@ func (s *ItemIn) SetPrice(val float32) {
 	s.Price = val
 }
 
-type PingGetOK struct {
+// Ref: #/components/schemas/ItemMeta
+type ItemMeta struct {
+	ItemStatus OptItemMetaItemStatus `json:"item_status"`
+}
+
+// GetItemStatus returns the value of ItemStatus.
+func (s *ItemMeta) GetItemStatus() OptItemMetaItemStatus {
+	return s.ItemStatus
+}
+
+// SetItemStatus sets the value of ItemStatus.
+func (s *ItemMeta) SetItemStatus(val OptItemMetaItemStatus) {
+	s.ItemStatus = val
+}
+
+type ItemMetaItemStatus string
+
+const (
+	ItemMetaItemStatusCreated ItemMetaItemStatus = "created"
+	ItemMetaItemStatusFetched ItemMetaItemStatus = "fetched"
+	ItemMetaItemStatusUpdated ItemMetaItemStatus = "updated"
+	ItemMetaItemStatusDeleted ItemMetaItemStatus = "deleted"
+)
+
+// AllValues returns all ItemMetaItemStatus values.
+func (ItemMetaItemStatus) AllValues() []ItemMetaItemStatus {
+	return []ItemMetaItemStatus{
+		ItemMetaItemStatusCreated,
+		ItemMetaItemStatusFetched,
+		ItemMetaItemStatusUpdated,
+		ItemMetaItemStatusDeleted,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ItemMetaItemStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case ItemMetaItemStatusCreated:
+		return []byte(s), nil
+	case ItemMetaItemStatusFetched:
+		return []byte(s), nil
+	case ItemMetaItemStatusUpdated:
+		return []byte(s), nil
+	case ItemMetaItemStatusDeleted:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ItemMetaItemStatus) UnmarshalText(data []byte) error {
+	switch ItemMetaItemStatus(data) {
+	case ItemMetaItemStatusCreated:
+		*s = ItemMetaItemStatusCreated
+		return nil
+	case ItemMetaItemStatusFetched:
+		*s = ItemMetaItemStatusFetched
+		return nil
+	case ItemMetaItemStatusUpdated:
+		*s = ItemMetaItemStatusUpdated
+		return nil
+	case ItemMetaItemStatusDeleted:
+		*s = ItemMetaItemStatusDeleted
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ItemUpdateRequest
+type ItemUpdateRequest struct {
+	Data ItemIn `json:"data"`
+}
+
+// GetData returns the value of Data.
+func (s *ItemUpdateRequest) GetData() ItemIn {
+	return s.Data
+}
+
+// SetData sets the value of Data.
+func (s *ItemUpdateRequest) SetData(val ItemIn) {
+	s.Data = val
+}
+
+// Ref: #/components/schemas/ItemUpdateResponse
+type ItemUpdateResponse struct {
+	Data Item     `json:"data"`
+	Meta ItemMeta `json:"meta"`
+}
+
+// GetData returns the value of Data.
+func (s *ItemUpdateResponse) GetData() Item {
+	return s.Data
+}
+
+// GetMeta returns the value of Meta.
+func (s *ItemUpdateResponse) GetMeta() ItemMeta {
+	return s.Meta
+}
+
+// SetData sets the value of Data.
+func (s *ItemUpdateResponse) SetData(val Item) {
+	s.Data = val
+}
+
+// SetMeta sets the value of Meta.
+func (s *ItemUpdateResponse) SetMeta(val ItemMeta) {
+	s.Meta = val
+}
+
+func (*ItemUpdateResponse) updateItemRes() {}
+
+// NewOptItemMetaItemStatus returns new OptItemMetaItemStatus with value set to v.
+func NewOptItemMetaItemStatus(v ItemMetaItemStatus) OptItemMetaItemStatus {
+	return OptItemMetaItemStatus{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptItemMetaItemStatus is optional ItemMetaItemStatus.
+type OptItemMetaItemStatus struct {
+	Value ItemMetaItemStatus
+	Set   bool
+}
+
+// IsSet returns true if OptItemMetaItemStatus was set.
+func (o OptItemMetaItemStatus) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptItemMetaItemStatus) Reset() {
+	var v ItemMetaItemStatus
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptItemMetaItemStatus) SetTo(v ItemMetaItemStatus) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptItemMetaItemStatus) Get() (v ItemMetaItemStatus, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptItemMetaItemStatus) Or(d ItemMetaItemStatus) ItemMetaItemStatus {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// Ref: #/components/schemas/PingResponse
+type PingResponse struct {
 	Message string `json:"message"`
 }
 
 // GetMessage returns the value of Message.
-func (s *PingGetOK) GetMessage() string {
+func (s *PingResponse) GetMessage() string {
 	return s.Message
 }
 
 // SetMessage sets the value of Message.
-func (s *PingGetOK) SetMessage(val string) {
+func (s *PingResponse) SetMessage(val string) {
 	s.Message = val
 }
+
+// UpdateItemNotFound is response for UpdateItem operation.
+type UpdateItemNotFound struct{}
+
+func (*UpdateItemNotFound) updateItemRes() {}

@@ -160,3 +160,9 @@ cython_debug/
 .idea/
 
 .vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini

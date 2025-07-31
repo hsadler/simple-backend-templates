@@ -71,12 +71,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 				if len(elem) == 0 {
 					switch r.Method {
-					case "GET":
-						s.handleItemsGetRequest([0]string{}, elemIsEscaped, w, r)
 					case "POST":
-						s.handleItemsPostRequest([0]string{}, elemIsEscaped, w, r)
+						s.handleCreateItemRequest([0]string{}, elemIsEscaped, w, r)
 					default:
-						s.notAllowed(w, r, "GET,POST")
+						s.notAllowed(w, r, "POST")
 					}
 
 					return
@@ -90,33 +88,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 
-					if len(elem) == 0 {
-						break
-					}
-					switch elem[0] {
-					case 'a': // Prefix: "all"
-						origElem := elem
-						if l := len("all"); len(elem) >= l && elem[0:l] == "all" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							// Leaf node.
-							switch r.Method {
-							case "GET":
-								s.handleItemsAllGetRequest([0]string{}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, "GET")
-							}
-
-							return
-						}
-
-						elem = origElem
-					}
-					// Param: "id"
+					// Param: "itemId"
 					// Leaf parameter, slashes are prohibited
 					idx := strings.IndexByte(elem, '/')
 					if idx >= 0 {
@@ -128,12 +100,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					if len(elem) == 0 {
 						// Leaf node.
 						switch r.Method {
+						case "DELETE":
+							s.handleDeleteItemRequest([1]string{
+								args[0],
+							}, elemIsEscaped, w, r)
 						case "GET":
-							s.handleItemsIDGetRequest([1]string{
+							s.handleGetItemRequest([1]string{
+								args[0],
+							}, elemIsEscaped, w, r)
+						case "PATCH":
+							s.handleUpdateItemRequest([1]string{
 								args[0],
 							}, elemIsEscaped, w, r)
 						default:
-							s.notAllowed(w, r, "GET")
+							s.notAllowed(w, r, "DELETE,GET,PATCH")
 						}
 
 						return
@@ -153,7 +133,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					// Leaf node.
 					switch r.Method {
 					case "GET":
-						s.handlePingGetRequest([0]string{}, elemIsEscaped, w, r)
+						s.handlePingRequest([0]string{}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, "GET")
 					}
@@ -265,18 +245,10 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 				if len(elem) == 0 {
 					switch method {
-					case "GET":
-						r.name = ItemsGetOperation
-						r.summary = "Get Items"
-						r.operationID = ""
-						r.pathPattern = "/items"
-						r.args = args
-						r.count = 0
-						return r, true
 					case "POST":
-						r.name = ItemsPostOperation
+						r.name = CreateItemOperation
 						r.summary = ""
-						r.operationID = ""
+						r.operationID = "createItem"
 						r.pathPattern = "/items"
 						r.args = args
 						r.count = 0
@@ -294,37 +266,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 
-					if len(elem) == 0 {
-						break
-					}
-					switch elem[0] {
-					case 'a': // Prefix: "all"
-						origElem := elem
-						if l := len("all"); len(elem) >= l && elem[0:l] == "all" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							// Leaf node.
-							switch method {
-							case "GET":
-								r.name = ItemsAllGetOperation
-								r.summary = "Get All Items"
-								r.operationID = ""
-								r.pathPattern = "/items/all"
-								r.args = args
-								r.count = 0
-								return r, true
-							default:
-								return
-							}
-						}
-
-						elem = origElem
-					}
-					// Param: "id"
+					// Param: "itemId"
 					// Leaf parameter, slashes are prohibited
 					idx := strings.IndexByte(elem, '/')
 					if idx >= 0 {
@@ -336,11 +278,27 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					if len(elem) == 0 {
 						// Leaf node.
 						switch method {
-						case "GET":
-							r.name = ItemsIDGetOperation
+						case "DELETE":
+							r.name = DeleteItemOperation
 							r.summary = ""
-							r.operationID = ""
-							r.pathPattern = "/items/{id}"
+							r.operationID = "deleteItem"
+							r.pathPattern = "/items/{itemId}"
+							r.args = args
+							r.count = 1
+							return r, true
+						case "GET":
+							r.name = GetItemOperation
+							r.summary = "Get Item"
+							r.operationID = "getItem"
+							r.pathPattern = "/items/{itemId}"
+							r.args = args
+							r.count = 1
+							return r, true
+						case "PATCH":
+							r.name = UpdateItemOperation
+							r.summary = "Update Item"
+							r.operationID = "updateItem"
+							r.pathPattern = "/items/{itemId}"
 							r.args = args
 							r.count = 1
 							return r, true
@@ -363,9 +321,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = PingGetOperation
+						r.name = PingOperation
 						r.summary = ""
-						r.operationID = ""
+						r.operationID = "ping"
 						r.pathPattern = "/ping"
 						r.args = args
 						r.count = 0

@@ -1,4 +1,4 @@
-.PHONY: build up down
+.PHONY: build up down test
 
 openapi-generate:
 	docker run --rm --volume=".:/workspace" ghcr.io/ogen-go/ogen:latest \
@@ -9,7 +9,7 @@ openapi-generate:
 		--generate-wrappers=on
 
 compile-binaries:
-	go build -v -o build/ -command="/app/app
+	go build -o ./build/app ./cmd/serverd
 
 build:
 	docker compose build

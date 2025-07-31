@@ -13,48 +13,48 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// ItemsAllGet implements GET /items/all operation.
-//
-// Returns all Items.
-//
-// GET /items/all
-func (UnimplementedHandler) ItemsAllGet(ctx context.Context, params ItemsAllGetParams) (r *GetItemsResponse, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// ItemsGet implements GET /items operation.
-//
-// Returns Items by ids. Only returns subset of Items found.
-//
-// GET /items
-func (UnimplementedHandler) ItemsGet(ctx context.Context, params ItemsGetParams) (r *GetItemsResponse, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// ItemsIDGet implements GET /items/{id} operation.
-//
-// Returns Item by id.
-//
-// GET /items/{id}
-func (UnimplementedHandler) ItemsIDGet(ctx context.Context, params ItemsIDGetParams) (r *GetItemResponse, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// ItemsPost implements POST /items operation.
+// CreateItem implements createItem operation.
 //
 // Creates Item.
 //
 // POST /items
-func (UnimplementedHandler) ItemsPost(ctx context.Context, req *CreateItemRequest) (r *CreateItemResponse, _ error) {
+func (UnimplementedHandler) CreateItem(ctx context.Context, req *ItemCreateRequest) (r CreateItemRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// PingGet implements GET /ping operation.
+// DeleteItem implements deleteItem operation.
+//
+// Deletes Item.
+//
+// DELETE /items/{itemId}
+func (UnimplementedHandler) DeleteItem(ctx context.Context, params DeleteItemParams) (r DeleteItemRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// GetItem implements getItem operation.
+//
+// Returns a single Item by id.
+//
+// GET /items/{itemId}
+func (UnimplementedHandler) GetItem(ctx context.Context, params GetItemParams) (r GetItemRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// Ping implements ping operation.
 //
 // Check if the service is running.
 //
 // GET /ping
-func (UnimplementedHandler) PingGet(ctx context.Context) (r *PingGetOK, _ error) {
+func (UnimplementedHandler) Ping(ctx context.Context) (r *PingResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// UpdateItem implements updateItem operation.
+//
+// Updates a single Item by id.
+//
+// PATCH /items/{itemId}
+func (UnimplementedHandler) UpdateItem(ctx context.Context, req *ItemUpdateRequest, params UpdateItemParams) (r UpdateItemRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

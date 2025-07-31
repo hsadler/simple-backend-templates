@@ -8,36 +8,36 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// ItemsAllGet implements GET /items/all operation.
-	//
-	// Returns all Items.
-	//
-	// GET /items/all
-	ItemsAllGet(ctx context.Context, params ItemsAllGetParams) (*GetItemsResponse, error)
-	// ItemsGet implements GET /items operation.
-	//
-	// Returns Items by ids. Only returns subset of Items found.
-	//
-	// GET /items
-	ItemsGet(ctx context.Context, params ItemsGetParams) (*GetItemsResponse, error)
-	// ItemsIDGet implements GET /items/{id} operation.
-	//
-	// Returns Item by id.
-	//
-	// GET /items/{id}
-	ItemsIDGet(ctx context.Context, params ItemsIDGetParams) (*GetItemResponse, error)
-	// ItemsPost implements POST /items operation.
+	// CreateItem implements createItem operation.
 	//
 	// Creates Item.
 	//
 	// POST /items
-	ItemsPost(ctx context.Context, req *CreateItemRequest) (*CreateItemResponse, error)
-	// PingGet implements GET /ping operation.
+	CreateItem(ctx context.Context, req *ItemCreateRequest) (CreateItemRes, error)
+	// DeleteItem implements deleteItem operation.
+	//
+	// Deletes Item.
+	//
+	// DELETE /items/{itemId}
+	DeleteItem(ctx context.Context, params DeleteItemParams) (DeleteItemRes, error)
+	// GetItem implements getItem operation.
+	//
+	// Returns a single Item by id.
+	//
+	// GET /items/{itemId}
+	GetItem(ctx context.Context, params GetItemParams) (GetItemRes, error)
+	// Ping implements ping operation.
 	//
 	// Check if the service is running.
 	//
 	// GET /ping
-	PingGet(ctx context.Context) (*PingGetOK, error)
+	Ping(ctx context.Context) (*PingResponse, error)
+	// UpdateItem implements updateItem operation.
+	//
+	// Updates a single Item by id.
+	//
+	// PATCH /items/{itemId}
+	UpdateItem(ctx context.Context, req *ItemUpdateRequest, params UpdateItemParams) (UpdateItemRes, error)
 	// NewError creates *ErrorResponseStatusCode from error returned by handler.
 	//
 	// Used for common default response.

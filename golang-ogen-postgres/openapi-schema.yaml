@@ -8,58 +8,9 @@ servers:
     description: Local development server
 
 paths:
-  /ping:
-    get:
-      description: Check if the service is running.
-      responses:
-        '200':
-          description: OK.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "pong"
-                required:
-                  - message
-        'default':
-          description: Unexpected error occurred.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /items:
-    get:
-      summary: Get Items
-      description: Returns Items by ids. Only returns subset of Items found.
-      parameters:
-        - name: item_ids
-          in: query
-          description: Item IDs
-          required: true
-          schema:
-            type: array
-            items:
-              type: integer
-          style: form
-          explode: true
-      responses:
-        '200':
-          description: OK.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetItemsResponse'
-        'default':
-          description: Unexpected error occurred.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
     post:
+      operationId: createItem
       description: Creates Item.
       requestBody:
         description: Item to create.
@@ -67,60 +18,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateItemRequest'
+              $ref: '#/components/schemas/ItemCreateRequest'
       responses:
         '201':
           description: Created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateItemResponse'
+                $ref: '#/components/schemas/ItemCreateResponse'
+        '409':
+          description: Conflict.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         'default':
           description: Unexpected error occurred.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /items/all:
+  /items/{itemId}:
     get:
-      summary: Get All Items
-      description: Returns all Items.
+      operationId: getItem
+      summary: Get Item
+      description: Returns a single Item by id.
       parameters:
-        - name: offset
-          in: query
-          description: Offset
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-        - name: chunkSize
-          in: query
-          description: Chunk size
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 20
-      responses:
-        '200':
-          description: OK.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetItemsResponse'
-        'default':
-          description: Unexpected error occurred.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /items/{id}:
-    get:
-      description: Returns Item by id.
-      parameters:
-        - name: id
+        - name: itemId
           in: path
           description: Item ID
           required: true
@@ -132,7 +56,90 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetItemResponse'
+                $ref: '#/components/schemas/ItemGetResponse'
+        '404':
+          description: Not found.
+        'default':
+          description: Unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: updateItem
+      summary: Update Item
+      description: Updates a single Item by id.
+      parameters:
+        - name: itemId
+          in: path
+          description: Item ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Item to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdateRequest'
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemUpdateResponse'
+        '404':
+          description: Not found.
+        '409':
+          description: Conflict.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        'default':
+          description: Unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteItem
+      description: Deletes Item.
+      parameters:
+        - name: itemId
+          in: path
+          description: Item ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDeleteResponse'
+        '404':
+          description: Not found.
+        'default':
+          description: Unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /ping:
+    get:
+      operationId: ping
+      description: Check if the service is running.
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
         'default':
           description: Unexpected error occurred.
           content:
@@ -186,31 +193,30 @@ components:
         - name
         - price
 
-    GetItemResponse:
+    ItemMeta:
+      type: object
+      properties:
+        item_status:
+          type: string
+          enum:
+            - created
+            - fetched
+            - updated
+            - deleted
+          example: created
+
+    ItemGetResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Item'
         meta:
-          type: object
+          $ref: '#/components/schemas/ItemMeta'
       required:
         - data
         - meta
 
-    GetItemsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Item'
-        meta:
-          type: object
-      required:
-        - data
-        - meta
-
-    CreateItemRequest:
+    ItemCreateRequest:
       type: object
       properties:
         data:
@@ -218,24 +224,55 @@ components:
       required:
         - data
 
-    CreateItemResponseMeta:
-      type: object
-      properties:
-        created:
-          type: boolean
-      required:
-        - created
-
-    CreateItemResponse:
+    ItemCreateResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Item'
         meta:
-          $ref: '#/components/schemas/CreateItemResponseMeta'
+          $ref: '#/components/schemas/ItemMeta'
       required:
         - data
         - meta
+
+    ItemUpdateRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ItemIn'
+      required:
+        - data
+
+    ItemUpdateResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Item'
+        meta:
+          $ref: '#/components/schemas/ItemMeta'
+      required:
+        - data
+        - meta
+
+    ItemDeleteResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Item'
+        meta:
+          $ref: '#/components/schemas/ItemMeta'
+      required:
+        - data
+        - meta
+
+    PingResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "pong"
+      required:
+        - message
 
     ErrorResponse:
       type: object

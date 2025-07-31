@@ -2,6 +2,7 @@ package openapi
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -24,19 +25,19 @@ func (s *ItemsService) NewError(ctx context.Context, err error) *ogen.ErrorRespo
 	}
 }
 
-func (s *ItemsService) PingGet(
+func (s *ItemsService) Ping(
 	ctx context.Context,
-) (*ogen.PingGetOK, error) {
+) (*ogen.PingResponse, error) {
 	log.Info().Msg("Handling PingGet")
-	return &ogen.PingGetOK{
+	return &ogen.PingResponse{
 		Message: "pong",
 	}, nil
 }
 
-func (s *ItemsService) ItemsPost(
+func (s *ItemsService) CreateItem(
 	ctx context.Context,
-	req *ogen.CreateItemRequest,
-) (*ogen.CreateItemResponse, error) {
+	req *ogen.ItemCreateRequest,
+) (ogen.CreateItemRes, error) {
 	log.Info().
 		Str("name", req.Data.Name).
 		Float32("price", req.Data.Price).
@@ -58,95 +59,38 @@ func (s *ItemsService) ItemsPost(
 		Price:     item.Price,
 	}
 	// Compose and return response
-	return &ogen.CreateItemResponse{
+	return &ogen.ItemCreateResponse{
 		Data: itemOut,
-		Meta: ogen.CreateItemResponseMeta{
-			Created: true,
+		Meta: ogen.ItemMeta{
+			ItemStatus: ogen.OptItemMetaItemStatus{
+				Value: ogen.ItemMetaItemStatusCreated,
+				Set:   true,
+			},
 		},
 	}, nil
 }
 
-func (s *ItemsService) ItemsGet(
+func (s *ItemsService) GetItem(
 	ctx context.Context,
-	params ogen.ItemsGetParams,
-) (*ogen.GetItemsResponse, error) {
-	log.Info().
-		Ints("item_ids", params.ItemIds).
-		Msg("Handling ItemsGet")
-	// Fetch items from DB by IDs
-	items, err := itemsrepo.FetchItemsByIds(s.Deps.DBPool, params.ItemIds)
-	if err != nil {
-		return nil, s.NewError(ctx, err)
-	}
-	// Convert models.Items to ogen.Items
-	itemsOut := make([]ogen.Item, len(items))
-	for i, item := range items {
-		itemsOut[i] = ogen.Item{
-			ID:        int64(item.ID),
-			UUID:      uuid.MustParse(item.UUID),
-			CreatedAt: item.CreatedAt,
-			Name:      item.Name,
-			Price:     item.Price,
-		}
-	}
-	// Compose and return response
-	return &ogen.GetItemsResponse{
-		Data: itemsOut,
-		Meta: ogen.GetItemsResponseMeta{},
-	}, nil
+	params ogen.GetItemParams,
+) (ogen.GetItemRes, error) {
+	// STUB
+	return nil, errors.New("not implemented")
 }
 
-func (s *ItemsService) ItemsIDGet(
+func (s *ItemsService) UpdateItem(
 	ctx context.Context,
-	params ogen.ItemsIDGetParams,
-) (*ogen.GetItemResponse, error) {
-	log.Info().
-		Int("item_id", params.ID).
-		Msg("Handling ItemsIDGet")
-	// Fetch item from DB by ID
-	item, err := itemsrepo.FetchItemById(s.Deps.DBPool, params.ID)
-	if err != nil {
-		return nil, s.NewError(ctx, err)
-	}
-	// Convert models.Item to ogen.Item
-	itemOut := ogen.Item{
-		ID:        int64(item.ID),
-		UUID:      uuid.MustParse(item.UUID),
-		CreatedAt: item.CreatedAt,
-		Name:      item.Name,
-		Price:     item.Price,
-	}
-	// Compose and return response
-	return &ogen.GetItemResponse{
-		Data: itemOut,
-	}, nil
+	req *ogen.ItemUpdateRequest,
+	params ogen.UpdateItemParams,
+) (ogen.UpdateItemRes, error) {
+	// STUB
+	return nil, errors.New("not implemented")
 }
 
-func (s *ItemsService) ItemsAllGet(
+func (s *ItemsService) DeleteItem(
 	ctx context.Context,
-	params ogen.ItemsAllGetParams,
-) (*ogen.GetItemsResponse, error) {
-	log.Info().Msg("Handling ItemsAllGet")
-	// Fetch all items from DB
-	// Note: Large limit to get all items
-	items, err := itemsrepo.FetchPaginatedItems(s.Deps.DBPool, 0, 1000)
-	if err != nil {
-		return nil, s.NewError(ctx, err)
-	}
-	// Convert models.Items to ogen.Items
-	itemsOut := make([]ogen.Item, len(items))
-	for i, item := range items {
-		itemsOut[i] = ogen.Item{
-			ID:        int64(item.ID),
-			UUID:      uuid.MustParse(item.UUID),
-			CreatedAt: item.CreatedAt,
-			Name:      item.Name,
-			Price:     item.Price,
-		}
-	}
-	// Compose and return response
-	return &ogen.GetItemsResponse{
-		Data: itemsOut,
-		Meta: ogen.GetItemsResponseMeta{},
-	}, nil
+	params ogen.DeleteItemParams,
+) (ogen.DeleteItemRes, error) {
+	// STUB
+	return nil, errors.New("not implemented")
 }

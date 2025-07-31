@@ -1,1 +1,45 @@
-build/
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of `go build`
+/bin/
+/build/
+/dist/
+
+# Vendor directory (if using `go mod vendor`)
+/vendor/
+
+# Go workspace file (Go 1.18+)
+/go.work
+/go.work.sum
+
+# Dependency directories (if you're not using Go modules)
+/Godeps/
+Godeps/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# Test cache and coverage
+*.cover
+*.cov
+*.coverprofile
+*.testresult
+*.prof
+*.pprof

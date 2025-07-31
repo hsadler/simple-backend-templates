@@ -17,7 +17,7 @@ services:
       CompileDaemon
         -color=true
         -build="make compile-binaries"
-        -command="build/serverd"
+        -command="build/app"
         -exclude-dir=.git
         -exclude-dir=./build
         -exclude-dir=./internal/openapi/ogen

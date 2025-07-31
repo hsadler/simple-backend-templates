@@ -21,20 +21,11 @@ func run(ctx context.Context) error {
 	if err := testCreateItem(ctx, client); err != nil {
 		return err
 	}
-	if err := testItemsGet(ctx, client); err != nil {
-		return err
-	}
-	if err := testItemsIDGet(ctx, client); err != nil {
-		return err
-	}
-	if err := testItemsAllGet(ctx, client); err != nil {
-		return err
-	}
 	return nil
 }
 
 func testPing(ctx context.Context, client *ogen.Client) error {
-	resp, err := client.PingGet(ctx)
+	resp, err := client.Ping(ctx)
 	if err != nil {
 		color.New(color.FgRed).Println(err)
 		return err
@@ -44,7 +35,7 @@ func testPing(ctx context.Context, client *ogen.Client) error {
 }
 
 func testCreateItem(ctx context.Context, client *ogen.Client) error {
-	req := &ogen.CreateItemRequest{
+	req := &ogen.ItemCreateRequest{
 		Data: ogen.ItemIn{
 			Name: fmt.Sprintf(
 				"Item-%d",
@@ -53,49 +44,12 @@ func testCreateItem(ctx context.Context, client *ogen.Client) error {
 			Price: 19.99,
 		},
 	}
-	resp, err := client.ItemsPost(ctx, req)
+	resp, err := client.CreateItem(ctx, req)
 	if err != nil {
 		color.New(color.FgRed).Println(err)
 		return err
 	}
-	color.New(color.FgGreen).Println(resp.Data)
-	return nil
-}
-
-func testItemsGet(ctx context.Context, client *ogen.Client) error {
-	resp, err := client.ItemsGet(ctx, ogen.ItemsGetParams{
-		ItemIds: []int{1, 2, 3},
-	})
-	if err != nil {
-		color.New(color.FgRed).Println(err)
-		return err
-	}
-	color.New(color.FgGreen).Println(resp.Data)
-	return nil
-}
-
-func testItemsIDGet(ctx context.Context, client *ogen.Client) error {
-	resp, err := client.ItemsIDGet(ctx, ogen.ItemsIDGetParams{
-		ID: 2,
-	})
-	if err != nil {
-		color.New(color.FgRed).Println(err)
-		return err
-	}
-	color.New(color.FgGreen).Println(resp.Data)
-	return nil
-}
-
-func testItemsAllGet(ctx context.Context, client *ogen.Client) error {
-	resp, err := client.ItemsAllGet(ctx, ogen.ItemsAllGetParams{
-		ChunkSize: 10,
-		Offset:    0,
-	})
-	if err != nil {
-		color.New(color.FgRed).Println(err)
-		return err
-	}
-	color.New(color.FgGreen).Println(resp.Data)
+	color.New(color.FgGreen).Println(resp)
 	return nil
 }
 
