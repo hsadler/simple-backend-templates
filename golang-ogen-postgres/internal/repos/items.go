@@ -16,6 +16,7 @@ var (
 	ErrorCreateItem   = errors.New("Error creating Item")
 	ErrorItemsQuery   = errors.New("Error querying Items")
 	ErrorUpdateItem   = errors.New("Error updating Item")
+	ErrorDeleteItem   = errors.New("Error deleting Item")
 	ErrorItemNotFound = errors.New("Item not found")
 	ErrorItemExists   = errors.New("Item already exists")
 )
@@ -68,7 +69,11 @@ func FetchItemById(dbPool database.PgxPoolIface, itemId int) (*models.Item, erro
 	return &item, nil
 }
 
-func UpdateItem(dbPool database.PgxPoolIface, itemId int, itemIn models.ItemIn) (*models.Item, error) {
+func UpdateItem(
+	dbPool database.PgxPoolIface,
+	itemId int,
+	itemIn models.ItemIn,
+) (*models.Item, error) {
 	// Update Item
 	var item models.Item
 	err := dbPool.QueryRow(
@@ -94,4 +99,30 @@ func UpdateItem(dbPool database.PgxPoolIface, itemId int, itemIn models.ItemIn) 
 		return nil, ErrorUpdateItem
 	}
 	return &item, nil
+}
+
+func DeleteItem(
+	dbPool database.PgxPoolIface,
+	itemId int,
+) (*models.Item, error) {
+	// Fetch Item by ID
+	item, fetchErr := FetchItemById(dbPool, itemId)
+	if fetchErr != nil {
+		return nil, fetchErr
+	}
+	if item == nil {
+		return nil, ErrorItemNotFound
+	}
+	// Delete Item if it exists
+	_, deleteErr := dbPool.Exec(
+		context.Background(),
+		"DELETE FROM item WHERE id = $1",
+		itemId,
+	)
+	// Handle Item delete error
+	if deleteErr != nil {
+		logger.LogErrorWithStacktrace(deleteErr, "Error deleting Item")
+		return nil, ErrorDeleteItem
+	}
+	return item, nil
 }

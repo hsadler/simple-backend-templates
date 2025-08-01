@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import Depends, FastAPI, HTTPException, Path, status
+from fastapi import Depends, FastAPI, HTTPException, Response, Path, status
 
 from src import models
 from src.database import Database, get_database
@@ -130,7 +130,7 @@ async def update_item(
 async def delete_item(
     item_id: int = Path(gt=0, examples=[1]),
     db: Database = Depends(get_database),
-) -> models.ItemDeleteResponse:
+) -> Response:
     logger.info("Handling delete item request", extra={"item_id": item_id})
     ERROR_DETAIL_500: str = "Error deleting item by id"
     try:
@@ -162,7 +162,4 @@ async def delete_item(
             detail=ERROR_DETAIL_500,
         )
     logger.debug(f"Item deleted: {item.model_dump()}")
-    return models.ItemDeleteResponse(
-        data=item,
-        meta=models.ItemMeta(item_status=models.ItemStatus.deleted),
-    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

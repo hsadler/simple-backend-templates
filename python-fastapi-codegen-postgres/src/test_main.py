@@ -387,12 +387,7 @@ class TestDeleteItemEndpoint:
         ):
             response = client.delete("/items/1")
 
-            assert response.status_code == 200
-            response_data = response.json()
-            assert response_data["data"]["id"] == 1
-            assert response_data["data"]["name"] == "test_item"
-            assert response_data["data"]["price"] == 10.0
-            assert response_data["meta"]["item_status"] == "deleted"
+            assert response.status_code == 204
 
             # Verify the mocks were called correctly
             mock_fetch.assert_called_once_with(mock_database, 1)

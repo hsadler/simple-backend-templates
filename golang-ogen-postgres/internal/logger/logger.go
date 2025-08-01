@@ -16,7 +16,7 @@ func SetupGlobalLogger() {
 	zerolog.SetGlobalLevel(l)
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	log.Logger = log.Output(w)
-	log.Info().Msg("Logger setup complete")
+	log.Info().Msg("Logging setup complete")
 }
 
 func LogErrorWithStacktrace(err error, errMsg string) {

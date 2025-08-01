@@ -14,6 +14,11 @@ func (s *ErrorResponseStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
+// DeleteItemNoContent is response for DeleteItem operation.
+type DeleteItemNoContent struct{}
+
+func (*DeleteItemNoContent) deleteItemRes() {}
+
 // DeleteItemNotFound is response for DeleteItem operation.
 type DeleteItemNotFound struct{}
 
@@ -169,34 +174,6 @@ func (s *ItemCreateResponse) SetMeta(val ItemMeta) {
 }
 
 func (*ItemCreateResponse) createItemRes() {}
-
-// Ref: #/components/schemas/ItemDeleteResponse
-type ItemDeleteResponse struct {
-	Data Item     `json:"data"`
-	Meta ItemMeta `json:"meta"`
-}
-
-// GetData returns the value of Data.
-func (s *ItemDeleteResponse) GetData() Item {
-	return s.Data
-}
-
-// GetMeta returns the value of Meta.
-func (s *ItemDeleteResponse) GetMeta() ItemMeta {
-	return s.Meta
-}
-
-// SetData sets the value of Data.
-func (s *ItemDeleteResponse) SetData(val Item) {
-	s.Data = val
-}
-
-// SetMeta sets the value of Meta.
-func (s *ItemDeleteResponse) SetMeta(val ItemMeta) {
-	s.Meta = val
-}
-
-func (*ItemDeleteResponse) deleteItemRes() {}
 
 // Ref: #/components/schemas/ItemGetResponse
 type ItemGetResponse struct {

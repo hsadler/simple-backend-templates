@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"example-server/internal/openapi/ogen"
 
 	"github.com/fatih/color"
 )
 
-func randId() int64 {
-	return int64(os.Getpid()) + int64(os.Getuid()) + int64(os.Geteuid())
+func timeId() int64 {
+	return time.Now().UnixNano()
 }
 
 func run(ctx context.Context) error {
@@ -31,6 +32,9 @@ func run(ctx context.Context) error {
 	if err := testUpdateItem(ctx, client); err != nil {
 		return err
 	}
+	if err := testDeleteItem(ctx, client); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -47,16 +51,16 @@ func testPing(ctx context.Context, client *ogen.Client) error {
 func testCreateItem(ctx context.Context, client *ogen.Client) error {
 	req := &ogen.ItemCreateRequest{
 		Data: ogen.ItemIn{
-			Name:  fmt.Sprintf("Item-%d", 1000+randId()),
+			Name:  fmt.Sprintf("Item-%d", timeId()),
 			Price: 19.99,
 		},
 	}
-	resp, err := client.CreateItem(ctx, req)
+	res, err := client.CreateItem(ctx, req)
 	if err != nil {
 		color.New(color.FgRed).Println(err)
 		return err
 	}
-	color.New(color.FgGreen).Println(resp)
+	color.New(color.FgGreen).Println(res)
 	return nil
 }
 
@@ -75,7 +79,7 @@ func testGetItem(ctx context.Context, client *ogen.Client) error {
 func testUpdateItem(ctx context.Context, client *ogen.Client) error {
 	req := &ogen.ItemUpdateRequest{
 		Data: ogen.ItemIn{
-			Name:  fmt.Sprintf("Updated Item-%d", 1000+randId()),
+			Name:  fmt.Sprintf("Updated Item-%d", timeId()),
 			Price: 29.99,
 		},
 	}
@@ -91,6 +95,29 @@ func testUpdateItem(ctx context.Context, client *ogen.Client) error {
 		return err
 	}
 	color.New(color.FgGreen).Println(resp)
+	return nil
+}
+
+func testDeleteItem(ctx context.Context, client *ogen.Client) error {
+	createRes, err := client.CreateItem(ctx, &ogen.ItemCreateRequest{
+		Data: ogen.ItemIn{
+			Name:  fmt.Sprintf("Item-%d", timeId()),
+			Price: 19.99,
+		},
+	})
+	if err != nil {
+		color.New(color.FgRed).Println("Error creating item for delete:", err)
+		return err
+	}
+	itemCreated := createRes.(*ogen.ItemCreateResponse).Data
+	deleteRes, err := client.DeleteItem(ctx, ogen.DeleteItemParams{
+		ItemId: int(itemCreated.ID),
+	})
+	if err != nil {
+		color.New(color.FgRed).Println("Error deleting item:", err)
+		return err
+	}
+	color.New(color.FgGreen).Println(deleteRes)
 	return nil
 }
 

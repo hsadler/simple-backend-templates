@@ -2,7 +2,6 @@ package openapi
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -145,6 +144,15 @@ func (s *ItemsService) DeleteItem(
 	ctx context.Context,
 	params ogen.DeleteItemParams,
 ) (ogen.DeleteItemRes, error) {
-	// STUB
-	return nil, errors.New("not implemented")
+	log.Info().Interface("DeleteItemParams", params).Msg("Handling item delete request")
+	// Delete item
+	itemId := params.ItemId
+	item, err := itemsrepo.DeleteItem(s.Deps.DBPool, itemId)
+	if err != nil {
+		log.Error().Err(err).Interface("DeleteItemParams", params).Msg("Error deleting item")
+		return nil, s.NewError(ctx, err)
+	}
+	log.Debug().Interface("item", item).Msg("Item deleted")
+	// Return empty response
+	return &ogen.DeleteItemNoContent{}, nil
 }
