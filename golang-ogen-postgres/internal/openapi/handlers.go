@@ -10,7 +10,7 @@ import (
 	"example-server/internal/dependencies"
 	"example-server/internal/models"
 	"example-server/internal/openapi/ogen"
-	itemsrepo "example-server/internal/repos"
+	"example-server/internal/repos"
 )
 
 type ItemsService struct {
@@ -40,7 +40,7 @@ func (s *ItemsService) CreateItem(
 	log.Info().Interface("ItemCreateRequest", req).Msg("Handling item create request")
 	// Insert item
 	itemIn := req.Data
-	item, err := itemsrepo.InsertItem(s.Deps.DBPool, models.ItemIn{
+	item, err := repos.InsertItem(s.Deps.DBPool, models.ItemIn{
 		Name:  itemIn.Name,
 		Price: itemIn.Price,
 	})
@@ -76,7 +76,7 @@ func (s *ItemsService) GetItem(
 	log.Info().Interface("GetItemParams", params).Msg("Handling item get request")
 	// Fetch item
 	itemId := params.ItemId
-	item, err := itemsrepo.FetchItemById(s.Deps.DBPool, itemId)
+	item, err := repos.FetchItemById(s.Deps.DBPool, itemId)
 	if err != nil {
 		log.Error().Err(err).Interface("GetItemParams", params).Msg("Error getting item")
 		return nil, s.NewError(ctx, err)
@@ -111,7 +111,7 @@ func (s *ItemsService) UpdateItem(
 	// Update item
 	itemId := params.ItemId
 	itemIn := req.Data
-	item, err := itemsrepo.UpdateItem(s.Deps.DBPool, itemId, models.ItemIn{
+	item, err := repos.UpdateItem(s.Deps.DBPool, itemId, models.ItemIn{
 		Name:  itemIn.Name,
 		Price: itemIn.Price,
 	})
@@ -147,7 +147,7 @@ func (s *ItemsService) DeleteItem(
 	log.Info().Interface("DeleteItemParams", params).Msg("Handling item delete request")
 	// Delete item
 	itemId := params.ItemId
-	item, err := itemsrepo.DeleteItem(s.Deps.DBPool, itemId)
+	item, err := repos.DeleteItem(s.Deps.DBPool, itemId)
 	if err != nil {
 		log.Error().Err(err).Interface("DeleteItemParams", params).Msg("Error deleting item")
 		return nil, s.NewError(ctx, err)
